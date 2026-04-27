@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     private int score = 0;
     private int highScore = 0;  // En yüksek skor
     public TextMeshProUGUI highScoreText;  // Highscore yazısı
+    public TextMeshProUGUI scoreResultText;
 
     // UI objeleri
     public TextMeshProUGUI scoreText;       // Skor yazısı
@@ -82,6 +83,7 @@ public class GameManager : MonoBehaviour
         }
         // Highscore yazısını güncelle
         highScoreText.text = "BEST: " + highScore;
+        scoreResultText.text = "SCORE: " + score;
         GetComponent<RocketController>().enabled = false;
 
         // Slow motion ve Almost yazısı göster

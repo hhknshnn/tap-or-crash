@@ -7,13 +7,11 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
-        // Target atanmamışsa hiçbir şey yapma
         if (target == null) return;
 
-        // Hedefin pozisyonunu al, Z eksenini -10 yap (kamera arkada kalsın)
-        Vector3 targetPos = new Vector3(target.position.x, target.position.y, -10f);
+        // Sadece Y eksenini takip et — dikey oyun için X sabit kalır
+        Vector3 targetPos = new Vector3(0f, target.position.y, -10f);
 
-        // Kamerayı yumuşakça hedefe doğru hareket ettir
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
     }
 }

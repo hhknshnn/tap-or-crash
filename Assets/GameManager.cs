@@ -1,122 +1,439 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
-using System.Collections; // Coroutine için
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
-    // Singleton — tek bir GameManager olsun
     public static GameManager instance;
 
-    // Oyun durumu
-    public static bool isGameOver = false;
-    private int score = 0;
-    private int highScore = 0;  // En yüksek skor
-    public TextMeshProUGUI highScoreText;  // Highscore yazısı
+    public static bool isGameOver    = false;
+    public static bool isGameStarted = false;
+    public static bool isNearMiss    = false;
+    public static bool isRestart     = false;
+
+    private int score      = 0;
+    private int highScore  = 0;
+    private int comboCount = 0;
+
+    public event System.Action<int> ScoreChanged;
+
+    [Header("Score UI")]
+    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI almostText;
+
+    [Header("Panels")]
+    public GameObject startPanel;
+    public GameObject gameOverPanel;
+
+    [Header("Game Over UI")]
+    public TextMeshProUGUI highScoreText;
     public TextMeshProUGUI scoreResultText;
 
-    // UI objeleri
-    public TextMeshProUGUI scoreText;       // Skor yazısı
-    public TextMeshProUGUI perfectText;     // "PERFECT!" yazısı
-    public TextMeshProUGUI almostText;     // "ALMOST!" yazısı
-    public GameObject gameOverPanel;        // Game Over ekranı
+    [Header("Referanslar")]
+    public RocketController playerRocket;
 
-    // Coroutine referansı
-    private Coroutine perfectCoroutine;
+    [Header("Animasyon Ayarları")]
+    [SerializeField] private float gameOverFadeDuration = 0.4f;
+    [SerializeField] private float scoreCountDuration   = 1.2f;
+
+    // Runtime'da oluşturulan combo metin nesnesi
+    private TextMeshProUGUI comboText;
+    private Coroutine comboAnimation;
 
     void Awake()
     {
-        // Singleton pattern
-        instance = this;
-        // Kaydedilmiş highscore'u yükle
+        if (!BecomeAuthoritativeInstance()) return;
+
         highScore = PlayerPrefs.GetInt("HighScore", 0);
+
+        if (scoreResultText == null)
+        {
+            TextMeshProUGUI[] allTexts = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>();
+            foreach (var t in allTexts)
+            {
+                if (t.gameObject.name == "ScoreResultText") { scoreResultText = t; break; }
+            }
+        }
+
+        if (playerRocket == null)
+            playerRocket = FindAnyObjectByType<RocketController>();
     }
 
-    // Her gezegen geçişinde skoru artır
+    bool BecomeAuthoritativeInstance()
+    {
+        if (instance == null || instance == this)
+        {
+            instance = this;
+            return true;
+        }
+
+        // SampleScene currently also carries a legacy GameManager component on Rocket.
+        // Keep that component alive for its serialized Restart UnityEvent, but only the
+        // best configured scene manager may run lifecycle/gameplay logic.
+        if (ConfigurationPriority() > instance.ConfigurationPriority())
+        {
+            instance.enabled = false;
+            instance = this;
+            return true;
+        }
+
+        enabled = false;
+        return false;
+    }
+
+    int ConfigurationPriority()
+    {
+        int priority = gameObject.name == "GameManager" ? 100 : 0;
+        if (startPanel != null) priority += 20;
+        if (gameOverPanel != null) priority += 10;
+        if (scoreText != null) priority += 5;
+        if (scoreResultText != null) priority += 3;
+        if (playerRocket != null) priority += 2;
+        return priority;
+    }
+
+    void OnDestroy()
+    {
+        if (instance == this) instance = null;
+    }
+
+    void Start()
+    {
+        if (instance != this) return;
+
+        isGameOver  = false;
+        comboCount  = 0;
+
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (almostText   != null) almostText.gameObject.SetActive(false);
+
+        CreateComboTextUI();
+
+        if (isRestart)
+        {
+            isRestart = false;
+            if (startPanel != null) startPanel.SetActive(false);
+            StartCoroutine(StartAfterDelay());
+        }
+        else
+        {
+            isGameStarted = false;
+            if (startPanel != null) startPanel.SetActive(true);
+        }
+
+        ScoreChanged?.Invoke(score);
+    }
+
+    // Combo göstergesi UI elementini kod ile oluşturur
+    void CreateComboTextUI()
+    {
+        Canvas canvas = FindAnyObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        Transform gameUI = canvas.transform.Find("GameUI");
+        Transform parent = gameUI != null ? gameUI : canvas.transform;
+
+        GameObject go = new GameObject("ComboText");
+        go.transform.SetParent(parent, false);
+
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.anchorMin       = new Vector2(0.5f, 1f);
+        rt.anchorMax       = new Vector2(0.5f, 1f);
+        rt.pivot           = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(0f, -120f);
+        rt.sizeDelta       = new Vector2(320f, 60f);
+
+        comboText           = go.AddComponent<TextMeshProUGUI>();
+        comboText.fontSize  = 36;
+        comboText.alignment = TextAlignmentOptions.Center;
+        comboText.color     = new Color(1f, 0.85f, 0.1f); // altın sarısı
+        comboText.fontStyle = FontStyles.Bold;
+        go.SetActive(false);
+    }
+
+    // ─── Skor ────────────────────────────────────────────────────────────────
+
     public void AddScore()
     {
+        if (instance != null && instance != this)
+        {
+            instance.AddScore();
+            return;
+        }
+
         score++;
-        scoreText.text = score.ToString();
-        Debug.Log("AddScore çağrıldı: " + score);
+        if (scoreText != null) scoreText.text = score.ToString();
+        ScoreChanged?.Invoke(score);
+
+        GameplayVFX.Ensure().PlayMilestone(score);
+
+        // Milestone kontrolü
+        if (CoinManager.instance != null) CoinManager.instance.CheckMilestones(score);
     }
 
-    public int GetScore()
+    public int GetScore()  => score;
+    public int GetCombo()  => comboCount;
+
+    // ─── Combo ───────────────────────────────────────────────────────────────
+
+    public void IncrementCombo()
     {
-        return score;
+        comboCount++;
+        ShowComboText("PRECISION", new Color(1f, 0.82f, 0.15f));
     }
-    // Perfect geçişte bonus puan ve yazı göster
-    public void PerfectLaunch()
+
+    public void RegisterLanding(RocketController.LandingQuality quality)
     {
-        Debug.Log("PerfectLaunch çağrıldı!");
-        score += 3;
-        scoreText.text = score.ToString();
+        if (quality == RocketController.LandingQuality.Normal)
+        {
+            ResetCombo();
+            return;
+        }
 
-        // Eğer zaten gösteriliyorsa önce durdur
-        if (perfectCoroutine != null)
-            StopCoroutine(perfectCoroutine);
-
-        // Perfect yazısını göster
-        perfectCoroutine = StartCoroutine(ShowPerfectText());
+        comboCount++;
+        if (quality == RocketController.LandingQuality.Perfect)
+            ShowComboText("PERFECT", new Color(1f, 0.82f, 0.15f));
+        else
+            ShowComboText("EDGE CATCH", new Color(1f, 0.38f, 0.08f));
     }
 
-    // Perfect yazısını 1 saniye gösterip gizle
-    IEnumerator ShowPerfectText()
+    public void ResetCombo()
     {
-        Debug.Log("ShowPerfectText başladı!");
-        perfectText.gameObject.SetActive(true);
-        Debug.Log("PerfectText aktif edildi!");
-        yield return new WaitForSeconds(1f);
-        perfectText.gameObject.SetActive(false);
+        if (comboCount == 0) return;
+        comboCount = 0;
+        if (comboAnimation != null)
+        {
+            StopCoroutine(comboAnimation);
+            comboAnimation = null;
+        }
+        if (comboText != null) comboText.gameObject.SetActive(false);
     }
 
-    // Game Over'ı tetikle
+    void ShowComboText(string eventLabel, Color color)
+    {
+        if (comboText == null) return;
+        comboText.text = comboCount > 1
+            ? $"{eventLabel}  ·  x{comboCount}"
+            : eventLabel + "!";
+        comboText.color = color;
+        comboText.gameObject.SetActive(true);
+
+        if (comboAnimation != null) StopCoroutine(comboAnimation);
+        comboAnimation = StartCoroutine(ComboTextAnim());
+    }
+
+    IEnumerator ComboTextAnim()
+    {
+        RectTransform rt = comboText.GetComponent<RectTransform>();
+        CanvasGroup   cg = comboText.GetComponent<CanvasGroup>();
+        if (cg == null) cg = comboText.gameObject.AddComponent<CanvasGroup>();
+        cg.alpha = 1f;
+        rt.localScale = Vector3.one * 1.4f;
+
+        // Pop-in
+        float t = 0f;
+        while (t < 0.2f)
+        {
+            t += Time.deltaTime;
+            rt.localScale = Vector3.Lerp(Vector3.one * 1.4f, Vector3.one, t / 0.2f);
+            yield return null;
+        }
+        rt.localScale = Vector3.one;
+
+        yield return new WaitForSeconds(0.8f);
+
+        // Fade-out
+        t = 0f;
+        while (t < 0.25f)
+        {
+            t += Time.deltaTime;
+            cg.alpha = 1f - (t / 0.25f);
+            yield return null;
+        }
+        cg.alpha = 1f;
+        comboText.gameObject.SetActive(false);
+        comboAnimation = null;
+    }
+
+    // ─── Game Over ───────────────────────────────────────────────────────────
+
     public void TriggerGameOver()
     {
+        if (instance != null && instance != this)
+        {
+            instance.TriggerGameOver();
+            return;
+        }
+
         if (isGameOver) return;
 
         isGameOver = true;
-        
+        comboCount = 0;
+        LevelProgressUI.RefreshState();
+
+        if (AdManager.instance != null) AdManager.instance.OnGameOver();
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.PlayCrash();
+            AudioManager.instance.StopLaunch();
+        }
+
+        CameraFollow cameraFollow = Camera.main != null ? Camera.main.GetComponent<CameraFollow>() : null;
+        if (cameraFollow != null) cameraFollow.PlayCrashKick();
+
         if (score > highScore)
         {
             highScore = score;
             PlayerPrefs.SetInt("HighScore", highScore);
+            PlayerPrefs.Save(); // B3: kilitlenme veya arka plana alınma durumunda kayıp önlenir
         }
-        // Highscore yazısını güncelle
-        highScoreText.text = "BEST: " + highScore;
-        scoreResultText.text = "SCORE: " + score;
-        GetComponent<RocketController>().enabled = false;
 
-        // Slow motion ve Almost yazısı göster
+        if (playerRocket != null) HandleRocketExplosion(playerRocket);
+
         StartCoroutine(DeathSequence());
+    }
+
+    void HandleRocketExplosion(RocketController rocket)
+    {
+        rocket.CancelHoldInput();
+        GameplayVFX.Ensure().PlayCrash(rocket.transform.position);
+
+        rocket.enabled = false;
+        rocket.GetComponent<SpriteRenderer>().enabled = false;
+
+        ParticleSystem thruster = rocket.GetComponentInChildren<ParticleSystem>();
+        if (thruster != null) thruster.Stop();
     }
 
     IEnumerator DeathSequence()
     {
-        // ALMOST! yazısını göster
-        almostText.gameObject.SetActive(true);
+        if (comboText != null) comboText.gameObject.SetActive(false);
 
-        // Slow motion başlat
-        Time.timeScale = 0.2f;
+        // "ALMOST!" animasyonu
+        if (almostText != null && isNearMiss)
+        {
+            almostText.gameObject.SetActive(true);
+            RectTransform rt  = almostText.GetComponent<RectTransform>();
+            float elapsed = 0f;
+            while (elapsed < 0.25f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                rt.localScale = Vector3.one * Mathf.Lerp(0.3f, 1f, elapsed / 0.25f);
+                yield return null;
+            }
+        }
 
-        // 0.5 saniye bekle (slow motion'da)
-        yield return new WaitForSecondsRealtime(0.8f);
+        isNearMiss          = false;
+        Time.timeScale      = 0.72f;
+        yield return new WaitForSecondsRealtime(0.22f);
+        Time.timeScale      = 1f;
 
-        // Normal hıza dön
-        Time.timeScale = 1f;
+        if (almostText != null) almostText.gameObject.SetActive(false);
 
-        // ALMOST! yazısını gizle
-        almostText.gameObject.SetActive(false);
+        if (gameOverPanel == null) yield break;
 
-        // Game Over ekranını göster
+        if (highScoreText  != null) highScoreText.text  = "BEST: "  + highScore;
+        if (scoreResultText != null) scoreResultText.text = "SCORE: 0";
+
+        // CanvasGroup: yoksa ekle (fade için gerekli)
+        CanvasGroup cg = gameOverPanel.GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameOverPanel.AddComponent<CanvasGroup>();
+
+        cg.alpha = 0f;
         gameOverPanel.SetActive(true);
+
+        RectTransform panelRt = gameOverPanel.GetComponent<RectTransform>();
+        panelRt.localScale    = Vector3.one * 0.85f;
+
+        // Fade + scale-in
+        float dur = gameOverFadeDuration;
+        float t   = 0f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float p       = Mathf.SmoothStep(0f, 1f, t / dur);
+            cg.alpha      = p;
+            panelRt.localScale = Vector3.Lerp(Vector3.one * 0.85f, Vector3.one, p);
+            yield return null;
+        }
+        cg.alpha           = 1f;
+        panelRt.localScale = Vector3.one;
+
+        // Skor sayacı animasyonu
+        if (scoreResultText != null) StartCoroutine(CountUpScore(score));
+
+        // Reklam izle → coin butonu
+        if (CoinManager.instance != null) CoinManager.instance.ShowWatchAdButton();
     }
 
-    // Restart butonuna basınca sahneyi yeniden yükle
+    IEnumerator CountUpScore(int target)
+    {
+        float elapsed = 0f;
+        while (elapsed < scoreCountDuration)
+        {
+            elapsed += Time.deltaTime;
+            float p = Mathf.SmoothStep(0f, 1f, elapsed / scoreCountDuration);
+            scoreResultText.text = "SCORE: " + Mathf.RoundToInt(p * target);
+            yield return null;
+        }
+        scoreResultText.text = "SCORE: " + target;
+    }
+
+    // ─── Oyun Akışı ──────────────────────────────────────────────────────────
+
+    public void StartGame()
+    {
+        if (instance != null && instance != this)
+        {
+            instance.StartGame();
+            return;
+        }
+
+        isGameStarted = true;
+        ResetRunScore();
+        if (startPanel != null) startPanel.SetActive(false);
+
+        // Başlangıç ekranında açık kalmışsa shop'u kapat
+        if (ShipSkinManager.instance != null) ShipSkinManager.instance.CloseShop();
+    }
+
     public void RestartGame()
     {
-        // Hızı sıfırla (slow motion kaldıysa)
+        if (instance != null && instance != this)
+        {
+            instance.RestartGame();
+            return;
+        }
+
+        PrepareForRestart();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void PrepareForRestart()
+    {
         Time.timeScale = 1f;
-        isGameOver = false;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        isRestart      = true;
+        isGameOver     = false;
+        isGameStarted  = false;
+        isNearMiss     = false;
+        if (playerRocket != null) playerRocket.ResetForNewRun();
+        ResetRunScore();
+    }
+
+    private void ResetRunScore()
+    {
+        score = 0;
+        comboCount = 0;
+        if (scoreText != null) scoreText.text = "0";
+        ScoreChanged?.Invoke(score);
+        LevelProgressUI.ResetForNewRun();
+    }
+
+    IEnumerator StartAfterDelay()
+    {
+        yield return null; // Tüm objeler yüklensin
+        isGameStarted = true;
+        ResetRunScore();
     }
 }

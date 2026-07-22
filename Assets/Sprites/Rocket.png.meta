@@ -3,8 +3,8 @@ guid: 118052974f110d14aa7302ea22fbeb65
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 570513375360262070
-    second: Rocket 1_0
+      213: 6711257252158638106
+    second: Rocket_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -97,7 +97,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: WebGL
+    buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -113,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Rocket 1_0
+      name: Rocket_0
       rect:
         serializedVersion: 2
         x: 20
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6bf15f564eedae700800000000000000
-      internalID: 570513375360262070
+      spriteID: a180e2fb9ec232d50800000000000000
+      internalID: 6711257252158638106
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Rocket 1_0: 570513375360262070
+      Rocket_0: 6711257252158638106
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,177 +1,414 @@
-using UnityEngine;
+using System;
 using GoogleMobileAds.Api;
 using GoogleMobileAds.Ump.Api;
-using System;
+using UnityEngine;
 
 public class AdManager : MonoBehaviour
 {
     public static AdManager instance;
 
-    // Gerçek AdMob reklam birimi ID'leri (production)
-    private const string InterstitialAdUnitId = "ca-app-pub-9310700764525340/9936988396"; // GameOver_Interstitial
-    private const string RewardedAdUnitId     = "ca-app-pub-9310700764525340/8305444545"; // GameOver_Rewarded
+#if UNITY_ANDROID
+    // Android production reklam birimleri
+    private const string InterstitialAdUnitId =
+        "ca-app-pub-9310700764525340/9936988396";
+
+    private const string RewardedAdUnitId =
+        "ca-app-pub-9310700764525340/8305444545";
+
+#elif UNITY_IOS
+    // iOS production reklam birimleri
+    private const string InterstitialAdUnitId =
+        "ca-app-pub-9310700764525340/1117245310";
+
+    private const string RewardedAdUnitId =
+        "ca-app-pub-9310700764525340/5198980619";
+
+#else
+    // Unity Editor ve desteklenmeyen platformlarda kullanılmaz.
+    private const string InterstitialAdUnitId = "unused";
+    private const string RewardedAdUnitId = "unused";
+#endif
 
     private InterstitialAd interstitialAd;
-    private RewardedAd     rewardedAd;
-    private int            gameOverCount = 0;
+    private RewardedAd rewardedAd;
 
-    // Rewarded ad ödüllendirilince çağrılacak callback
-    private Action<int>    pendingRewardCallback;
-    private int            pendingRewardAmount;
-    private bool           rewardedAdShowing;
+    private int gameOverCount;
+    private Action<int> pendingRewardCallback;
+    private int pendingRewardAmount;
+    private bool rewardedAdShowing;
+    private bool adsInitialized;
 
     private static bool AdsSupported =>
         Application.platform == RuntimePlatform.Android ||
         Application.platform == RuntimePlatform.IPhonePlayer;
 
-    void Awake()
+    private void Awake()
     {
-        if (instance == null) { instance = this; DontDestroyOnLoad(gameObject); }
-        else { Destroy(gameObject); return; }
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+            return;
+        }
+
+        Destroy(gameObject);
     }
 
-    void Start()
+    private void Start()
     {
-        // Google Mobile Ads uses placeholder clients in the Unity Editor and on
-        // unsupported desktop platforms. Only initialize the real mobile SDK.
-        if (!AdsSupported) return;
+        if (!AdsSupported)
+        {
+            Debug.Log("AdMob initialization skipped on unsupported platform.");
+            return;
+        }
 
-        var requestParameters = new ConsentRequestParameters();
+        RequestConsentAndInitializeAds();
+    }
 
-        ConsentInformation.Update(requestParameters, (FormError updateError) =>
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
+
+        DestroyInterstitialAd();
+        DestroyRewardedAd();
+    }
+
+    private void RequestConsentAndInitializeAds()
+    {
+        ConsentRequestParameters requestParameters =
+            new ConsentRequestParameters();
+
+        ConsentInformation.Update(requestParameters, updateError =>
         {
             if (updateError != null)
             {
-                Debug.LogError("Consent bilgisi güncellenemedi: " + updateError.Message);
+                Debug.LogError(
+                    "Consent bilgisi güncellenemedi: " +
+                    updateError.Message
+                );
+
                 InitializeAds();
                 return;
             }
 
-            ConsentForm.LoadAndShowConsentFormIfRequired((FormError formError) =>
+            ConsentForm.LoadAndShowConsentFormIfRequired(formError =>
             {
                 if (formError != null)
                 {
-                    Debug.LogError("Consent formu hatası: " + formError.Message);
+                    Debug.LogError(
+                        "Consent formu hatası: " +
+                        formError.Message
+                    );
                 }
 
                 if (ConsentInformation.CanRequestAds())
                 {
                     InitializeAds();
                 }
+                else
+                {
+                    Debug.LogWarning(
+                        "Kullanıcı izni nedeniyle şu anda reklam isteği gönderilemiyor."
+                    );
+                }
             });
         });
     }
 
-    void InitializeAds()
+    private void InitializeAds()
     {
-        MobileAds.Initialize(_ =>
+        if (adsInitialized)
         {
+            return;
+        }
+
+        adsInitialized = true;
+
+        MobileAds.Initialize(initializationStatus =>
+        {
+            Debug.Log("Google Mobile Ads initialized.");
+
             LoadInterstitialAd();
             LoadRewardedAd();
         });
     }
 
-    // ─── Interstitial ─────────────────────────────────────────────────────────
+    // ─── Interstitial ──────────────────────────────────────────────────────
 
-    void LoadInterstitialAd()
+    private void LoadInterstitialAd()
     {
-        interstitialAd?.Destroy();
-        interstitialAd = null;
-
-        InterstitialAd.Load(InterstitialAdUnitId, new AdRequest(), (ad, error) =>
+        if (!AdsSupported || !adsInitialized)
         {
-            if (error != null) { Debug.LogError("Interstitial yüklenemedi: " + error); return; }
-            interstitialAd = ad;
-        });
+            return;
+        }
+
+        DestroyInterstitialAd();
+
+        AdRequest request = new AdRequest();
+
+        InterstitialAd.Load(
+            InterstitialAdUnitId,
+            request,
+            (ad, error) =>
+            {
+                if (error != null)
+                {
+                    Debug.LogError(
+                        "Interstitial yüklenemedi: " +
+                        error
+                    );
+                    return;
+                }
+
+                if (ad == null)
+                {
+                    Debug.LogError(
+                        "Interstitial yükleme callback'i boş reklam döndürdü."
+                    );
+                    return;
+                }
+
+                interstitialAd = ad;
+
+                Debug.Log("Interstitial reklam yüklendi.");
+            }
+        );
     }
 
     public void OnGameOver()
     {
-        if (!AdsSupported) return;
+        if (!AdsSupported)
+        {
+            return;
+        }
 
         gameOverCount++;
-        if (gameOverCount % 3 == 0) ShowInterstitialAd();
-    }
 
-    void ShowInterstitialAd()
-    {
-        if (interstitialAd != null && interstitialAd.CanShowAd())
+        if (gameOverCount % 3 == 0)
         {
-            // Önce kapanma olayına abone ol, sonra reklamı göster (doğru sıra)
-            interstitialAd.OnAdFullScreenContentClosed += OnInterstitialClosed;
-            interstitialAd.Show();
+            ShowInterstitialAd();
         }
-        else { LoadInterstitialAd(); }
     }
 
-    void OnInterstitialClosed()
+    private void ShowInterstitialAd()
     {
-        // Aboneliği kaldır ve bir sonraki gösterim için yeni reklam yükle
-        interstitialAd.OnAdFullScreenContentClosed -= OnInterstitialClosed;
+        if (interstitialAd == null || !interstitialAd.CanShowAd())
+        {
+            Debug.Log("Interstitial hazır değil, yeniden yükleniyor.");
+            LoadInterstitialAd();
+            return;
+        }
+
+        interstitialAd.OnAdFullScreenContentClosed +=
+            OnInterstitialClosed;
+
+        interstitialAd.OnAdFullScreenContentFailed +=
+            OnInterstitialFailed;
+
+        interstitialAd.Show();
+    }
+
+    private void OnInterstitialClosed()
+    {
+        UnsubscribeInterstitialEvents();
         LoadInterstitialAd();
     }
 
-    // ─── Rewarded Ad ──────────────────────────────────────────────────────────
-
-    void LoadRewardedAd()
+    private void OnInterstitialFailed(AdError error)
     {
-        rewardedAd?.Destroy();
-        rewardedAd = null;
+        Debug.LogError(
+            "Interstitial gösterilemedi: " +
+            error
+        );
 
-        RewardedAd.Load(RewardedAdUnitId, new AdRequest(), (ad, error) =>
-        {
-            if (error != null) { Debug.LogError("Rewarded reklam yüklenemedi: " + error); return; }
-            rewardedAd = ad;
-        });
+        UnsubscribeInterstitialEvents();
+        LoadInterstitialAd();
     }
 
-    // Reklam izlenince verilecek coin miktarı ve callback
-    public bool IsRewardedAdReady() =>
-        AdsSupported && rewardedAd != null && rewardedAd.CanShowAd();
-
-    public void ShowRewardedAdForCoins(Action<int> onRewarded = null)
+    private void UnsubscribeInterstitialEvents()
     {
-        if (!AdsSupported || rewardedAdShowing) return;
+        if (interstitialAd == null)
+        {
+            return;
+        }
+
+        interstitialAd.OnAdFullScreenContentClosed -=
+            OnInterstitialClosed;
+
+        interstitialAd.OnAdFullScreenContentFailed -=
+            OnInterstitialFailed;
+    }
+
+    private void DestroyInterstitialAd()
+    {
+        if (interstitialAd == null)
+        {
+            return;
+        }
+
+        UnsubscribeInterstitialEvents();
+        interstitialAd.Destroy();
+        interstitialAd = null;
+    }
+
+    // ─── Rewarded ──────────────────────────────────────────────────────────
+
+    private void LoadRewardedAd()
+    {
+        if (!AdsSupported || !adsInitialized)
+        {
+            return;
+        }
+
+        DestroyRewardedAd();
+
+        AdRequest request = new AdRequest();
+
+        RewardedAd.Load(
+            RewardedAdUnitId,
+            request,
+            (ad, error) =>
+            {
+                if (error != null)
+                {
+                    Debug.LogError(
+                        "Rewarded reklam yüklenemedi: " +
+                        error
+                    );
+                    return;
+                }
+
+                if (ad == null)
+                {
+                    Debug.LogError(
+                        "Rewarded yükleme callback'i boş reklam döndürdü."
+                    );
+                    return;
+                }
+
+                rewardedAd = ad;
+
+                Debug.Log("Rewarded reklam yüklendi.");
+            }
+        );
+    }
+
+    public bool IsRewardedAdReady()
+    {
+        return AdsSupported &&
+               rewardedAd != null &&
+               rewardedAd.CanShowAd() &&
+               !rewardedAdShowing;
+    }
+
+    public void ShowRewardedAdForCoins(
+        Action<int> onRewarded = null
+    )
+    {
+        if (!AdsSupported || rewardedAdShowing)
+        {
+            return;
+        }
 
         if (rewardedAd == null || !rewardedAd.CanShowAd())
         {
-            Debug.Log("Rewarded reklam hazır değil, yeniden yükleniyor.");
+            Debug.Log(
+                "Rewarded reklam hazır değil, yeniden yükleniyor."
+            );
+
             LoadRewardedAd();
             return;
         }
 
-        pendingRewardAmount   = GameEconomyConfig.Current.rewardedAdCoins;
+        pendingRewardAmount =
+            GameEconomyConfig.Current.rewardedAdCoins;
+
         pendingRewardCallback = onRewarded;
-        bool rewardGranted = false;
         rewardedAdShowing = true;
 
-        rewardedAd.OnAdFullScreenContentClosed += OnRewardedClosed;
-        rewardedAd.OnAdFullScreenContentFailed += OnRewardedFailed;
+        bool rewardGranted = false;
+
+        rewardedAd.OnAdFullScreenContentClosed +=
+            OnRewardedClosed;
+
+        rewardedAd.OnAdFullScreenContentFailed +=
+            OnRewardedFailed;
+
         rewardedAd.Show(reward =>
         {
-            if (rewardGranted) return;
+            if (rewardGranted)
+            {
+                return;
+            }
+
             rewardGranted = true;
-            // Kullanıcı reklamı izledi — ödülü ver
-            if (CoinManager.instance != null) CoinManager.instance.AddCoins(pendingRewardAmount);
-            pendingRewardCallback?.Invoke(pendingRewardAmount);
+
+            if (CoinManager.instance != null)
+            {
+                CoinManager.instance.AddCoins(
+                    pendingRewardAmount
+                );
+            }
+
+            pendingRewardCallback?.Invoke(
+                pendingRewardAmount
+            );
+
             pendingRewardCallback = null;
         });
     }
 
-    void OnRewardedClosed()
+    private void OnRewardedClosed()
     {
-        rewardedAd.OnAdFullScreenContentClosed -= OnRewardedClosed;
-        rewardedAd.OnAdFullScreenContentFailed -= OnRewardedFailed;
-        rewardedAdShowing = false;
-        LoadRewardedAd(); // Bir sonraki gösterim için yükle
-    }
+        UnsubscribeRewardedEvents();
 
-    void OnRewardedFailed(AdError error)
-    {
-        rewardedAd.OnAdFullScreenContentClosed -= OnRewardedClosed;
-        rewardedAd.OnAdFullScreenContentFailed -= OnRewardedFailed;
         rewardedAdShowing = false;
         pendingRewardCallback = null;
+
         LoadRewardedAd();
+    }
+
+    private void OnRewardedFailed(AdError error)
+    {
+        Debug.LogError(
+            "Rewarded reklam gösterilemedi: " +
+            error
+        );
+
+        UnsubscribeRewardedEvents();
+
+        rewardedAdShowing = false;
+        pendingRewardCallback = null;
+
+        LoadRewardedAd();
+    }
+
+    private void UnsubscribeRewardedEvents()
+    {
+        if (rewardedAd == null)
+        {
+            return;
+        }
+
+        rewardedAd.OnAdFullScreenContentClosed -=
+            OnRewardedClosed;
+
+        rewardedAd.OnAdFullScreenContentFailed -=
+            OnRewardedFailed;
+    }
+
+    private void DestroyRewardedAd()
+    {
+        if (rewardedAd == null)
+        {
+            return;
+        }
+
+        UnsubscribeRewardedEvents();
+        rewardedAd.Destroy();
+        rewardedAd = null;
     }
 }

@@ -3,7 +3,6 @@ workflows:
     name: Unity iOS Export Test
 
     instance_type: mac_mini_m2
-
     max_build_duration: 60
 
     environment:
@@ -16,25 +15,38 @@ workflows:
       - name: Show environment
         script: |
           set -e
+
+          echo "macOS:"
           sw_vers
+
+          echo "Architecture:"
           uname -m
+
+          echo "Project directory:"
           pwd
-          ls -la
+
+          echo "Unity project version:"
           cat ProjectSettings/ProjectVersion.txt
 
-      - name: Install Unity
+      - name: Install Unity and iOS module
         script: |
           set -e
 
-          /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
-            -- --headless install \
-            --version "$UNITY_VERSION" \
-            --changeset "$UNITY_CHANGESET"
+          HUB="/Applications/Unity Hub.app/Contents/MacOS/Unity Hub"
 
-          /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
-            -- --headless install-modules \
+          if [ ! -x "$HUB" ]; then
+            echo "Unity Hub bulunamadı:"
+            echo "$HUB"
+            exit 1
+          fi
+
+          echo "Unity $UNITY_VERSION Apple Silicon sürümü kuruluyor..."
+
+          "$HUB" -- --headless install \
             --version "$UNITY_VERSION" \
-            -m ios
+            --changeset "$UNITY_CHANGESET" \
+            --architecture arm64 \
+            --module ios
 
       - name: Locate Unity
         script: |
@@ -45,17 +57,26 @@ workflows:
           if [ ! -x "$UNITY_PATH" ]; then
             echo "Unity çalıştırılabilir dosyası bulunamadı:"
             echo "$UNITY_PATH"
+
+            echo "Kurulu Editor klasörleri:"
+            find "/Applications/Unity/Hub/Editor" -maxdepth 2 -type d 2>/dev/null || true
+
             exit 1
           fi
 
           echo "Unity bulundu:"
           echo "$UNITY_PATH"
 
+          "$UNITY_PATH" -version
+
       - name: Export iOS project
         script: |
           set -e
 
           UNITY_PATH="/Applications/Unity/Hub/Editor/$UNITY_VERSION/Unity.app/Contents/MacOS/Unity"
+          BUILD_LOG="$CM_BUILD_DIR/unity-ios-build.log"
+
+          set +e
 
           "$UNITY_PATH" \
             -batchmode \
@@ -63,12 +84,28 @@ workflows:
             -quit \
             -projectPath "$CM_BUILD_DIR" \
             -executeMethod BuildScript.BuildIos \
-            -logFile "$CM_BUILD_DIR/unity-ios-build.log" || {
-              cat "$CM_BUILD_DIR/unity-ios-build.log"
-              exit 1
-            }
+            -logFile "$BUILD_LOG"
 
-          cat "$CM_BUILD_DIR/unity-ios-build.log"
+          UNITY_EXIT_CODE=$?
+
+          set -e
+
+          if [ -f "$BUILD_LOG" ]; then
+            cat "$BUILD_LOG"
+          fi
+
+          if [ "$UNITY_EXIT_CODE" -ne 0 ]; then
+            echo "Unity iOS export başarısız oldu."
+            echo "Unity exit code: $UNITY_EXIT_CODE"
+            exit "$UNITY_EXIT_CODE"
+          fi
+
+          if [ ! -d "$CM_BUILD_DIR/build/ios" ]; then
+            echo "Unity başarılı çıkış verdi ancak build/ios klasörü oluşmadı."
+            exit 1
+          fi
+
+          echo "Unity iOS export tamamlandı."
 
     artifacts:
       - build/ios/**

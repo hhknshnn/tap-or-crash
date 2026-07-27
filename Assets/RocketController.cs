@@ -5,6 +5,16 @@ using System.Collections.Generic;
 
 public class RocketController : MonoBehaviour
 {
+    public struct ContinueState
+    {
+        public Transform planet;
+        public Vector3 planetRelativePosition;
+        public Quaternion rotation;
+        public float angle;
+        public float orbitRadius;
+        public int orbitDirection;
+    }
+
     public enum LandingQuality
     {
         Normal,
@@ -214,6 +224,68 @@ public class RocketController : MonoBehaviour
         CancelHoldInput();
         persistentOrbitDirection = 1;
         EnsureRocketFlame();
+    }
+
+    public bool TryCaptureContinueState(out ContinueState state)
+    {
+        state = default;
+        if (!isOrbiting || currentIndex < 0 || currentIndex >= planets.Count)
+            return false;
+
+        Transform currentPlanet = planets[currentIndex];
+        if (currentPlanet == null)
+            return false;
+
+        state = new ContinueState
+        {
+            planet = currentPlanet,
+            planetRelativePosition = transform.position - currentPlanet.position,
+            rotation = transform.rotation,
+            angle = angle,
+            orbitRadius = orbitRadius,
+            orbitDirection = persistentOrbitDirection
+        };
+        return true;
+    }
+
+    public bool RestoreContinueState(ContinueState state)
+    {
+        int restoredIndex = state.planet != null ? planets.IndexOf(state.planet) : -1;
+        if (restoredIndex < 0)
+            return false;
+
+        currentIndex = restoredIndex;
+        transform.position = state.planet.position + state.planetRelativePosition;
+        transform.rotation = state.rotation;
+        angle = state.angle;
+        orbitRadius = state.orbitRadius;
+        persistentOrbitDirection = state.orbitDirection == 0 ? 1 : state.orbitDirection;
+        isOrbiting = true;
+        isSettlingCapture = false;
+        captureSettleElapsed = 0f;
+        closestApproach = float.MaxValue;
+        trackedFlightTarget = null;
+        flyDir = Vector3.zero;
+        CancelHoldInput();
+
+        if (flightTrail != null)
+        {
+            flightTrail.emitting = false;
+            flightTrail.Clear();
+        }
+        if (trajectoryLine != null)
+            trajectoryLine.positionCount = 0;
+        if (rocketSpriteRenderer != null)
+            rocketSpriteRenderer.enabled = true;
+        if (rocketHitbox != null)
+            rocketHitbox.enabled = true;
+
+        enabled = true;
+        EnsureRocketFlame();
+        if (thrusterParticles != null)
+            thrusterParticles.Play();
+        SetEmissionRate(orbitEmissionRate);
+        return true;
     }
 
     void EnsureRocketFlame()
@@ -430,6 +502,7 @@ public class RocketController : MonoBehaviour
                         : quality == LandingQuality.EdgeCatch ? 1.07f : 1f;
                     AudioManager.instance.PlayLand(landingPitch);
                 }
+                GameManager.instance.CaptureContinueCheckpoint();
                 return;
             }
 

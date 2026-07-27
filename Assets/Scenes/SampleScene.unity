@@ -10721,6 +10721,9 @@ GameObject:
   - component: {fileID: 1666648233}
   - component: {fileID: 1666648235}
   - component: {fileID: 1666648236}
+  - component: {fileID: 2100000001}
+  - component: {fileID: 2100000002}
+  - component: {fileID: 2100000003}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -10747,6 +10750,8 @@ MonoBehaviour:
   highScoreText: {fileID: 748624748}
   scoreResultText: {fileID: 1736696921}
   playerRocket: {fileID: 1932267785}
+  adService: {fileID: 2100000001}
+  rewardedContinue: {fileID: 2100000002}
   gameOverFadeDuration: 0.4
   scoreCountDuration: 1.2
 --- !u!4 &1666648234
@@ -10797,6 +10802,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0add48f0356b149419f3cae165fcd03a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneButtonStyler
+--- !u!114 &2100000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666648232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30a9839a05974da39708102378f63e7a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AdService
+  useFakeReward: 1
+--- !u!114 &2100000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666648232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551dae607e4d4f3abba8382b128fae1f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::RewardedContinueController
+  soCloseThreshold: 0.9
+--- !u!114 &2100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666648232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4294bf04ff054b82ae694a0743630b72, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ContinuePanelView
+  fadeDuration: 0.24
 --- !u!1 &1736696919
 GameObject:
   m_ObjectHideFlags: 0
@@ -11124,6 +11168,31 @@ MonoBehaviour:
   - {fileID: 3939581829011799183, guid: db23bcebece3b394c8be93e8b87da759, type: 3}
   - {fileID: 3939581829011799183, guid: c7a985990e6e1d945b4537a45b2223bd, type: 3}
   - {fileID: 3939581829011799183, guid: 2db69ef6e991caf4b970e9d7b3d97f9c, type: 3}
+  levels:
+  - levelName: Natural
+    prefabs:
+    - {fileID: 3939581829011799183, guid: 783b43112b714d60b729b8e9cfbe4f99, type: 3}
+    - {fileID: 3939581829011799183, guid: b676e85449ce402b87220de9bc9d1b30, type: 3}
+    - {fileID: 3939581829011799183, guid: 5a55ffc7cf904668b748253334585e51, type: 3}
+    - {fileID: 3939581829011799183, guid: 65c4c78d51624ae09fd882a766cf308a, type: 3}
+    - {fileID: 3939581829011799183, guid: 05f7bf8757d444cf95d4f2a1157e9153, type: 3}
+    - {fileID: 3939581829011799183, guid: bba4710c92014d469c7e3c54be82ee8c, type: 3}
+    - {fileID: 3939581829011799183, guid: 2b7d7416c1e94668bdf74fa271eb2828, type: 3}
+    - {fileID: 3939581829011799183, guid: bca519e9d3ea43d0b55341f8369f9fa6, type: 3}
+    - {fileID: 3939581829011799183, guid: c3ba3d8e8a6d40d98e5f82da1b8b656d, type: 3}
+    - {fileID: 3939581829011799183, guid: 8375368e855749118fb5c9e828f062e1, type: 3}
+  - levelName: Ice
+    prefabs:
+    - {fileID: 3939581829011799183, guid: 57420cf0287e4c20b27cf77095bb8b1d, type: 3}
+    - {fileID: 3939581829011799183, guid: ced4e8bd459c4ee79ef6fba639c0c139, type: 3}
+    - {fileID: 3939581829011799183, guid: ab475d4e0a5e4cf4811352219e74de02, type: 3}
+    - {fileID: 3939581829011799183, guid: debca6c4f75a46968415d62667ec4c70, type: 3}
+    - {fileID: 3939581829011799183, guid: 906e35ee37fa41dd9202d53385436f77, type: 3}
+    - {fileID: 3939581829011799183, guid: d4563407276a45dd985a05a6c76c99d1, type: 3}
+    - {fileID: 3939581829011799183, guid: 6bf827727a294c128a09d8d6778a3c41, type: 3}
+    - {fileID: 3939581829011799183, guid: bd82a83a1e44417e9a0f80d498bb0042, type: 3}
+    - {fileID: 3939581829011799183, guid: bc8d1b037fe1417288d2cad38fa4918e, type: 3}
+    - {fileID: 3939581829011799183, guid: 3300181878aa43ccb1dc9e2a0ac967ba, type: 3}
   rocket: {fileID: 1932267785}
   spawnDistance: 8
   movingPlanetChance: 0.25

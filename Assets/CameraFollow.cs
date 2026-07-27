@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
+    public struct ContinueState
+    {
+        public Vector3 position;
+        public Vector3 velocity;
+        public float orthographicSize;
+    }
+
     public Transform target;
     public float smoothSpeed = 5f;
 
@@ -72,6 +79,30 @@ public class CameraFollow : MonoBehaviour
     public void PlayCrashKick()
     {
         StartKick(crashKickDuration, crashKickStrength, landingZoom * 1.35f);
+    }
+
+    public ContinueState CaptureContinueState()
+    {
+        return new ContinueState
+        {
+            position = transform.position,
+            velocity = velocity,
+            orthographicSize = controlledCamera != null
+                ? controlledCamera.orthographicSize
+                : baseOrthographicSize
+        };
+    }
+
+    public void RestoreContinueState(ContinueState state)
+    {
+        transform.position = state.position;
+        velocity = state.velocity;
+        kickTimer = 0f;
+        kickDuration = 0f;
+        kickStrength = 0f;
+        zoomStrength = 0f;
+        if (controlledCamera != null)
+            controlledCamera.orthographicSize = state.orthographicSize;
     }
 
     void StartKick(float duration, float strength, float zoom)

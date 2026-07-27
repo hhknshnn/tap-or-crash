@@ -33,6 +33,10 @@ public class GameManager : MonoBehaviour
     [Header("Referanslar")]
     public RocketController playerRocket;
 
+    [Header("Rewarded Continue")]
+    [SerializeField] private AdService adService;
+    [SerializeField] private RewardedContinueController rewardedContinue;
+
     [Header("Animasyon Ayarları")]
     [SerializeField] private float gameOverFadeDuration = 0.4f;
     [SerializeField] private float scoreCountDuration   = 1.2f;
@@ -58,6 +62,7 @@ public class GameManager : MonoBehaviour
 
         if (playerRocket == null)
             playerRocket = FindAnyObjectByType<RocketController>();
+
     }
 
     bool BecomeAuthoritativeInstance()
@@ -102,8 +107,14 @@ public class GameManager : MonoBehaviour
     {
         if (instance != this) return;
 
+        EnsureRewardedContinue();
         isGameOver  = false;
         comboCount  = 0;
+        if (rewardedContinue != null)
+        {
+            rewardedContinue.ResetForLevel();
+            StartCoroutine(CaptureInitialContinueCheckpoint());
+        }
 
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
         if (almostText   != null) almostText.gameObject.SetActive(false);
@@ -174,6 +185,13 @@ public class GameManager : MonoBehaviour
 
     public int GetScore()  => score;
     public int GetCombo()  => comboCount;
+
+    public bool TryGetCurrentLevelProgress(out int currentPlanetIndex, out int totalPlanets)
+    {
+        currentPlanetIndex = Mathf.Max(0, score);
+        totalPlanets = LevelProgressUI.TotalPlanets;
+        return totalPlanets > 0 && currentPlanetIndex < totalPlanets;
+    }
 
     // ─── Combo ───────────────────────────────────────────────────────────────
 
@@ -269,10 +287,8 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return;
 
         isGameOver = true;
-        comboCount = 0;
         LevelProgressUI.RefreshState();
 
-        if (AdManager.instance != null) AdManager.instance.OnGameOver();
         if (AudioManager.instance != null)
         {
             AudioManager.instance.PlayCrash();
@@ -281,13 +297,6 @@ public class GameManager : MonoBehaviour
 
         CameraFollow cameraFollow = Camera.main != null ? Camera.main.GetComponent<CameraFollow>() : null;
         if (cameraFollow != null) cameraFollow.PlayCrashKick();
-
-        if (score > highScore)
-        {
-            highScore = score;
-            PlayerPrefs.SetInt("HighScore", highScore);
-            PlayerPrefs.Save(); // B3: kilitlenme veya arka plana alınma durumunda kayıp önlenir
-        }
 
         if (playerRocket != null) HandleRocketExplosion(playerRocket);
 
@@ -331,6 +340,31 @@ public class GameManager : MonoBehaviour
 
         if (almostText != null) almostText.gameObject.SetActive(false);
 
+        if (rewardedContinue != null && rewardedContinue.TryShowOffer())
+            yield break;
+
+        ShowNormalGameOver();
+    }
+
+    public void ShowNormalGameOver()
+    {
+        if (!isGameOver)
+            return;
+
+        comboCount = 0;
+        if (score > highScore)
+        {
+            highScore = score;
+            PlayerPrefs.SetInt("HighScore", highScore);
+            PlayerPrefs.Save();
+        }
+
+        if (AdManager.instance != null) AdManager.instance.OnGameOver();
+        StartCoroutine(ShowGameOverPanel());
+    }
+
+    IEnumerator ShowGameOverPanel()
+    {
         if (gameOverPanel == null) yield break;
 
         if (highScoreText  != null) highScoreText.text  = "BEST: "  + highScore;
@@ -365,6 +399,54 @@ public class GameManager : MonoBehaviour
 
         // Reklam izle → coin butonu
         if (CoinManager.instance != null) CoinManager.instance.ShowWatchAdButton();
+    }
+
+    public void CaptureContinueCheckpoint()
+    {
+        if (instance != null && instance != this)
+        {
+            instance.CaptureContinueCheckpoint();
+            return;
+        }
+
+        if (rewardedContinue != null)
+            rewardedContinue.CaptureCheckpoint();
+    }
+
+    public void ResumeFromContinue(
+        RocketController.ContinueState rocketState,
+        CameraFollow.ContinueState cameraState,
+        int restoredScore,
+        int restoredCombo)
+    {
+        if (instance != null && instance != this)
+        {
+            instance.ResumeFromContinue(rocketState, cameraState, restoredScore, restoredCombo);
+            return;
+        }
+
+        if (playerRocket == null || !playerRocket.RestoreContinueState(rocketState))
+        {
+            ShowNormalGameOver();
+            return;
+        }
+
+        CameraFollow cameraFollow = Camera.main != null
+            ? Camera.main.GetComponent<CameraFollow>()
+            : null;
+        if (cameraFollow != null)
+            cameraFollow.RestoreContinueState(cameraState);
+
+        score = Mathf.Max(0, restoredScore);
+        comboCount = Mathf.Max(0, restoredCombo);
+        if (scoreText != null) scoreText.text = score.ToString();
+        ScoreChanged?.Invoke(score);
+
+        isNearMiss = false;
+        isGameStarted = true;
+        isGameOver = false;
+        Time.timeScale = 1f;
+        LevelProgressUI.RefreshState();
     }
 
     IEnumerator CountUpScore(int target)
@@ -428,6 +510,28 @@ public class GameManager : MonoBehaviour
         if (scoreText != null) scoreText.text = "0";
         ScoreChanged?.Invoke(score);
         LevelProgressUI.ResetForNewRun();
+    }
+
+    private void EnsureRewardedContinue()
+    {
+        if (adService == null)
+            adService = GetComponent<AdService>();
+        if (adService == null)
+            adService = gameObject.AddComponent<AdService>();
+
+        if (rewardedContinue == null)
+            rewardedContinue = GetComponent<RewardedContinueController>();
+        if (rewardedContinue == null)
+            rewardedContinue = gameObject.AddComponent<RewardedContinueController>();
+
+        rewardedContinue.Initialize(this, adService);
+    }
+
+    private IEnumerator CaptureInitialContinueCheckpoint()
+    {
+        yield return null;
+        if (rewardedContinue != null)
+            rewardedContinue.CaptureCheckpoint();
     }
 
     IEnumerator StartAfterDelay()

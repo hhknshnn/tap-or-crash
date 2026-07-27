@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public sealed class LevelProgressUI : MonoBehaviour
 {
     private const int GuidedLevelCount = 10;
+    public static int TotalPlanets => GuidedLevelCount;
     private static LevelProgressUI instance;
 
     private GameManager observedManager;

@@ -2,6 +2,18 @@ using UnityEngine;
 
 public class PlanetSpawner : MonoBehaviour
 {
+    [System.Serializable]
+    public class PlanetLevel
+    {
+        public string levelName;
+        public GameObject[] prefabs;
+    }
+
+    // Her seviye PlanetsPerLevel kadar gezegen sürer (Level 1 = Natural, Level 2 = Ice, ...).
+    // Tanımlı seviyeler tükenince aşağıdaki planetPrefabs (uzay gezegenleri) havuzuna dönülür.
+    public const int PlanetsPerLevel = 10;
+    public PlanetLevel[] levels;
+
     public GameObject[] planetPrefabs;
     public RocketController rocket;
 
@@ -11,8 +23,23 @@ public class PlanetSpawner : MonoBehaviour
     // Hareketli gezegen şansı (0–1 arası). Skor 15'i geçince devreye girer.
     [SerializeField] private float movingPlanetChance = 0.25f;
 
-    private int    lastPlanetIndex = -1;
+    private int   lastPlanetIndex = -1;
+    private int[] lastLevelIndex;
     private Camera mainCamera;
+
+    public static string[] LevelNames { get; private set; } = new string[0];
+
+    public static int LevelIndexForScore(int score) => score / PlanetsPerLevel;
+
+    void Awake()
+    {
+        LevelNames = levels != null
+            ? System.Array.ConvertAll(levels, l => l.levelName)
+            : new string[0];
+
+        lastLevelIndex = new int[levels != null ? levels.Length : 0];
+        for (int i = 0; i < lastLevelIndex.Length; i++) lastLevelIndex[i] = -1;
+    }
 
     void Start()
     {
@@ -23,7 +50,15 @@ public class PlanetSpawner : MonoBehaviour
 
     public void SpawnPlanet()
     {
-        if (rocket == null || planetPrefabs == null || planetPrefabs.Length == 0) return;
+        if (rocket == null) return;
+
+        int score = GameManager.instance != null ? GameManager.instance.GetScore() : 0;
+        int levelIndex = LevelIndexForScore(score);
+
+        bool usingLevelPool = levels != null && levelIndex < levels.Length
+            && levels[levelIndex].prefabs != null && levels[levelIndex].prefabs.Length > 0;
+        GameObject[] pool = usingLevelPool ? levels[levelIndex].prefabs : planetPrefabs;
+        if (pool == null || pool.Length == 0) return;
 
         Vector3 lastPos = rocket.planets.Count > 0
             ? rocket.planets[rocket.planets.Count - 1].position
@@ -43,16 +78,25 @@ public class PlanetSpawner : MonoBehaviour
 
         // ── Aynı gezegen üst üste gelmesin ─────────────────────────────────
         int newIndex;
-        do { newIndex = Random.Range(0, planetPrefabs.Length); }
-        while (newIndex == lastPlanetIndex && planetPrefabs.Length > 1);
-        lastPlanetIndex = newIndex;
+        if (usingLevelPool)
+        {
+            int prevIndex = lastLevelIndex[levelIndex];
+            do { newIndex = Random.Range(0, pool.Length); }
+            while (newIndex == prevIndex && pool.Length > 1);
+            lastLevelIndex[levelIndex] = newIndex;
+        }
+        else
+        {
+            do { newIndex = Random.Range(0, pool.Length); }
+            while (newIndex == lastPlanetIndex && pool.Length > 1);
+            lastPlanetIndex = newIndex;
+        }
 
-        GameObject p = Instantiate(planetPrefabs[newIndex], pos, Quaternion.identity);
+        GameObject p = Instantiate(pool[newIndex], pos, Quaternion.identity);
         p.tag = "Planet";
 
         // ── Boyut ayarı (puana göre) ────────────────────────────────────────
-        SpriteRenderer sr   = p.GetComponent<SpriteRenderer>();
-        int score           = GameManager.instance != null ? GameManager.instance.GetScore() : 0;
+        SpriteRenderer sr = p.GetComponent<SpriteRenderer>();
 
         float difficulty = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 75f, score));
         float targetSize = Mathf.Lerp(0.70f, 0.28f, difficulty);

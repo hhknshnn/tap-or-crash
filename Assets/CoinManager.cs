@@ -78,17 +78,14 @@ public class CoinManager : MonoBehaviour
         coinCounterRt.anchorMin = new Vector2(1f, 1f);
         coinCounterRt.anchorMax = new Vector2(1f, 1f);
         coinCounterRt.pivot = new Vector2(1f, 1f);
-        coinCounterRt.anchoredPosition = new Vector2(-28f, -28f);
-        coinCounterRt.sizeDelta = new Vector2(240f, 76f);
+        // The same gutter as the icon discs below it and the shop pill opposite.
+        UIDesign.EnsureInitialised();
+        coinCounterRt.anchoredPosition = new Vector2(-UIDesign.ScreenMargin, -UIDesign.ScreenMargin);
+        coinCounterRt.sizeDelta = new Vector2(248f, UIDesign.ChipHeight);
 
-        Image bg = root.AddComponent<Image>();
-        UIStyleKit.ApplyPanel(bg, new Color(0.035f, 0.055f, 0.13f, 0.96f));
-        bg.raycastTarget = false;
-
-        Outline outline = root.AddComponent<Outline>();
-        outline.effectColor = new Color(1f, 0.75f, 0.15f, 0.38f);
-        outline.effectDistance = new Vector2(2f, -2f);
-        outline.useGraphicAlpha = true;
+        // The same glass chip as the best-score panel, at the same radius: the
+        // two readouts in this game now read as a matched pair.
+        UIKit.MakeGlass(root, UIDesign.RadiusChip, UITinted.Role.Glass, 0.92f, false);
 
         GameObject iconGo = new GameObject("Icon");
         iconGo.transform.SetParent(root.transform, false);
@@ -96,22 +93,25 @@ public class CoinManager : MonoBehaviour
         iconRt.anchorMin = new Vector2(0f, 0.5f);
         iconRt.anchorMax = new Vector2(0f, 0.5f);
         iconRt.pivot = new Vector2(0f, 0.5f);
-        iconRt.anchoredPosition = new Vector2(18f, 0f);
-        iconRt.sizeDelta = new Vector2(44f, 44f);
+        iconRt.anchoredPosition = new Vector2(20f, 0f);
+        iconRt.sizeDelta = new Vector2(48f, 48f);
         Image iconImg = iconGo.AddComponent<Image>();
-        iconImg.sprite = UIStyleKit.Circle;
-        iconImg.color = UIStyleKit.CoinColor;
+        iconImg.sprite = UIIcons.Get(UIIcons.Coin);
+        iconImg.preserveAspect = true;
         iconImg.raycastTarget = false;
 
+        // A glint over the struck face rather than a dot drawn on a disc. It is
+        // dark almost all of the time and ticks bright for a moment.
         GameObject shineGo = new GameObject("Shine");
         shineGo.transform.SetParent(iconGo.transform, false);
         RectTransform shineRt = shineGo.AddComponent<RectTransform>();
-        shineRt.anchorMin = shineRt.anchorMax = new Vector2(0.35f, 0.68f);
-        shineRt.sizeDelta = new Vector2(9f, 9f);
+        shineRt.anchorMin = shineRt.anchorMax = new Vector2(0.42f, 0.66f);
+        shineRt.sizeDelta = new Vector2(30f, 30f);
         Image shine = shineGo.AddComponent<Image>();
-        shine.sprite = UIStyleKit.Circle;
-        shine.color = new Color(1f, 1f, 0.88f, 0.95f);
+        shine.sprite = UIGlass.Glow;
+        shine.color = new Color(1f, 0.97f, 0.84f, 0.85f);
         shine.raycastTarget = false;
+        UIMotion.Attach(shineGo, UIMotion.Mode.Shine, 1f, 4.8f);
 
         GameObject textGo = new GameObject("Value");
         textGo.transform.SetParent(root.transform, false);
@@ -122,17 +122,8 @@ public class CoinManager : MonoBehaviour
         textRt.offsetMax = new Vector2(-18f, -6f);
 
         coinText = textGo.AddComponent<TextMeshProUGUI>();
-        UIStyleKit.ApplyRuntimeFont(coinText, root.transform);
-        coinText.fontSize = 32f;
-        coinText.fontSizeMin = 24f;
-        coinText.fontSizeMax = 32f;
-        coinText.enableAutoSizing = true;
-        coinText.textWrappingMode = TextWrappingModes.NoWrap;
-        coinText.overflowMode = TextOverflowModes.Ellipsis;
-        coinText.color = UIStyleKit.TextMain;
-        coinText.alignment = TextAlignmentOptions.MidlineLeft;
-        coinText.fontStyle = FontStyles.Bold;
-        coinText.raycastTarget = false;
+        UIKit.StyleText(coinText, UIDesign.TypeHeading, UIDesign.TrackButton, UIDesign.TextMain,
+            FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
 
         RefreshCoinDisplay();
     }
@@ -284,9 +275,10 @@ public class CoinManager : MonoBehaviour
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = new Vector2(220f, 76f);
 
-        Image bg = root.AddComponent<Image>();
-        UIStyleKit.ApplyPanel(bg, new Color(0.045f, 0.07f, 0.16f, 0.88f));
-        bg.raycastTarget = false;
+        // Same chip, same coin, one step smaller: the reward that flies up is
+        // recognisably the counter it is flying towards.
+        UIDesign.EnsureInitialised();
+        UIKit.MakeGlass(root, UIDesign.RadiusChip, UITinted.Role.Glass, 0.86f, false);
 
         GameObject iconGo = new GameObject("CoinIcon");
         iconGo.transform.SetParent(root.transform, false);
@@ -295,13 +287,15 @@ public class CoinManager : MonoBehaviour
         iconRt.anchoredPosition = new Vector2(-62f, 0f);
         iconRt.sizeDelta = new Vector2(46f, 46f);
         Image icon = iconGo.AddComponent<Image>();
-        icon.sprite = UIStyleKit.Circle;
-        icon.color = UIStyleKit.CoinColor;
+        icon.sprite = UIIcons.Get(UIIcons.Coin);
+        icon.preserveAspect = true;
         icon.raycastTarget = false;
 
-        TextMeshProUGUI amountText = UIStyleKit.MakeLabel(root.transform, "+1", 34f,
-            UIStyleKit.CoinColor, new Vector2(30f, 0f), new Vector2(120f, 62f), FontStyles.Bold);
-        amountText.textWrappingMode = TextWrappingModes.NoWrap;
+        TextMeshProUGUI amountText = UIStyleKit.MakeLabel(root.transform, "+1",
+            UIDesign.TypeHeading, UIDesign.Gold, new Vector2(30f, 0f), new Vector2(120f, 62f),
+            FontStyles.Bold);
+        UIKit.StyleText(amountText, UIDesign.TypeHeading, UIDesign.TrackButton, UIDesign.Gold,
+            FontStyles.Bold);
 
         CanvasGroup group = root.AddComponent<CanvasGroup>();
         group.interactable = false;
@@ -450,7 +444,7 @@ public class CoinManager : MonoBehaviour
         {
             int digits = Mathf.Max(1, shownBalance.ToString().Length);
             float width = Mathf.Clamp(170f + digits * 18f, 240f, 400f);
-            coinCounterRt.sizeDelta = new Vector2(width, 76f);
+            coinCounterRt.sizeDelta = new Vector2(width, UIDesign.ChipHeight);
         }
     }
 

@@ -179,7 +179,8 @@ public class DayNightManager : MonoBehaviour
         return tinted;
     }
 
-    void UpdateIcon()
+    // Public: VisualPolishController ikon sprite'larını değiştirdikten sonra çağırır.
+    public void UpdateIcon()
     {
         if (toggleButton == null) return;
         toggleButton.sprite = isDayMode ? nightSprite : daySprite;

@@ -7,9 +7,10 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
     private static readonly Color InnerColor = new Color(0.25f, 0.88f, 1f, 0.98f);
 
     [Header("Flame Placement")]
-    [SerializeField] private Vector3 flameLocalPosition = new Vector3(-1.02f, -0.02f, 0f);
+    // Tuned for the 3D HeroRocket model: nozzle lip sits at local X -1.23.
+    [SerializeField] private Vector3 flameLocalPosition = new Vector3(-1.22f, 0f, 0f);
     [SerializeField] private Vector3 flameLocalEulerAngles = Vector3.zero;
-    [SerializeField] private Vector3 flameScale = new Vector3(0.82f, 0.34f, 1f);
+    [SerializeField] private Vector3 flameScale = new Vector3(1.45f, 0.72f, 1f);
     [SerializeField] private float modelForwardOffset;
 
     private RocketController rocket;
@@ -23,7 +24,9 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
     private bool crashStopped;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoInstall()
+    static void AutoInstall() => SceneInstaller.RunOnEveryScene(Install);
+
+    static void Install()
     {
         RocketController rocket = FindAnyObjectByType<RocketController>();
         if (rocket != null && rocket.GetComponent<LowPolyRocketFlame>() == null)
@@ -92,12 +95,17 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
         SetLayerShape(innerFlame, intensity * innerLength * 0.66f,
             intensity * (2f - outerWidth) * 0.5f);
 
+        // Two incommensurate sines: brightness never repeats, never strobes (±5%).
+        float brightness = 1f
+            + Mathf.Sin(phase * 9.1f) * 0.035f
+            + Mathf.Sin(phase * 4.3f + 1.2f) * 0.02f;
+
         Color outer = OuterColor;
-        outer.a *= Mathf.Clamp01(intensity * 1.35f);
+        outer.a *= Mathf.Clamp01(intensity * 1.35f * brightness);
         outerFlame.color = outer;
 
         Color inner = InnerColor;
-        inner.a *= Mathf.Clamp01(intensity * 1.5f);
+        inner.a *= Mathf.Clamp01(intensity * 1.5f * brightness);
         innerFlame.color = inner;
     }
 

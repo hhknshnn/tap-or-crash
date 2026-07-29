@@ -298,6 +298,8 @@ public class RocketController : MonoBehaviour
     bool CanRunGameplay()
     {
         if (!GameManager.isGameStarted || GameManager.isGameOver) return false;
+        // The menu still owns the ship while the camera pulls back into the game.
+        if (GameManager.isIntroPlaying) return false;
         if (PauseManager.instance != null && PauseManager.instance.IsPaused) return false;
         return !Mathf.Approximately(Time.timeScale, 0f);
     }

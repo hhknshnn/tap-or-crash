@@ -6,12 +6,20 @@ public sealed class PlanetPresentation : MonoBehaviour
 {
     public const float OrbitRingRadiusRatio = 1.28f;
 
+    // Tema eşleşmeyen gezegenlerin hâle rengi.
+    static readonly Color DefaultAuraColor = new Color(0.22f, 0.73f, 1f, 0.10f);
+
     private SpriteRenderer halo;
     private float phase;
 
     public static void Attach(Transform planet)
     {
-        if (planet == null || planet.GetComponent<PlanetPresentation>() != null) return;
+        if (planet == null) return;
+
+        // Gezegen temasına özel dekoratif katman; hangi tema olduğu burada bilinmez.
+        PlanetAmbience.Attach(planet);
+
+        if (planet.GetComponent<PlanetPresentation>() != null) return;
         planet.gameObject.AddComponent<PlanetPresentation>();
     }
 
@@ -26,7 +34,7 @@ public sealed class PlanetPresentation : MonoBehaviour
 
         halo = go.AddComponent<SpriteRenderer>();
         halo.sprite = VfxSpriteFactory.SoftSprite;
-        halo.color = new Color(0.22f, 0.73f, 1f, 0.10f);
+        halo.color = PlanetAmbience.AuraColorFor(transform, DefaultAuraColor);
         halo.sortingLayerID = planetRenderer.sortingLayerID;
         halo.sortingOrder = planetRenderer.sortingOrder - 1;
 

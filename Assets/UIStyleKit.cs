@@ -104,6 +104,25 @@ public static class UIStyleKit
         img.raycastTarget = false;
     }
 
+    // TMP'nin kendi underlay katmanı: metnin altına yumuşak bir gölge koyar.
+    // Outline'ı kalınlaştırmadan başlığı arka plandan ayırır; malzeme örneği başına
+    // tek ek çizim çağrısı olduğu için yalnızca büyük başlıklarda kullanılır.
+    public static void ApplySoftShadow(TMP_Text text, Color color, Vector2 offset, float softness,
+        float dilate = 0f)
+    {
+        if (text == null) return;
+
+        Material material = text.fontMaterial;
+        if (material == null) return;
+
+        material.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+        material.SetColor(ShaderUtilities.ID_UnderlayColor, color);
+        material.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, offset.x);
+        material.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, offset.y);
+        material.SetFloat(ShaderUtilities.ID_UnderlaySoftness, softness);
+        material.SetFloat(ShaderUtilities.ID_UnderlayDilate, dilate);
+    }
+
     // ── Button fabrikası ──────────────────────────────────────────────────────
 
     public static Button MakeButton(Transform parent, string name, string label,

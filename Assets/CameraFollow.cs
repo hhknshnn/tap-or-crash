@@ -60,7 +60,11 @@ public class CameraFollow : MonoBehaviour
 
         if (controlledCamera != null)
         {
-            float targetSize = baseOrthographicSize - zoomStrength * envelope;
+            // Barely-there cinematic breathing (±0.4%): two slow incommensurate sines
+            // so the framing never feels frozen, never consciously noticeable.
+            float breath = Mathf.Sin(Time.unscaledTime * 0.31f) * 0.0025f
+                + Mathf.Sin(Time.unscaledTime * 0.127f + 2.4f) * 0.0015f;
+            float targetSize = baseOrthographicSize * (1f + breath) - zoomStrength * envelope;
             controlledCamera.orthographicSize = Mathf.Lerp(
                 controlledCamera.orthographicSize,
                 targetSize,

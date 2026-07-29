@@ -12,6 +12,11 @@ public class GameManager : MonoBehaviour
     public static bool isNearMiss    = false;
     public static bool isRestart     = false;
 
+    // Presentation gate. The menu keeps flying the rocket for a beat after StartGame
+    // while the camera pulls back, and hands it to RocketController mid-orbit. Gameplay
+    // input stays asleep until then, so the launch tap is never spent on the transition.
+    public static bool isIntroPlaying = false;
+
     private int score      = 0;
     private int highScore  = 0;
     private int comboCount = 0;
@@ -109,6 +114,7 @@ public class GameManager : MonoBehaviour
 
         EnsureRewardedContinue();
         isGameOver  = false;
+        isIntroPlaying = false;
         comboCount  = 0;
         if (rewardedContinue != null)
         {
@@ -367,8 +373,8 @@ public class GameManager : MonoBehaviour
     {
         if (gameOverPanel == null) yield break;
 
-        if (highScoreText  != null) highScoreText.text  = "BEST: "  + highScore;
-        if (scoreResultText != null) scoreResultText.text = "SCORE: 0";
+        if (highScoreText  != null) highScoreText.text  = "BEST  "  + highScore;
+        if (scoreResultText != null) scoreResultText.text = "SCORE  0";
 
         // CanvasGroup: yoksa ekle (fade için gerekli)
         CanvasGroup cg = gameOverPanel.GetComponent<CanvasGroup>();
@@ -456,10 +462,10 @@ public class GameManager : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float p = Mathf.SmoothStep(0f, 1f, elapsed / scoreCountDuration);
-            scoreResultText.text = "SCORE: " + Mathf.RoundToInt(p * target);
+            scoreResultText.text = "SCORE  " + Mathf.RoundToInt(p * target);
             yield return null;
         }
-        scoreResultText.text = "SCORE: " + target;
+        scoreResultText.text = "SCORE  " + target;
     }
 
     // ─── Oyun Akışı ──────────────────────────────────────────────────────────
@@ -474,7 +480,13 @@ public class GameManager : MonoBehaviour
 
         isGameStarted = true;
         ResetRunScore();
-        if (startPanel != null) startPanel.SetActive(false);
+
+        // The showcase dissolves the start panel itself, as one move with the camera
+        // pull-back. It only declines when there is no menu stage to hand over from.
+        if (!MainMenuShowcase.TryBeginLaunch(startPanel))
+        {
+            if (startPanel != null) startPanel.SetActive(false);
+        }
 
         // Başlangıç ekranında açık kalmışsa shop'u kapat
         if (ShipSkinManager.instance != null) ShipSkinManager.instance.CloseShop();
@@ -499,6 +511,7 @@ public class GameManager : MonoBehaviour
         isGameOver     = false;
         isGameStarted  = false;
         isNearMiss     = false;
+        isIntroPlaying = false;
         if (playerRocket != null) playerRocket.ResetForNewRun();
         ResetRunScore();
     }

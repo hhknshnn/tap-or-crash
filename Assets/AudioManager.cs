@@ -84,7 +84,8 @@ public class AudioManager : MonoBehaviour
     }
 
     // YENİ — Butondaki ikonu mevcut duruma göre günceller
-    void UpdateIcon()
+    // Public: VisualPolishController ikon sprite'larını değiştirdikten sonra çağırır.
+    public void UpdateIcon()
     {
         if (soundButtonImages == null) return;
         foreach (Image img in soundButtonImages)

@@ -23,7 +23,7 @@ public sealed class GameplayVFX : MonoBehaviour
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoInstall() => Ensure();
+    static void AutoInstall() => SceneInstaller.RunOnEveryScene(() => Ensure());
 
     public static GameplayVFX Ensure()
     {
@@ -326,8 +326,35 @@ public static class VfxSpriteFactory
             particleMaterial.mainTexture = softTexture;
             if (particleMaterial.HasProperty("_BaseMap"))
                 particleMaterial.SetTexture("_BaseMap", softTexture);
+            MakeTransparent(particleMaterial);
             return particleMaterial;
         }
+    }
+
+    /// A material built with `new Material(urpShader)` inherits the shader's
+    /// defaults, and URP's particle shaders default to Opaque. Every soft round
+    /// particle in this game was therefore drawing as a hard square of its
+    /// texture's colour with the alpha thrown away — the coloured blocks over
+    /// the lava planet and around the rocket. Nothing but the blend state is
+    /// wrong, so the fix is to state it rather than to change any artwork.
+    public static void MakeTransparent(Material material)
+    {
+        if (material == null) return;
+
+        material.SetOverrideTag("RenderType", "Transparent");
+        if (material.HasProperty("_Surface")) material.SetFloat("_Surface", 1f);   // Transparent
+        if (material.HasProperty("_Blend")) material.SetFloat("_Blend", 0f);       // Alpha
+        if (material.HasProperty("_SrcBlend"))
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        if (material.HasProperty("_DstBlend"))
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        if (material.HasProperty("_ZWrite")) material.SetFloat("_ZWrite", 0f);
+        if (material.HasProperty("_AlphaClip")) material.SetFloat("_AlphaClip", 0f);
+
+        material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        material.DisableKeyword("_ALPHATEST_ON");
+        material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
     }
 
     public static Sprite SharpFlameSprite

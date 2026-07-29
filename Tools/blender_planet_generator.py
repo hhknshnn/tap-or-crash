@@ -61,8 +61,8 @@
 # ── Roadmap (score 1-100, 10 planets per level) ─────────────────────────────────
 #   Level 1  Natural   [DONE]
 #   Level 2  Ice       [DONE]
-#   Level 3  Lava       <- next
-#   Level 4  Desert
+#   Level 3  Lava      [DONE]
+#   Level 4  Desert     <- next
 #   Level 5  Mushroom
 #   Level 6  Sakura
 #   Level 7  Crystal

@@ -12,6 +12,8 @@ public class PlanetSpawner : MonoBehaviour
     // Her seviye PlanetsPerLevel kadar gezegen sürer (Level 1 = Natural, Level 2 = Ice, ...).
     // Tanımlı seviyeler tükenince aşağıdaki planetPrefabs (uzay gezegenleri) havuzuna dönülür.
     public const int PlanetsPerLevel = 10;
+    private const float BenchmarkPlanetAuthoringScale = 0.30f;
+    private const float DesertGameplayTargetSize = 0.66f;
     public PlanetLevel[] levels;
 
     public GameObject[] planetPrefabs;
@@ -101,8 +103,22 @@ public class PlanetSpawner : MonoBehaviour
         float difficulty = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 75f, score));
         float targetSize = Mathf.Lerp(0.70f, 0.28f, difficulty);
 
-        float naturalSize = sr != null ? Mathf.Max(sr.bounds.size.x, sr.bounds.size.y) : 1f;
-        float finalScale  = naturalSize > 0 ? targetSize / naturalSize : 1f;
+        bool isDesertLevel = usingLevelPool
+            && string.Equals(levels[levelIndex].levelName, "Desert", System.StringComparison.OrdinalIgnoreCase);
+
+        // Natural, Ice and Lava were authored at 0.30 root scale. Desert was authored at 1.0,
+        // so measuring scaled renderer bounds and then replacing the root scale made Desert
+        // approximately four times smaller. Normalize Desert from scale-independent sprite
+        // bounds and hold it at the measured gameplay-camera benchmark size.
+        if (isDesertLevel)
+            targetSize = DesertGameplayTargetSize;
+
+        float naturalSize = sr != null
+            ? (isDesertLevel && sr.sprite != null
+                ? Mathf.Max(sr.sprite.bounds.size.x, sr.sprite.bounds.size.y) * BenchmarkPlanetAuthoringScale
+                : Mathf.Max(sr.bounds.size.x, sr.bounds.size.y))
+            : 1f;
+        float finalScale = naturalSize > 0 ? targetSize / naturalSize : 1f;
         p.transform.localScale = Vector3.one * finalScale;
 
         // ── Y4: Hareketli gezegen ───────────────────────────────────────────

@@ -2999,6 +2999,84 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &891648873
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1932267787}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: dc06c9c86d27a9049b3beba9850e1b93, type: 2}
+    - target: {fileID: 919132149155446097, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+      propertyPath: m_Name
+      value: RocketModel3D
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+--- !u!4 &891648874 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1bec7c8b612654c4a8465d120a902894, type: 3}
+  m_PrefabInstance: {fileID: 891648873}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &895117128
 GameObject:
   m_ObjectHideFlags: 0
@@ -9534,6 +9612,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1305842195}
   m_CullTransparentMesh: 1
+--- !u!1 &1385939852
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1385939853}
+  m_Layer: 0
+  m_Name: MCP_TEST
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1385939853
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385939852}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1404376112
 GameObject:
   m_ObjectHideFlags: 0
@@ -10802,45 +10911,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0add48f0356b149419f3cae165fcd03a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneButtonStyler
---- !u!114 &2100000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1666648232}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30a9839a05974da39708102378f63e7a, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::AdService
-  useFakeReward: 1
---- !u!114 &2100000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1666648232}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 551dae607e4d4f3abba8382b128fae1f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::RewardedContinueController
-  soCloseThreshold: 0.9
---- !u!114 &2100000003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1666648232}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4294bf04ff054b82ae694a0743630b72, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::ContinuePanelView
-  fadeDuration: 0.24
 --- !u!1 &1736696919
 GameObject:
   m_ObjectHideFlags: 0
@@ -11153,21 +11223,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a06930348b824846962f7194392e480, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlanetSpawner
-  planetPrefabs:
-  - {fileID: 3939581829011799183, guid: b48fe2d10c3e8a04981e68f7fdec99eb, type: 3}
-  - {fileID: 8435972690130037652, guid: 924260ea738242f43905ab1d7d480918, type: 3}
-  - {fileID: 8921485238090317396, guid: dd8f3a18ba815d44481fa0bb71939777, type: 3}
-  - {fileID: 4332409969640043407, guid: e6fa7233f48e5614bb1f066e930446a1, type: 3}
-  - {fileID: 7854458496732805342, guid: 40a5e7c26688a90468809ff84da5bb93, type: 3}
-  - {fileID: 3939581829011799183, guid: 918866a3839a6c044a8d5bd2ec7f084f, type: 3}
-  - {fileID: 3939581829011799183, guid: 31d4e1d9f56301c4b84fdde4d214ca6c, type: 3}
-  - {fileID: 3939581829011799183, guid: 559e7315247f9f04bac863ce81a6022a, type: 3}
-  - {fileID: 3939581829011799183, guid: 96e6a9eed25f26247802dd4926670775, type: 3}
-  - {fileID: 3939581829011799183, guid: 57b65ed3f3385254498921e291290507, type: 3}
-  - {fileID: 3939581829011799183, guid: b457755a10c998340a7abb342a34e1e2, type: 3}
-  - {fileID: 3939581829011799183, guid: db23bcebece3b394c8be93e8b87da759, type: 3}
-  - {fileID: 3939581829011799183, guid: c7a985990e6e1d945b4537a45b2223bd, type: 3}
-  - {fileID: 3939581829011799183, guid: 2db69ef6e991caf4b970e9d7b3d97f9c, type: 3}
   levels:
   - levelName: Natural
     prefabs:
@@ -11193,6 +11248,45 @@ MonoBehaviour:
     - {fileID: 3939581829011799183, guid: bd82a83a1e44417e9a0f80d498bb0042, type: 3}
     - {fileID: 3939581829011799183, guid: bc8d1b037fe1417288d2cad38fa4918e, type: 3}
     - {fileID: 3939581829011799183, guid: 3300181878aa43ccb1dc9e2a0ac967ba, type: 3}
+  - levelName: Lava
+    prefabs:
+    - {fileID: 3939581829011799183, guid: 756e2649953c4d54b5505358c2decc75, type: 3}
+    - {fileID: 3939581829011799183, guid: caa8076b8c6d463983a6d2035a6026aa, type: 3}
+    - {fileID: 3939581829011799183, guid: 19ddafc2afce476e914548db7c0ddfa8, type: 3}
+    - {fileID: 3939581829011799183, guid: 99b9b9af37134ec2a765b61ec76a2514, type: 3}
+    - {fileID: 3939581829011799183, guid: b325c1ad30f04159a6498de3ade1be66, type: 3}
+    - {fileID: 3939581829011799183, guid: 1be6ae4732ec4744aa68eac863be693f, type: 3}
+    - {fileID: 3939581829011799183, guid: 60b6fed10d7b42789908565598a186b9, type: 3}
+    - {fileID: 3939581829011799183, guid: c1cce610f2434f20bd97808588a1a618, type: 3}
+    - {fileID: 3939581829011799183, guid: 253e99831b2c4dabb21fa323156ba2b9, type: 3}
+    - {fileID: 3939581829011799183, guid: a787ab97b192457a9dd14094f7e73bd1, type: 3}
+  - levelName: Desert
+    prefabs:
+    - {fileID: 4407686772823404542, guid: 5c15d394f945ceb43a198e638f944a15, type: 3}
+    - {fileID: 545556686192805699, guid: 10d8aea87a084e047a0e817e47271e63, type: 3}
+    - {fileID: 6348300347980747161, guid: 399b78b057c7a994782e0097ff94387e, type: 3}
+    - {fileID: 7313936818052031297, guid: fd6c41a57aa5a7b4a9199a999befc09a, type: 3}
+    - {fileID: 2562589520970163898, guid: b6ca353d131839b42b118ff2d6e116d1, type: 3}
+    - {fileID: 8513954335655921178, guid: 244f44b98b7a1fe41b881ea21be06f77, type: 3}
+    - {fileID: 4150380072510745114, guid: 2b6addd8140a6294f855885ca0c70d5c, type: 3}
+    - {fileID: 7753582977773184157, guid: 599c545f8e31df74791148282f8f794c, type: 3}
+    - {fileID: 5568974937330530111, guid: b68c670fd0789c14f94b7582c6afebca, type: 3}
+    - {fileID: 8428825599694452859, guid: a7320b9448759514f9b8fc8645df2472, type: 3}
+  planetPrefabs:
+  - {fileID: 3939581829011799183, guid: b48fe2d10c3e8a04981e68f7fdec99eb, type: 3}
+  - {fileID: 8435972690130037652, guid: 924260ea738242f43905ab1d7d480918, type: 3}
+  - {fileID: 8921485238090317396, guid: dd8f3a18ba815d44481fa0bb71939777, type: 3}
+  - {fileID: 4332409969640043407, guid: e6fa7233f48e5614bb1f066e930446a1, type: 3}
+  - {fileID: 7854458496732805342, guid: 40a5e7c26688a90468809ff84da5bb93, type: 3}
+  - {fileID: 3939581829011799183, guid: 918866a3839a6c044a8d5bd2ec7f084f, type: 3}
+  - {fileID: 3939581829011799183, guid: 31d4e1d9f56301c4b84fdde4d214ca6c, type: 3}
+  - {fileID: 3939581829011799183, guid: 559e7315247f9f04bac863ce81a6022a, type: 3}
+  - {fileID: 3939581829011799183, guid: 96e6a9eed25f26247802dd4926670775, type: 3}
+  - {fileID: 3939581829011799183, guid: 57b65ed3f3385254498921e291290507, type: 3}
+  - {fileID: 3939581829011799183, guid: b457755a10c998340a7abb342a34e1e2, type: 3}
+  - {fileID: 3939581829011799183, guid: db23bcebece3b394c8be93e8b87da759, type: 3}
+  - {fileID: 3939581829011799183, guid: c7a985990e6e1d945b4537a45b2223bd, type: 3}
+  - {fileID: 3939581829011799183, guid: 2db69ef6e991caf4b970e9d7b3d97f9c, type: 3}
   rocket: {fileID: 1932267785}
   spawnDistance: 8
   movingPlanetChance: 0.25
@@ -11698,6 +11792,7 @@ GameObject:
   - component: {fileID: 1932267789}
   - component: {fileID: 1932267788}
   - component: {fileID: 1932267791}
+  - component: {fileID: 1932267792}
   m_Layer: 0
   m_Name: Rocket
   m_TagString: Player
@@ -11790,7 +11885,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -8338395729993541974, guid: 36d1680ad92b46640acc29644d02dbd7, type: 3}
+  m_Sprite: {fileID: -535545451124306030, guid: 593f22e0287d48747b4278d61f144806, type: 3}
   m_Color: {r: 0.9607844, g: 0.8705883, b: 0.7019608, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -11814,6 +11909,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1275865004}
+  - {fileID: 891648874}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 85}
 --- !u!114 &1932267788
@@ -11835,6 +11931,8 @@ MonoBehaviour:
   highScoreText: {fileID: 748624748}
   scoreResultText: {fileID: 0}
   playerRocket: {fileID: 0}
+  adService: {fileID: 0}
+  rewardedContinue: {fileID: 0}
   gameOverFadeDuration: 0.4
   scoreCountDuration: 1.2
 --- !u!50 &1932267789
@@ -12010,6 +12108,26 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &1932267792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1932267784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc2f2bb668eff2142a9e62d247fe1656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RocketModelVisual
+  model: {fileID: 891648874}
+  hoverAmplitude: 0.05
+  hoverFrequency: 1.4
+  bankAmplitude: 3.2
+  bankFrequency: 0.9
+  noseWobbleAmplitude: 1.1
+  breathingAmplitude: 0.008
+  themeLightStrength: 0.14
 --- !u!1 &1956071139
 GameObject:
   m_ObjectHideFlags: 0
@@ -12595,6 +12713,45 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2092129487}
   m_CullTransparentMesh: 1
+--- !u!114 &2100000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666648232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30a9839a05974da39708102378f63e7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AdService
+  useFakeReward: 1
+--- !u!114 &2100000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666648232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551dae607e4d4f3abba8382b128fae1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RewardedContinueController
+  soCloseThreshold: 0.9
+--- !u!114 &2100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666648232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4294bf04ff054b82ae694a0743630b72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContinuePanelView
+  fadeDuration: 0.24
 --- !u!1 &2100817215
 GameObject:
   m_ObjectHideFlags: 0
@@ -12828,3 +12985,4 @@ SceneRoots:
   - {fileID: 1924607956}
   - {fileID: 1571246245}
   - {fileID: 1004078682}
+  - {fileID: 1385939853}

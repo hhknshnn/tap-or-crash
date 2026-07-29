@@ -33,7 +33,9 @@ public sealed class LevelIntroUI : MonoBehaviour
     private int lastAnnouncedLevel = -1;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoInstall()
+    static void AutoInstall() => SceneInstaller.RunOnEveryScene(Install);
+
+    static void Install()
     {
         if (instance != null) return;
 
@@ -87,7 +89,11 @@ public sealed class LevelIntroUI : MonoBehaviour
             Enqueue("YOU'RE ON YOUR OWN NOW", "No more guidance — good luck out there.", WarningAccent);
         }
 
-        Enqueue($"LEVEL {levelIndex + 1}", $"{levelNames[levelIndex].ToUpperInvariant()} PLANETS", LevelAccent);
+        // HUD ile aynı dil: "dünya" adı + içindeki gezegen sayısı. Vurgu rengi tema
+        // kaydından gelir, yeni tema eklendiğinde kart rengi kendiliğinden uyar.
+        string worldName = levelNames[levelIndex].ToUpperInvariant();
+        Color accent = PlanetAmbience.AccentColorFor(levelNames[levelIndex], LevelAccent);
+        Enqueue($"{worldName} WORLD", $"{PlanetSpawner.PlanetsPerLevel} PLANETS AHEAD", accent);
         lastAnnouncedLevel = levelIndex;
     }
 
@@ -110,19 +116,23 @@ public sealed class LevelIntroUI : MonoBehaviour
         rootRect.sizeDelta = new Vector2(640f, 210f);
         rootRect.localScale = Vector3.one * 0.7f;
 
-        Image panel = visualRoot.AddComponent<Image>();
-        UIStyleKit.ApplyPanel(panel, UIStyleKit.BgCard);
+        // A card, so it takes the card radius and a shadow: unlike the progress
+        // strip, this one is a moment the player is meant to look at.
+        UIDesign.EnsureInitialised();
+        // No shadow: the card fades and scales through a CanvasGroup, which a
+        // sibling shadow cannot follow — it would hang in the air mid-fade.
+        UIKit.MakeGlass(visualRoot, UIDesign.RadiusCard, UITinted.Role.GlassDeep, 1f, false);
 
-        Outline outline = visualRoot.AddComponent<Outline>();
-        outline.effectColor = new Color(0.30f, 0.85f, 0.55f, 0.55f);
-        outline.effectDistance = new Vector2(2f, -2f);
-        outline.useGraphicAlpha = true;
+        titleLabel = UIStyleKit.MakeLabel(visualRoot.transform, "NATURAL WORLD",
+            UIDesign.TypeTitle, UIDesign.TextMain, new Vector2(0f, 38f), new Vector2(600f, 70f),
+            FontStyles.Bold);
+        UIKit.StyleDisplay(titleLabel, UIDesign.TypeTitle, UIDesign.TrackTitle, UIDesign.TextMain);
 
-        titleLabel = UIStyleKit.MakeLabel(visualRoot.transform, "LEVEL 1", 46f, UIStyleKit.TextMain,
-            new Vector2(0f, 38f), new Vector2(600f, 70f), FontStyles.Bold);
-
-        subtitleLabel = UIStyleKit.MakeLabel(visualRoot.transform, "NATURAL PLANETS", 24f, LevelAccent,
-            new Vector2(0f, -30f), new Vector2(600f, 44f), FontStyles.Bold);
+        subtitleLabel = UIStyleKit.MakeLabel(visualRoot.transform, "10 PLANETS AHEAD",
+            UIDesign.TypeLabel, LevelAccent, new Vector2(0f, -30f), new Vector2(600f, 44f),
+            FontStyles.Bold);
+        UIKit.StyleText(subtitleLabel, UIDesign.TypeLabel, UIDesign.TrackLabel, LevelAccent,
+            FontStyles.Bold);
 
         group = visualRoot.AddComponent<CanvasGroup>();
         group.alpha = 0f;

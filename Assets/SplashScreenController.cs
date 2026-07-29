@@ -387,6 +387,14 @@ public class SplashScreenController : MonoBehaviour
         SetAlpha(tapToStartText, alpha);
     }
 
+    // The logo is laid out one frame after this Start runs (VisualPolishController), so
+    // the float has to be told where "home" ended up — otherwise it drags the title back
+    // to its scene position every frame.
+    public void RebaselineLogo()
+    {
+        if (logoText != null) logoStartPos = logoText.transform.localPosition;
+    }
+
     void FloatLogo()
     {
         if (logoText == null) return;

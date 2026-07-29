@@ -34,7 +34,9 @@ public class SafeAreaFitter : MonoBehaviour
     private float refreshTimer;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoInstall()
+    static void AutoInstall() => SceneInstaller.RunOnEveryScene(Install);
+
+    static void Install()
     {
         Canvas sceneCanvas = FindAnyObjectByType<Canvas>();
         if (sceneCanvas != null && sceneCanvas.GetComponent<SafeAreaFitter>() == null)

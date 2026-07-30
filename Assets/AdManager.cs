@@ -311,7 +311,19 @@ public class AdManager : MonoBehaviour
         Action<int> onRewarded = null
     )
     {
-        if (!AdsSupported || rewardedAdShowing)
+        ShowRewardedAdForCoins(
+            GameEconomyConfig.Current.rewardedAdCoins,
+            onRewarded
+        );
+    }
+
+    public void ShowRewardedAdForCoins(
+        int rewardAmount,
+        Action<int> onRewarded = null
+    )
+    {
+        rewardAmount = Mathf.Max(0, rewardAmount);
+        if (rewardAmount <= 0 || !AdsSupported || rewardedAdShowing)
         {
             return;
         }
@@ -326,8 +338,7 @@ public class AdManager : MonoBehaviour
             return;
         }
 
-        pendingRewardAmount =
-            GameEconomyConfig.Current.rewardedAdCoins;
+        pendingRewardAmount = rewardAmount;
 
         pendingRewardCallback = onRewarded;
         rewardedAdShowing = true;

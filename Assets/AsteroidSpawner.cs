@@ -18,8 +18,8 @@ public class AsteroidSpawner : MonoBehaviour
     [SerializeField, Range(0f, 0.18f)] private float movementVariation = 0.07f;
     [SerializeField, Range(0.7f, 1f)] private float minimumSizeMultiplier = 0.84f;
     [SerializeField, Range(1f, 1.35f)] private float maximumSizeMultiplier = 1.18f;
-    [SerializeField] private float minimumRotationSpeed = 48f;
-    [SerializeField] private float maximumRotationSpeed = 132f;
+    [SerializeField] private float minimumRotationSpeed = 18f;
+    [SerializeField] private float maximumRotationSpeed = 62f;
     [SerializeField] private float scoreSpeedPerPoint = 0.05f;
     [SerializeField] private float maximumScoreSpeedBonus = 3.5f;
 
@@ -54,7 +54,8 @@ public class AsteroidSpawner : MonoBehaviour
         if (GameManager.instance == null) return;
 
         int score = GameManager.instance.GetScore();
-        if (score < 10) return;
+        // Score counts completed landings: score 20 is Planet 21.
+        if (score < PlanetSpawner.PlanetsPerLevel * 2) return;
 
         spawnTimer += Time.deltaTime;
         if (spawnTimer < nextSpawnTime) return;

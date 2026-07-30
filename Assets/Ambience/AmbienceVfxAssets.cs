@@ -102,15 +102,19 @@ public static class AmbienceVfxAssets
         if (particleMaterials.TryGetValue(sprite, out Material cached) && cached != null)
             return cached;
 
-        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        // Sprites/Default for the same reason the soft particles use it: the URP 2D
+        // Renderer does not draw URP's 3D particle pass, and every shaped particle —
+        // leaf, petal, snowflake, shard — comes out as an opaque white square.
+        // See VfxSpriteFactory.ParticleMaterial.
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
         if (shader == null) shader = Shader.Find("Particles/Standard Unlit");
-        if (shader == null) shader = Shader.Find("Sprites/Default");
 
         Material material = new Material(shader) { name = "Runtime " + sprite.name };
         material.mainTexture = sprite.texture;
         if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", sprite.texture);
-        // URP's particle shaders default to Opaque, which throws the sprite's
-        // alpha away and leaves a hard square. See VfxSpriteFactory.
+        // Harmless on Sprites/Default, and still correct if a URP shader is ever the one
+        // that resolves: those default to Opaque and would throw the alpha away.
         VfxSpriteFactory.MakeTransparent(material);
 
         particleMaterials[sprite] = material;

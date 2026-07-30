@@ -12645,8 +12645,8 @@ MonoBehaviour:
   movementVariation: 0.07
   minimumSizeMultiplier: 0.84
   maximumSizeMultiplier: 1.18
-  minimumRotationSpeed: 48
-  maximumRotationSpeed: 132
+  minimumRotationSpeed: 18
+  maximumRotationSpeed: 62
   scoreSpeedPerPoint: 0.05
   maximumScoreSpeedBonus: 3.5
   prewarmCount: 6

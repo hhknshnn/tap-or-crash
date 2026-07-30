@@ -128,7 +128,8 @@ public class CameraFollow : MonoBehaviour
         while (elapsed < total)
         {
             elapsed += Time.unscaledDeltaTime;
-            float phase = elapsed / total;
+            float t = Mathf.Clamp01(elapsed / total);
+            float phase = t * t * t * (t * (t * 6f - 15f) + 10f);
             float envelope = Mathf.Sin(phase * Mathf.PI);
             transitionZoomStrength = baseOrthographicSize * zoomAmount * envelope;
             yield return null;

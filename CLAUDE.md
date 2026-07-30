@@ -1,105 +1,504 @@
 # CLAUDE.md
 
-## Project Overview
-This is a Unity 6 2D mobile game project named **tap-or-crash**.
-Core gameplay appears to involve a rocket/player object, planets/obstacles, camera follow, and spawn management.
+# Tap or Crash
+Production Development Guide
 
-## Main Goal
-When making changes, prioritize:
-1. Keeping the game playable at all times
-2. Avoiding breaking scene references or prefab links
-3. Making small, reversible changes
-4. Preserving existing gameplay feel unless explicitly asked to change it
+This document defines the permanent engineering rules for this repository.
 
-## Tech Stack
-- Unity 6
-- C#
-- 2D project
-- TextMesh Pro
+Unless the current task explicitly overrides a rule, ALWAYS follow this document.
 
-## Important Scripts
-These are likely key gameplay scripts and should be edited carefully:
-- `Assets/CameraFollow.cs`
-- `Assets/GameManager.cs`
-- `Assets/PlanetSpawner.cs`
-- `Assets/RocketController.cs`
+TASK EXECUTION PROTOCOL
 
-## Working Rules
-- Do not rename scripts, folders, scenes, prefabs, tags, layers, or serialized fields unless explicitly requested.
-- Do not move files between folders unless necessary.
-- Prefer small targeted edits over broad refactors.
-- Keep public field names stable to avoid breaking Inspector references.
-- If a refactor is necessary, explain why before doing it.
-- Do not delete assets or scenes unless explicitly requested.
-- Preserve mobile-friendly performance.
-- Keep code readable and simple.
+Before doing any work:
 
-## Unity Safety Rules
-- Do not modify `Library`, `Temp`, or generated cache content.
-- Only edit source files inside `Assets`, `Packages`, and `ProjectSettings` when needed.
-- Avoid changing project-wide settings unless the task requires it.
-- Avoid introducing new packages unless explicitly approved.
-- If creating new scripts, place them in logical folders under `Assets`.
+1. Break the task into a numbered checklist.
 
-## Coding Style
-- Use clear, short method names.
-- Prefer serialized private fields over unnecessary public fields.
-- Add brief comments only where logic is not obvious.
-- Avoid overengineering.
-- Keep MonoBehaviour responsibilities narrow.
-- Use Unity lifecycle methods intentionally (`Awake`, `Start`, `Update`, etc.).
-- Avoid hidden side effects across scripts.
+2. Print the checklist.
 
-## Gameplay Change Policy
-When asked to add or adjust gameplay:
-- First inspect the relevant script(s)
-- Change as little as possible
-- Preserve existing controls unless explicitly asked to redesign them
-- Keep tuning values easy to edit in the Inspector
-- If balancing gameplay, expose key values with `[SerializeField]`
+3. Mark each item as completed as you finish it.
 
-## UI / UX Policy
-- Keep UI simple and mobile-readable
-- Avoid clutter
-- Maintain consistency in naming and hierarchy
-- Prefer minimal intrusive changes
+4. If any step is expected to take longer than 5 minutes,
+pause and report your current progress before continuing.
 
-## Debugging Policy
+5. If a blocker appears,
+stop immediately,
+report the blocker,
+and wait for approval.
+
+Never work silently for a long period.
+
+------------------------------------------------------------
+PROJECT PHILOSOPHY
+------------------------------------------------------------
+
+This is a production game.
+
+Everything should move the project closer to release quality.
+
+Never prototype.
+
+Never leave temporary implementations.
+
+Never introduce dead code.
+
+Never implement "good enough".
+
+Every implementation should be maintainable.
+
+Long-term maintainability always wins.
+
+------------------------------------------------------------
+PRIMARY OBJECTIVE
+------------------------------------------------------------
+
+Always optimize for:
+
+1. Stability
+2. Maintainability
+3. Readability
+4. Mobile performance
+5. Production quality
+
+Implementation speed is never more important than architecture.
+
+------------------------------------------------------------
+WORKING STYLE
+------------------------------------------------------------
+
+Work on ONE task only.
+
+Never start another feature while the current one is unfinished.
+
+Never increase task scope without approval.
+
+Implement only what was requested.
+
+Do not add "nice to have" improvements.
+
+Do not redesign systems unless explicitly requested.
+
+------------------------------------------------------------
+BLOCKER POLICY (VERY IMPORTANT)
+------------------------------------------------------------
+
+If a blocker appears:
+
+STOP IMMEDIATELY.
+
+Do NOT:
+
+- spend a long time investigating
+- redesign surrounding systems
+- implement multiple alternatives
+- continue guessing
+
+Instead:
+
+1. Explain the blocker.
+2. Explain why it blocks the task.
+3. Present the available options.
+4. Wait for approval.
+
+Never spend more than approximately 5–10 minutes investigating a blocker without reporting it.
+
+------------------------------------------------------------
+ARCHITECTURE
+------------------------------------------------------------
+
+Always prefer:
+
+- modular systems
+- reusable systems
+- isolated systems
+- data-driven systems
+
+Avoid:
+
+- duplicated logic
+- hidden dependencies
+- circular references
+- unnecessary abstractions
+
+Architecture is more important than implementation speed.
+
+------------------------------------------------------------
+GAMEPLAY VS PRESENTATION
+------------------------------------------------------------
+
+Gameplay and Presentation are COMPLETELY SEPARATE.
+
+Presentation must NEVER become a gameplay dependency.
+
+Gameplay must NEVER become a presentation dependency.
+
+Examples:
+
+Gameplay:
+
+- Rocket
+- Physics
+- Scoring
+- Progression
+- Planet spawning
+- Continue system
+
+Presentation:
+
+- Hero Planet
+- Camera
+- Backgrounds
+- UI
+- Particles
+- Menu
+- Animations
+- Transitions
+
+Never mix these systems.
+
+------------------------------------------------------------
+GAMEMANAGER
+------------------------------------------------------------
+
+GameManager is NOT a dumping ground.
+
+Never move gameplay logic into GameManager.
+
+Create dedicated systems instead.
+
+------------------------------------------------------------
+DATA-DRIVEN DESIGN
+------------------------------------------------------------
+
+Whenever possible:
+
+Prefer configuration over code.
+
+Prefer ScriptableObjects.
+
+Avoid hardcoded values.
+
+Avoid duplicated constants.
+
+Centralize shared configuration.
+
+------------------------------------------------------------
+UNITY SAFETY
+------------------------------------------------------------
+
+Never edit:
+
+Library/
+
+Temp/
+
+Obj/
+
+Logs/
+
+Generated cache
+
+Only modify:
+
+Assets/
+
+Packages/
+
+ProjectSettings/
+
+Only when necessary.
+
+------------------------------------------------------------
+MCP WORKFLOW
+------------------------------------------------------------
+
+Before starting any task:
+
+Verify:
+
+✓ Blender MCP
+
+✓ Unity MCP
+
+✓ Unity Editor running
+
+✓ Blender running
+
+✓ Project loaded
+
+✓ Zero compile errors
+
+If any verification fails:
+
+STOP.
+
+Report the issue.
+
+------------------------------------------------------------
+BLENDER RULES
+------------------------------------------------------------
+
+Concept art is inspiration.
+
+Never copy every tiny detail literally.
+
+Simplify geometry.
+
+Never simplify artistic identity.
+
+Maintain:
+
+- silhouette
+- composition
+- color harmony
+- visual identity
+
+Always preserve:
+
+- centered pivot
+- clean topology
+- mobile optimization
+
+------------------------------------------------------------
+UNITY RULES
+------------------------------------------------------------
+
+Never modify gameplay while implementing presentation.
+
+Never modify unrelated systems.
+
+Never rename assets unnecessarily.
+
+Never move files without reason.
+
+Never change project-wide settings unless requested.
+
+------------------------------------------------------------
+PERFORMANCE
+------------------------------------------------------------
+
+Target mobile devices.
+
+Prefer:
+
+- low draw calls
+- reusable materials
+- shared textures
+- optimized meshes
+
+Do NOT optimize prematurely.
+
+Correctness first.
+
+Optimization second.
+
+------------------------------------------------------------
+EXISTING CODE
+------------------------------------------------------------
+
+Before creating new code:
+
+Search for an existing implementation.
+
+Reuse existing systems whenever possible.
+
+Avoid duplicated functionality.
+
+------------------------------------------------------------
+DEBUGGING
+------------------------------------------------------------
+
 When fixing bugs:
-1. Identify the smallest likely cause
-2. Suggest the fix clearly
-3. Apply the smallest safe code change
-4. Mention possible side effects
 
-## Request Handling
-For each task:
-- Briefly state what files are likely involved
-- Then make the change
-- Keep outputs concise and implementation-focused
+1. Find the smallest root cause.
+2. Apply the smallest safe fix.
+3. Verify the result.
+4. Report possible side effects.
 
-## Things to Avoid
-- Large unsolicited rewrites
-- Renaming scene objects without instruction
-- Changing input behavior unexpectedly
-- Adding dependencies without approval
-- Editing multiple unrelated systems in one pass
+Never rewrite unrelated systems.
 
-## Preferred Workflow
-1. Read the task carefully
-2. Inspect only the relevant files
-3. Propose a minimal plan if the change is non-trivial
-4. Implement the smallest clean solution
-5. Summarize exactly what changed
+------------------------------------------------------------
+VALIDATION
+------------------------------------------------------------
 
-## If Information Is Missing
-If scene setup, prefab wiring, or expected behavior is unclear:
-- State the uncertainty clearly
-- Make the safest assumption
-- Avoid destructive changes
+After every task verify:
 
-## Output Style
-- Be direct
-- Be practical
-- Prefer exact file-level changes
-- Avoid long theory unless requested
+✓ Compile
 
+✓ Console
+
+✓ Missing references
+
+✓ Missing materials
+
+✓ Prefabs
+
+✓ Runtime behaviour
+
+Never assume.
+
+Always verify.
+
+------------------------------------------------------------
+REPORT FORMAT
+------------------------------------------------------------
+
+Keep reports concise.
+
+Return only:
+
+✓ Root Cause (if applicable)
+
+✓ Files Created
+
+✓ Files Modified
+
+✓ Validation
+
+✓ Remaining Issues
+
+Avoid unnecessary essays.
+
+------------------------------------------------------------
+COMMUNICATION
+------------------------------------------------------------
+
+If requirements are unclear:
+
+Ask.
+
+Never guess.
+
+If multiple implementations exist:
+
+Explain them briefly.
+
+Wait for approval.
+
+------------------------------------------------------------
+CODE STYLE
+------------------------------------------------------------
+
+Prefer:
+
+- readable code
+- explicit names
+- small methods
+- predictable behaviour
+
+Avoid:
+
+- clever tricks
+- hidden side effects
+- magic numbers
+- unnecessary inheritance
+
+------------------------------------------------------------
+GIT
+------------------------------------------------------------
+
+Never:
+
+- commit automatically
+- delete files automatically
+- overwrite user work
+
+Always wait for confirmation.
+
+------------------------------------------------------------
+TAP OR CRASH SPECIFIC RULES
+------------------------------------------------------------
+
+Planet Theme System is considered production complete.
+
+World Transition is production complete.
+
+Do not modify those systems unless explicitly requested.
+
+Current locked roadmap:
+
+1. Main Menu Presentation
+2. In-Game HUD Presentation
+3. Gameplay Juice Pass
+4. Endless Mode
+
+Do not begin a later phase before the current phase is complete.
+
+------------------------------------------------------------
+HERO PLANET
+------------------------------------------------------------
+
+Hero Planet exists ONLY in the Main Menu.
+
+Hero Planet is NOT a gameplay planet.
+
+Never borrow gameplay planets for the Main Menu.
+
+Hero Planet must remain completely independent.
+
+Gameplay starts with the real gameplay planet.
+
+------------------------------------------------------------
+MAIN MENU
+------------------------------------------------------------
+
+The Main Menu is presentation only.
+
+Do not change gameplay architecture while improving the Main Menu.
+
+Camera, lighting, Hero Planet, rocket presentation and UI belong to Presentation.
+
+------------------------------------------------------------
+ASSET CREATION
+------------------------------------------------------------
+
+When using Blender MCP:
+
+1. Analyze reference images first.
+2. Explain detected landmarks.
+3. Model afterwards.
+
+Never start modeling before understanding the reference.
+
+------------------------------------------------------------
+INVESTIGATION LIMIT
+------------------------------------------------------------
+
+Avoid long autonomous investigations.
+
+If the task expands beyond its original scope:
+
+STOP.
+
+Explain why.
+
+Wait for approval.
+
+The user makes product decisions.
+
+Claude makes engineering decisions.
+
+------------------------------------------------------------
+FINAL PRINCIPLE
+------------------------------------------------------------
+
+When in doubt choose the solution that is:
+
+- simpler
+- cleaner
+- easier to understand
+- easier to maintain
+- production quality
+
+Never sacrifice long-term maintainability for short-term convenience.
+
+Visual asset improvements are NOT considered gameplay changes.
+
+Updating meshes, materials, textures or presentation-only visuals is allowed as long as:
+
+- gameplay logic
+- colliders
+- physics
+- timing
+- progression
+
+remain unchanged.

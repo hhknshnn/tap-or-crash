@@ -588,14 +588,15 @@ public sealed class VisualPolishController : MonoBehaviour
         if (gameOverCoinsText != null)
             SetLocalRect(gameOverCoinsText.rectTransform, new Vector2(0f, 120f), new Vector2(620f, 58f));
 
-        // One primary, two quiet: the restart is the only surface here carrying
-        // the CTA, which is what makes it the obvious next tap.
-        StyleMajorButton(panel, "RestartButton", "FLY AGAIN", new Vector2(0f, -15f), true,
-            new Vector2(600f, UIDesign.ButtonHeightMajor));
-        StyleMajorButton(panel, "ShareButton", "SHARE FLIGHT", new Vector2(0f, -140f), false,
-            new Vector2(600f, UIDesign.ButtonHeightPill));
-        StyleMajorButton(panel, "MainMenuButton_GameOver", "MAIN MENU", new Vector2(0f, -258f), false,
-            new Vector2(600f, UIDesign.ButtonHeightPill));
+        // Reward is the single dominant action. Everything else steps down in
+        // size and contrast so the value proposition reads in one glance.
+        StyleRewardButton(panel);
+        StyleMajorButton(panel, "RestartButton", "FLY AGAIN", new Vector2(0f, -150f), false,
+            new Vector2(560f, UIDesign.ButtonHeightPill));
+        StyleMajorButton(panel, "ShareButton", "SHARE FLIGHT", new Vector2(0f, -248f), false,
+            new Vector2(560f, UIDesign.ButtonHeightPill));
+        StyleMajorButton(panel, "MainMenuButton_GameOver", "MAIN MENU", new Vector2(0f, -346f), false,
+            new Vector2(560f, UIDesign.ButtonHeightPill));
     }
 
     void StylePause()
@@ -657,6 +658,14 @@ public sealed class VisualPolishController : MonoBehaviour
         if (instance == null) return;
         if (instance.canvas == null) instance.canvas = FindAnyObjectByType<Canvas>();
         instance.StyleTutorial();
+    }
+
+    public static void RestyleGameOver()
+    {
+        if (instance == null) return;
+        if (instance.canvas == null) instance.canvas = FindAnyObjectByType<Canvas>();
+        instance.StyleGameOver();
+        instance.RefreshGameOverCoins();
     }
 
     void StyleTutorial()
@@ -836,6 +845,47 @@ public sealed class VisualPolishController : MonoBehaviour
         }
     }
 
+    void StyleRewardButton(Transform panel)
+    {
+        Transform target = FindDeep(panel, "WatchAdButton");
+        if (target == null) return;
+
+        RectTransform rect = target.GetComponent<RectTransform>();
+        if (rect != null) SetLocalRect(rect, new Vector2(0f, -5f), new Vector2(650f, 124f));
+
+        UIKit.MakeGlass(target.gameObject, UIDesign.RadiusPill, UITinted.Role.Glass, 1f, true, true);
+        UIKit.OverrideRim(target.gameObject,
+            new Color(UIDesign.Cta.r, UIDesign.Cta.g, UIDesign.Cta.b, 0.78f));
+        UIKit.AddPressFeedback(target.gameObject);
+        UIMotion.Attach(target.gameObject, UIMotion.Mode.Breathe, 0.9f, 3.0f);
+
+        Transform primaryTransform = target.Find("RewardPrimaryLabel");
+        TextMeshProUGUI primary = primaryTransform != null
+            ? primaryTransform.GetComponent<TextMeshProUGUI>()
+            : null;
+        if (primary != null)
+        {
+            UIKit.StyleText(primary, 34f, UIDesign.TrackButton, UIDesign.CtaText, FontStyles.Bold);
+            primary.rectTransform.anchorMin = Vector2.zero;
+            primary.rectTransform.anchorMax = Vector2.one;
+            primary.rectTransform.offsetMin = new Vector2(18f, 25f);
+            primary.rectTransform.offsetMax = new Vector2(-18f, -5f);
+            primary.transform.SetAsLastSibling();
+        }
+
+        Transform previewTransform = target.Find("RewardPreview");
+        TextMeshProUGUI preview = previewTransform != null
+            ? previewTransform.GetComponent<TextMeshProUGUI>()
+            : null;
+        if (preview != null)
+        {
+            UIKit.StyleText(preview, UIDesign.TypeCaption, UIDesign.TrackCaption,
+                UIDesign.CtaText, FontStyles.Bold);
+            SetLocalRect(preview.rectTransform, new Vector2(0f, -34f), new Vector2(560f, 30f));
+            preview.transform.SetAsLastSibling();
+        }
+    }
+
     void EnsurePauseCard(Transform panel)
     {
         Transform existing = FindDeep(panel, "PauseCard");
@@ -863,7 +913,10 @@ public sealed class VisualPolishController : MonoBehaviour
         if (gameOverCoinsText == null) return;
 
         int earned = CoinManager.instance != null ? CoinManager.instance.GetRunCoinsEarned() : 0;
-        gameOverCoinsText.text = "RUN COINS  +" + earned;
+        bool doubled = CoinManager.instance != null && CoinManager.instance.HasDoubledRunCoins;
+        gameOverCoinsText.text = doubled
+            ? "RUN REWARD  " + earned + "  •  DOUBLED"
+            : "RUN COINS  " + earned + "  •  DOUBLE TO " + (earned * 2);
     }
 
     void CreatePanelDim(Transform panel, string name, Color color)

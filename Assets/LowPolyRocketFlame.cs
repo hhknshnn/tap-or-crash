@@ -6,6 +6,11 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
     private static readonly Color OuterColor = new Color(1f, 0.25f, 0.045f, 0.94f);
     private static readonly Color InnerColor = new Color(0.25f, 0.88f, 1f, 0.98f);
 
+    // What the engine idles at before the game starts. Correct for a ship the size of a
+    // thumbnail behind a start panel; far too small for one drawn as a portrait.
+    private const float GameplayIdleIntensity = 0.22f;
+    private const int PresentationMaxParticles = 40;
+
     [Header("Flame Placement")]
     // Tuned for the 3D HeroRocket model: nozzle lip sits at local X -1.23.
     [SerializeField] private Vector3 flameLocalPosition = new Vector3(-1.22f, 0f, 0f);
@@ -22,6 +27,35 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
     private float intensity;
     private float phase;
     private bool crashStopped;
+    private float presentationIdleIntensity;
+    private int gameplayMaxParticles = -1;
+
+    // Where the engine exits, in rocket-local space. Presentation hangs its own glow
+    // here rather than guessing at the model's proportions.
+    public Vector3 EngineLocalPosition => flameLocalPosition;
+
+    // Presentation borrows the engine while the ship is a portrait rather than a HUD
+    // element: the main menu draws it several times its gameplay size with nothing else
+    // in the frame, and the idle stub reads as a dead engine at that size. Calling this
+    // with zeroes gives the engine back exactly as it was found.
+    //
+    // Gameplay never reads any of this: the idle override only applies before the game
+    // starts, and RocketController resumes writing its own emission rate the moment it
+    // owns the ship again.
+    public void SetPresentationIdle(float idleIntensity, float exhaustRate)
+    {
+        presentationIdleIntensity = Mathf.Max(0f, idleIntensity);
+        if (thrusterParticles == null) return;
+
+        ParticleSystem.MainModule main = thrusterParticles.main;
+        if (gameplayMaxParticles < 0) gameplayMaxParticles = main.maxParticles;
+        main.maxParticles = presentationIdleIntensity > 0f
+            ? Mathf.Max(gameplayMaxParticles, PresentationMaxParticles)
+            : gameplayMaxParticles;
+
+        ParticleSystem.EmissionModule emission = thrusterParticles.emission;
+        emission.rateOverTime = Mathf.Max(0f, exhaustRate);
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoInstall() => SceneInstaller.RunOnEveryScene(Install);
@@ -72,8 +106,9 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
         SetLayerVisibility(true);
 
         float emissionRate = GetEmissionRate();
+        float idle = presentationIdleIntensity > 0f ? presentationIdleIntensity : GameplayIdleIntensity;
         float targetIntensity = !GameManager.isGameStarted
-            ? 0.22f
+            ? idle
             : emissionRate > 20f ? 1f : emissionRate > 0.1f ? 0.58f : 0.34f;
 
         // Scaled time intentionally freezes the flame rhythm during pause.
@@ -141,7 +176,7 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
         innerFlame = ResolveOrCreateLayer("LowPolyFlame_Inner",
             rocketRenderer != null ? rocketRenderer.sortingOrder - 1 : -1, InnerColor);
 
-        intensity = GameManager.isGameStarted ? 0.58f : 0.22f;
+        intensity = GameManager.isGameStarted ? 0.58f : GameplayIdleIntensity;
         SetLayerShape(outerFlame, intensity, intensity);
         SetLayerShape(innerFlame, intensity * 0.66f, intensity * 0.5f);
     }

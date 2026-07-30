@@ -9,6 +9,7 @@ public class AsteroidMover : MonoBehaviour
 
     private const int TextureSize = 64;
     private const float ProceduralVisualRadius = 0.28f;
+    private const string SpriteResourcePrefix = "Asteroids/asteroid_";
     private static readonly List<AsteroidMover> activeAsteroids = new List<AsteroidMover>();
     private static Sprite[] cachedSprites;
 
@@ -31,6 +32,8 @@ public class AsteroidMover : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private TrailRenderer trailRenderer;
+    private TrailRenderer beamTrail;
+    private SpriteRenderer atmosphereGlow;
     private Transform rocketTransform;
     private Vector3 baseScale;
     private Vector3 lastRocketPosition;
@@ -82,6 +85,7 @@ public class AsteroidMover : MonoBehaviour
     {
         activeAsteroids.Remove(this);
         if (trailRenderer != null) trailRenderer.Clear();
+        if (beamTrail != null) beamTrail.Clear();
     }
 
     void Start()
@@ -161,6 +165,16 @@ public class AsteroidMover : MonoBehaviour
         {
             trailRenderer.Clear();
             trailRenderer.emitting = true;
+        }
+        if (beamTrail != null)
+        {
+            beamTrail.Clear();
+            beamTrail.emitting = true;
+        }
+        if (atmosphereGlow != null)
+        {
+            atmosphereGlow.color = new Color(1f, 0.32f, 0.08f, 0.20f);
+            atmosphereGlow.transform.localScale = Vector3.one * Mathf.Lerp(1.35f, 1.72f, safeScale);
         }
 
         FindRocket();
@@ -249,6 +263,7 @@ public class AsteroidMover : MonoBehaviour
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
         if (circleCollider == null) circleCollider = GetComponent<CircleCollider2D>();
         if (trailRenderer == null) trailRenderer = GetComponent<TrailRenderer>();
+        EnsurePresentation();
 
         if (!baseScaleCaptured)
         {
@@ -257,6 +272,99 @@ public class AsteroidMover : MonoBehaviour
         }
 
         FindRocket();
+    }
+
+    void EnsurePresentation()
+    {
+        if (trailRenderer == null)
+            trailRenderer = gameObject.AddComponent<TrailRenderer>();
+        ConfigureTrail(
+            trailRenderer,
+            0.42f,
+            0.42f,
+            0.02f,
+            new Color(1f, 0.25f, 0.055f, 0.24f),
+            new Color(0.34f, 0.10f, 0.055f, 0f),
+            -3);
+
+        Transform presentation = transform.Find("IncomingPresentation");
+        if (presentation == null)
+        {
+            GameObject presentationObject = new GameObject("IncomingPresentation");
+            presentationObject.transform.SetParent(transform, false);
+            presentation = presentationObject.transform;
+        }
+
+        Transform beam = presentation.Find("LightBeam");
+        if (beam == null)
+        {
+            GameObject beamObject = new GameObject("LightBeam");
+            beamObject.transform.SetParent(presentation, false);
+            beam = beamObject.transform;
+        }
+        beamTrail = beam.GetComponent<TrailRenderer>();
+        if (beamTrail == null) beamTrail = beam.gameObject.AddComponent<TrailRenderer>();
+        ConfigureTrail(
+            beamTrail,
+            0.24f,
+            0.19f,
+            0f,
+            new Color(1f, 0.86f, 0.52f, 0.78f),
+            new Color(1f, 0.18f, 0.04f, 0f),
+            -2);
+
+        Transform glow = presentation.Find("AtmosphericGlow");
+        if (glow == null)
+        {
+            GameObject glowObject = new GameObject("AtmosphericGlow");
+            glowObject.transform.SetParent(presentation, false);
+            glow = glowObject.transform;
+        }
+        atmosphereGlow = glow.GetComponent<SpriteRenderer>();
+        if (atmosphereGlow == null) atmosphereGlow = glow.gameObject.AddComponent<SpriteRenderer>();
+        atmosphereGlow.sprite = VfxSpriteFactory.SoftSprite;
+        atmosphereGlow.color = new Color(1f, 0.32f, 0.08f, 0.20f);
+        atmosphereGlow.sortingOrder = -1;
+        atmosphereGlow.transform.localPosition = Vector3.zero;
+        atmosphereGlow.transform.localScale = Vector3.one * 1.5f;
+    }
+
+    static void ConfigureTrail(
+        TrailRenderer trail,
+        float lifetime,
+        float startWidth,
+        float endWidth,
+        Color startColor,
+        Color endColor,
+        int sortingOrder)
+    {
+        trail.sharedMaterial = VfxSpriteFactory.TrailMaterial;
+        trail.time = lifetime;
+        trail.startWidth = startWidth;
+        trail.endWidth = endWidth;
+        trail.minVertexDistance = 0.035f;
+        trail.numCornerVertices = 3;
+        trail.numCapVertices = 2;
+        trail.alignment = LineAlignment.View;
+        trail.textureMode = LineTextureMode.Stretch;
+        trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        trail.receiveShadows = false;
+        trail.sortingOrder = sortingOrder;
+        trail.colorGradient = new Gradient
+        {
+            colorKeys = new[]
+            {
+                new GradientColorKey(startColor, 0f),
+                new GradientColorKey(Color.Lerp(startColor, endColor, 0.55f), 0.42f),
+                new GradientColorKey(endColor, 1f),
+            },
+            alphaKeys = new[]
+            {
+                new GradientAlphaKey(startColor.a, 0f),
+                new GradientAlphaKey(startColor.a * 0.55f, 0.45f),
+                new GradientAlphaKey(0f, 1f),
+            },
+        };
     }
 
     void FindRocket()
@@ -348,7 +456,11 @@ public class AsteroidMover : MonoBehaviour
         {
             cachedSprites = new Sprite[VisualVariantCount];
             for (int i = 0; i < cachedSprites.Length; i++)
-                cachedSprites[i] = CreateAsteroidSprite(i);
+            {
+                cachedSprites[i] = Resources.Load<Sprite>(SpriteResourcePrefix + i);
+                if (cachedSprites[i] == null)
+                    cachedSprites[i] = CreateAsteroidSprite(i);
+            }
         }
 
         return cachedSprites[variant];

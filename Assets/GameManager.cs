@@ -321,7 +321,7 @@ public class GameManager : MonoBehaviour
     void HandleRocketExplosion(RocketController rocket)
     {
         rocket.CancelHoldInput();
-        GameplayVFX.Ensure().PlayCrash(rocket.transform.position);
+        GameplayVFX.Ensure().PlayCrash(rocket.transform.position, rocket.transform.rotation);
 
         rocket.enabled = false;
         rocket.GetComponent<SpriteRenderer>().enabled = false;
@@ -463,6 +463,7 @@ public class GameManager : MonoBehaviour
         PresentationGate.Release(PresentationGate.Kind.GameOver);
         Time.timeScale = 1f;
         LevelProgressUI.RefreshState();
+        WorldTransitionManager.IntroduceCurrentWorld();
     }
 
     IEnumerator CountUpScore(int target)

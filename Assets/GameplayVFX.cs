@@ -69,15 +69,28 @@ public sealed class GameplayVFX : MonoBehaviour
 
     public void PlayCrash(Vector3 position)
     {
+        PlayCrash(position, Quaternion.identity);
+    }
+
+    public void PlayCrash(Vector3 position, Quaternion rocketRotation)
+    {
         if (lastCrashFrame == Time.frameCount) return;
         lastCrashFrame = Time.frameCount;
 
-        CreateBurst(position, new Color(1f, 0.92f, 0.54f, 1f), 1, 0f, 0f, 0.48f, 0.58f,
-            BurstGeometry.Soft, 0.12f, 0.18f, 0f);
-        CreateBurst(position, new Color(1f, 0.24f, 0.08f, 1f), 16, 1.7f, 4.2f, 0.07f, 0.19f,
-            BurstGeometry.Triangle, 0.24f, 0.48f, 0.12f);
-        CreateBurst(position, new Color(1f, 0.72f, 0.16f, 1f), 10, 1.0f, 3.1f, 0.05f, 0.13f,
-            BurstGeometry.Diamond, 0.20f, 0.40f, 0.10f);
+        CrashDebrisPresentation.Spawn(position, rocketRotation);
+
+        // Bright core, expanding fire, metal sparks and a short soft smoke tail.
+        // Every layer is realtime-driven so the complete beat remains inside 0.8 s.
+        CreateBurst(position, new Color(1f, 0.96f, 0.72f, 1f), 1, 0f, 0f, 0.58f, 0.68f,
+            BurstGeometry.Soft, 0.12f, 0.20f, 0f);
+        CreateBurst(position, new Color(1f, 0.25f, 0.055f, 0.96f), 2, 0.2f, 0.8f, 0.28f, 0.50f,
+            BurstGeometry.Soft, 0.32f, 0.48f, 0.08f);
+        CreateBurst(position, new Color(1f, 0.30f, 0.07f, 1f), 18, 1.9f, 4.8f, 0.065f, 0.18f,
+            BurstGeometry.Triangle, 0.24f, 0.52f, 0.14f);
+        CreateBurst(position, new Color(1f, 0.78f, 0.20f, 1f), 12, 1.25f, 3.8f, 0.045f, 0.12f,
+            BurstGeometry.Diamond, 0.22f, 0.46f, 0.11f);
+        CreateBurst(position + Vector3.up * 0.08f, new Color(0.18f, 0.20f, 0.25f, 0.62f),
+            7, 0.32f, 1.15f, 0.20f, 0.38f, BurstGeometry.Soft, 0.46f, 0.72f, 0.18f);
     }
 
     public void PlayMilestone(int score)
@@ -319,9 +332,23 @@ public static class VfxSpriteFactory
             EnsureTexture();
             if (particleMaterial != null) return particleMaterial;
 
-            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            // Sprites/Default, not URP's particle shader.
+            //
+            // This project renders through the URP 2D Renderer, and that renderer does
+            // not draw the 3D "Universal Render Pipeline/Particles/Unlit" pass: it
+            // discards the texture's alpha and the per-particle colour and fills the whole
+            // quad opaque white. Every soft round particle in the game — ash, embers, lava
+            // drops, sparkles — drew as a hard white square, largest and most obvious over
+            // the menu's volcano.
+            //
+            // Stating the blend state (MakeTransparent, below) does not fix it. The blend
+            // state was already correct while the squares were still white; the shader
+            // itself has to be one the 2D renderer supports. That is the same
+            // Sprites/Default the geometric particles have always used, which is exactly
+            // why those were the only particles rendering correctly.
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
             if (shader == null) shader = Shader.Find("Particles/Standard Unlit");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
             particleMaterial = new Material(shader) { name = "Runtime Soft Particle" };
             particleMaterial.mainTexture = softTexture;
             if (particleMaterial.HasProperty("_BaseMap"))
@@ -331,12 +358,14 @@ public static class VfxSpriteFactory
         }
     }
 
-    /// A material built with `new Material(urpShader)` inherits the shader's
-    /// defaults, and URP's particle shaders default to Opaque. Every soft round
-    /// particle in this game was therefore drawing as a hard square of its
-    /// texture's colour with the alpha thrown away — the coloured blocks over
-    /// the lava planet and around the rocket. Nothing but the blend state is
-    /// wrong, so the fix is to state it rather than to change any artwork.
+    /// A material built with `new Material(urpShader)` inherits the shader's defaults,
+    /// and URP's particle shaders default to Opaque — which throws the texture's alpha
+    /// away and leaves a hard square. This states the blend state instead.
+    ///
+    /// Necessary but not sufficient: under the URP 2D Renderer the blend state can be
+    /// perfectly correct and the particle still draws as an opaque white quad, because
+    /// the 2D renderer does not run URP's 3D particle pass at all. Picking a shader the
+    /// 2D renderer supports is the other half. See ParticleMaterial above.
     public static void MakeTransparent(Material material)
     {
         if (material == null) return;

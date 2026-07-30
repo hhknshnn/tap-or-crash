@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -155,12 +154,12 @@ public class RocketController : MonoBehaviour
 
     bool HandleOrbitInput()
     {
-        bool mouseDown = Input.GetMouseButtonDown(0);
-        bool keyDown = Input.GetKeyDown(KeyCode.Space);
-        if (mouseDown || keyDown)
+        bool pointerDown = TapInput.PointerPressedThisFrame;
+        bool keyDown = TapInput.KeyPressedThisFrame;
+        if (pointerDown || keyDown)
         {
             CancelHoldInput();
-            pointerStartedOverUI = mouseDown && IsPointerOverUI();
+            pointerStartedOverUI = pointerDown && TapInput.IsPointerOverUI();
             if (!pointerStartedOverUI)
             {
                 isPointerDown = true;
@@ -170,13 +169,21 @@ public class RocketController : MonoBehaviour
 
         if (isPointerDown)
         {
-            if (Input.GetMouseButton(0) && IsPointerOverUI())
+            // The system took the finger away — a volume overlay, a notification shade.
+            // The press ends where it stands and never becomes a launch.
+            if (TapInput.PointerCancelledThisFrame)
             {
                 CancelHoldInput();
                 return false;
             }
 
-            bool isStillHeld = Input.GetMouseButton(0) || Input.GetKey(KeyCode.Space);
+            if (TapInput.PointerHeld && TapInput.IsPointerOverUI())
+            {
+                CancelHoldInput();
+                return false;
+            }
+
+            bool isStillHeld = TapInput.PointerHeld || TapInput.KeyHeld;
             if (isStillHeld
                 && !holdTriggered
                 && Time.unscaledTime - pointerDownTime >= reverseHoldThreshold)
@@ -185,7 +192,7 @@ public class RocketController : MonoBehaviour
             }
         }
 
-        if (!Input.GetMouseButtonUp(0) && !Input.GetKeyUp(KeyCode.Space)) return false;
+        if (!TapInput.PointerReleasedThisFrame && !TapInput.KeyReleasedThisFrame) return false;
 
         if (pointerStartedOverUI)
         {
@@ -740,14 +747,6 @@ public class RocketController : MonoBehaviour
         return start + segment * t;
     }
 
-    bool IsPointerOverUI()
-    {
-        if (EventSystem.current == null) return false;
-        if (Input.touchCount > 0)
-            return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
-        return EventSystem.current.IsPointerOverGameObject();
-    }
-
     void ConfigureFlightTrail()
     {
         flightTrail = GetComponent<TrailRenderer>();
@@ -813,7 +812,11 @@ public class RocketController : MonoBehaviour
     void UpdateTargetRing()
     {
         if (targetRing == null) return;
-        bool canShow = showTargetRing && isOrbiting && currentIndex + 1 < planets.Count;
+        int score = GameManager.instance != null ? GameManager.instance.GetScore() : 0;
+        bool canShow = showTargetRing
+            && score < PlanetSpawner.PlanetsPerLevel
+            && isOrbiting
+            && currentIndex + 1 < planets.Count;
         targetRing.enabled = canShow;
         if (!canShow) return;
 

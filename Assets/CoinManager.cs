@@ -36,8 +36,12 @@ public class CoinManager : MonoBehaviour
     private RectTransform canvasRect;
     private TextMeshProUGUI coinText;
     private RectTransform coinCounterRt;
+    private Button runDoubleButton;
+    private TextMeshProUGUI runDoubleLabel;
+    private TextMeshProUGUI runDoublePreview;
     private Coroutine rewardQueueCoroutine;
     private Coroutine counterBounceCoroutine;
+    private bool runDoubleRewardGranted;
 
     private readonly HashSet<int> rewardedScores = new HashSet<int>();
     private readonly Queue<LandingRewardRequest> rewardQueue = new Queue<LandingRewardRequest>();
@@ -119,13 +123,48 @@ public class CoinManager : MonoBehaviour
         textRt.anchorMin = Vector2.zero;
         textRt.anchorMax = Vector2.one;
         textRt.offsetMin = new Vector2(78f, 6f);
-        textRt.offsetMax = new Vector2(-18f, -6f);
+        textRt.offsetMax = new Vector2(-62f, -6f);
 
         coinText = textGo.AddComponent<TextMeshProUGUI>();
         UIKit.StyleText(coinText, UIDesign.TypeHeading, UIDesign.TrackButton, UIDesign.TextMain,
             FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
 
+        CreateCoinShopShortcut(root.transform);
         RefreshCoinDisplay();
+    }
+
+    void CreateCoinShopShortcut(Transform parent)
+    {
+        GameObject plusObject = new GameObject("CoinPurchaseShortcut");
+        plusObject.transform.SetParent(parent, false);
+        RectTransform rect = plusObject.AddComponent<RectTransform>();
+        rect.anchorMin = rect.anchorMax = new Vector2(1f, 0.5f);
+        rect.pivot = new Vector2(1f, 0.5f);
+        rect.anchoredPosition = new Vector2(-14f, 0f);
+        rect.sizeDelta = new Vector2(42f, 42f);
+
+        Image background = plusObject.AddComponent<Image>();
+        background.sprite = UIStyleKit.Circle;
+        background.color = new Color(UIDesign.Cta.r, UIDesign.Cta.g, UIDesign.Cta.b, 0.96f);
+
+        Button button = plusObject.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(OpenCoinShop);
+
+        TextMeshProUGUI plus = UIStyleKit.AddLabel(plusObject.transform, "+", 30f,
+            UIDesign.CtaText, FontStyles.Bold);
+        plus.alignment = TextAlignmentOptions.Center;
+        plus.rectTransform.offsetMin = new Vector2(0f, -2f);
+        plus.rectTransform.offsetMax = Vector2.zero;
+
+        plusObject.AddComponent<UIButtonPressFeedback>();
+        UIMotion.Attach(plusObject, UIMotion.Mode.Breathe, 0.55f, 3.6f);
+    }
+
+    void OpenCoinShop()
+    {
+        ShipSkinManager shop = FindAnyObjectByType<ShipSkinManager>();
+        if (shop != null) shop.OpenShop();
     }
 
     public int AwardLanding(Vector3 worldPosition, int score, int combo)
@@ -336,40 +375,101 @@ public class CoinManager : MonoBehaviour
         if (canvas == null) return;
 
         Transform panel = canvas.transform.Find("GameOverPanel");
-        if (panel == null || panel.Find("WatchAdButton") != null) return;
+        if (panel == null) return;
 
-        int reward = GameEconomyConfig.Current.rewardedAdCoins;
-        UIStyleKit.MakeButtonAnchored(
-            parent: panel,
-            name: "WatchAdButton",
-            label: "WATCH AD   +" + reward,
-            pos: new Vector2(0f, 30f),
-            size: new Vector2(520f, 82f),
-            bgColor: UIStyleKit.BtnSuccess,
-            onClick: () =>
+        Transform existing = panel.Find("WatchAdButton");
+        if (existing == null)
+        {
+            runDoubleButton = UIStyleKit.MakeButtonAnchored(
+                parent: panel,
+                name: "WatchAdButton",
+                label: "WATCH AD  ×2",
+                pos: new Vector2(0f, -5f),
+                size: new Vector2(650f, 124f),
+                bgColor: UIDesign.Cta,
+                onClick: RequestDoubleRunReward,
+                fontSize: 34f);
+
+            existing = runDoubleButton.transform;
+            runDoubleLabel = existing.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (runDoubleLabel != null)
             {
-                if (AdManager.instance != null)
-                    AdManager.instance.ShowRewardedAdForCoins();
-            },
-            fontSize: 27f,
-            anchorMin: new Vector2(0.5f, 0f),
-            anchorMax: new Vector2(0.5f, 0f),
-            pivot: new Vector2(0.5f, 0f));
+                runDoubleLabel.gameObject.name = "RewardPrimaryLabel";
+                runDoubleLabel.fontStyle = FontStyles.Bold;
+                runDoubleLabel.rectTransform.offsetMin = new Vector2(12f, 24f);
+                runDoubleLabel.rectTransform.offsetMax = new Vector2(-12f, -4f);
+            }
 
-        Transform button = panel.Find("WatchAdButton");
-        if (button == null) return;
+            GameObject glowObject = new GameObject("RewardGlow");
+            glowObject.transform.SetParent(existing, false);
+            glowObject.transform.SetAsFirstSibling();
+            RectTransform glowRect = glowObject.AddComponent<RectTransform>();
+            glowRect.anchorMin = glowRect.anchorMax = glowRect.pivot = new Vector2(0.5f, 0.5f);
+            glowRect.sizeDelta = new Vector2(700f, 166f);
+            Image glow = glowObject.AddComponent<Image>();
+            glow.sprite = UIGlass.Glow;
+            glow.color = new Color(UIDesign.Cta.r, UIDesign.Cta.g, UIDesign.Cta.b, 0.22f);
+            glow.raycastTarget = false;
+            UIMotion.Attach(glowObject, UIMotion.Mode.Pulse, 1f, 2.7f);
 
-        GameObject iconGo = new GameObject("CoinIcon");
-        iconGo.transform.SetParent(button, false);
-        RectTransform iconRt = iconGo.AddComponent<RectTransform>();
-        iconRt.anchorMin = iconRt.anchorMax = new Vector2(0f, 0.5f);
-        iconRt.pivot = new Vector2(0f, 0.5f);
-        iconRt.anchoredPosition = new Vector2(24f, 0f);
-        iconRt.sizeDelta = new Vector2(34f, 34f);
-        Image coinImg = iconGo.AddComponent<Image>();
-        coinImg.sprite = UIStyleKit.Circle;
-        coinImg.color = UIStyleKit.CoinColor;
-        coinImg.raycastTarget = false;
+            runDoublePreview = UIStyleKit.MakeLabel(existing, "DOUBLE THIS RUN",
+                UIDesign.TypeCaption, UIDesign.CtaText, new Vector2(0f, -34f),
+                new Vector2(560f, 30f), FontStyles.Bold);
+            runDoublePreview.gameObject.name = "RewardPreview";
+            UIKit.StyleText(runDoublePreview, UIDesign.TypeCaption, UIDesign.TrackCaption,
+                UIDesign.CtaText, FontStyles.Bold);
+
+            if (existing.GetComponent<UIButtonPressFeedback>() == null)
+                existing.gameObject.AddComponent<UIButtonPressFeedback>();
+            UIMotion.Attach(existing.gameObject, UIMotion.Mode.Breathe, 0.9f, 3.0f);
+        }
+        else
+        {
+            runDoubleButton = existing.GetComponent<Button>();
+            if (runDoubleLabel == null)
+            {
+                Transform primary = existing.Find("RewardPrimaryLabel");
+                if (primary != null) runDoubleLabel = primary.GetComponent<TextMeshProUGUI>();
+            }
+            if (runDoublePreview == null)
+            {
+                Transform preview = existing.Find("RewardPreview");
+                if (preview != null) runDoublePreview = preview.GetComponent<TextMeshProUGUI>();
+            }
+        }
+
+        RefreshDoubleRewardButton();
+        VisualPolishController.RestyleGameOver();
+    }
+
+    void RequestDoubleRunReward()
+    {
+        if (runDoubleRewardGranted || runCoinsEarned <= 0 || AdManager.instance == null) return;
+        int currentRunReward = runCoinsEarned;
+        AdManager.instance.ShowRewardedAdForCoins(currentRunReward, OnRunDoubleRewardGranted);
+    }
+
+    void OnRunDoubleRewardGranted(int bonus)
+    {
+        if (runDoubleRewardGranted || bonus <= 0) return;
+        runDoubleRewardGranted = true;
+        runCoinsEarned += bonus;
+        RefreshDoubleRewardButton();
+    }
+
+    void RefreshDoubleRewardButton()
+    {
+        if (runDoubleButton == null) return;
+        runDoubleButton.interactable = !runDoubleRewardGranted && runCoinsEarned > 0;
+
+        if (runDoubleLabel != null)
+            runDoubleLabel.text = runDoubleRewardGranted ? "REWARD CLAIMED" : "WATCH AD  ×2";
+        if (runDoublePreview != null)
+        {
+            runDoublePreview.text = runDoubleRewardGranted
+                ? "RUN TOTAL  •  " + runCoinsEarned
+                : "DOUBLE THIS RUN  •  +" + runCoinsEarned + " BONUS";
+        }
     }
 
     public void AddCoins(int amount)
@@ -405,6 +505,7 @@ public class CoinManager : MonoBehaviour
     public int GetDiamonds() => diamonds;
     public int GetRunCoinsEarned() => runCoinsEarned;
     public int RunCoinsEarned => runCoinsEarned;
+    public bool HasDoubledRunCoins => runDoubleRewardGranted;
 
     public void CheckMilestones(int score)
     {

@@ -38,6 +38,17 @@ public sealed class LavaPlanetAmbience : PlanetAmbience
         { "Lava_10", new Vector3( 0.250f,  0.046f, 0.062f) },
     };
 
+    // Ana menünün kendi lav sunumu da aynı tabloya bakar; kaldera konumları sprite'ın
+    // özelliği, temanın değil. Kopyalamak yerine buradan okunur.
+    public static bool TryGetCaldera(string spriteName, out Vector3 normalized)
+    {
+        if (!string.IsNullOrEmpty(spriteName) && Calderas.TryGetValue(spriteName, out normalized))
+            return true;
+
+        normalized = Vector3.zero;
+        return false;
+    }
+
     sealed class Vent
     {
         public Vector2 position;      // yerel koordinat
@@ -93,8 +104,7 @@ public sealed class LavaPlanetAmbience : PlanetAmbience
     // Sprite adına göre boyalı krater; tanımlı değilse merkez dışı rastgele bir nokta.
     Vector3 ResolveCaldera()
     {
-        string spriteName = SpriteName;
-        if (spriteName != null && Calderas.TryGetValue(spriteName, out Vector3 normalized))
+        if (TryGetCaldera(SpriteName, out Vector3 normalized))
         {
             float span = LocalRadius * 2f;
             return new Vector3(normalized.x * span, normalized.y * span, normalized.z * span);

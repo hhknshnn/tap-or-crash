@@ -29,9 +29,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _GhostOpacity: 0.46
-    - _ShimmerStrength: 0.85
-    - _VisualScale: 4.4
+    - _GhostOpacity: 0
+    - _ShimmerStrength: 0.72
+    - _VisualScale: 1
     m_Colors:
     - _EnergyColor: {r: 0.68, g: 0.38, b: 1, a: 1}
     - _ShimmerColor: {r: 0.55, g: 0.95, b: 1, a: 1}

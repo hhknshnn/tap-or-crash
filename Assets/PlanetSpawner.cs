@@ -103,19 +103,20 @@ public class PlanetSpawner : MonoBehaviour
         float difficulty = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 75f, score));
         float targetSize = Mathf.Lerp(0.70f, 0.28f, difficulty);
 
-        bool usesBenchmarkAuthoringScale = usingLevelPool
+        bool usesBenchmarkPresentationSize = usingLevelPool
             && (string.Equals(levels[levelIndex].levelName, "Desert", System.StringComparison.OrdinalIgnoreCase)
-                || string.Equals(levels[levelIndex].levelName, "Ocean", System.StringComparison.OrdinalIgnoreCase));
+                || string.Equals(levels[levelIndex].levelName, "Ocean", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(levels[levelIndex].levelName, "Crystal", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(levels[levelIndex].levelName, "Sakura", System.StringComparison.OrdinalIgnoreCase));
 
-        // Natural, Ice and Lava were authored at 0.30 root scale. Desert was authored at 1.0,
-        // so measuring scaled renderer bounds and then replacing the root scale made Desert
-        // approximately four times smaller. Normalize Desert from scale-independent sprite
-        // bounds and hold it at the measured gameplay-camera benchmark size.
-        if (usesBenchmarkAuthoringScale)
+        // Collections authored from the benchmark render pipeline use scale-independent
+        // sprite bounds. Keep Crystal and Sakura on the same real body diameter as
+        // Desert/Ocean so their visible edge, orbit ring and capture boundary agree.
+        if (usesBenchmarkPresentationSize)
             targetSize = DesertGameplayTargetSize;
 
         float naturalSize = sr != null
-            ? (usesBenchmarkAuthoringScale && sr.sprite != null
+            ? (usesBenchmarkPresentationSize && sr.sprite != null
                 ? Mathf.Max(sr.sprite.bounds.size.x, sr.sprite.bounds.size.y) * BenchmarkPlanetAuthoringScale
                 : Mathf.Max(sr.bounds.size.x, sr.bounds.size.y))
             : 1f;

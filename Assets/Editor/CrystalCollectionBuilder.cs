@@ -105,9 +105,12 @@ internal static class CrystalCollectionBuilder
             material.shader = shader;
         }
 
-        material.SetFloat("_VisualScale", 4.4f);
-        material.SetFloat("_GhostOpacity", 0.46f);
-        material.SetFloat("_ShimmerStrength", 0.85f);
+        // Crystal now uses the same real gameplay body diameter as Desert/Ocean.
+        // Keep the shader at the physical sprite boundary so orbit/capture never
+        // passes through a larger, purely visual ghost.
+        material.SetFloat("_VisualScale", 1f);
+        material.SetFloat("_GhostOpacity", 0f);
+        material.SetFloat("_ShimmerStrength", 0.72f);
         material.SetColor("_ShimmerColor", new Color(0.55f, 0.95f, 1f, 1f));
         material.SetColor("_EnergyColor", new Color(0.68f, 0.38f, 1f, 1f));
         EditorUtility.SetDirty(material);

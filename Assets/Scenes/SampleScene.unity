@@ -11308,6 +11308,18 @@ MonoBehaviour:
     - {fileID: 1508927890789453540, guid: b966717ccdfccd94cb1f42b6b2200a09, type: 3}
     - {fileID: 7913777990928993513, guid: 5a25d47773dc6644d8a231be1ac460f1, type: 3}
     - {fileID: 5255880009380497412, guid: 2555f28a204c73f42b31f9554655c7d0, type: 3}
+  - levelName: Mushroom
+    prefabs:
+    - {fileID: 4533980391800918085, guid: 91233ba5bbefcc24f909d1faef73ca34, type: 3}
+    - {fileID: 7949831556187875370, guid: 6a5a4ce0cb2d40b49bea0a150ae3aee4, type: 3}
+    - {fileID: 3466141787313963878, guid: 225729944a2f7084288d7c075df8797e, type: 3}
+    - {fileID: 624805773775807043, guid: dcf55b40ccc0ef5418f562f8a7db4454, type: 3}
+    - {fileID: 3522372352747620924, guid: 2a1d74b9429fc634b90d74eff0236b22, type: 3}
+    - {fileID: 8942919647993011490, guid: 8b3cddce57fe623479ad3cfb987c9b2b, type: 3}
+    - {fileID: 6135683628271873485, guid: dbe7cc397eb3e714a9ae7ef1697685cd, type: 3}
+    - {fileID: 7855679998348153313, guid: 2e8c5e40e7e091c46ab7e852918e07d5, type: 3}
+    - {fileID: 2564170917804804142, guid: e3804f0b425069245a770c1e0675d0ca, type: 3}
+    - {fileID: 8126068607026026482, guid: 8643968416b061a40abf2641782d3265, type: 3}
   planetPrefabs:
   - {fileID: 3939581829011799183, guid: b48fe2d10c3e8a04981e68f7fdec99eb, type: 3}
   - {fileID: 8435972690130037652, guid: 924260ea738242f43905ab1d7d480918, type: 3}

@@ -11344,6 +11344,18 @@ MonoBehaviour:
     - {fileID: 1608202979866434612, guid: 0c11b7de5627ef5449222faaa9fb4f16, type: 3}
     - {fileID: 7263369635340856999, guid: b04f15054f5a0914f83b8a67f2fc6b2b, type: 3}
     - {fileID: 3477385367582923008, guid: 32c6f4f105a1cb64ab14b2873e4d1215, type: 3}
+  - levelName: Alien
+    prefabs:
+    - {fileID: 4861307659442585938, guid: a8ecdd362ca1a004bb8612574114d2bc, type: 3}
+    - {fileID: 1011261933988645500, guid: 8ea7310a3de23c847ac09c73dc47a280, type: 3}
+    - {fileID: 1504392619755731624, guid: 43d67fd94b111474fa34ee8957fd667b, type: 3}
+    - {fileID: 9153687573050611260, guid: 40a031d05959c9445aadad5f5a8af437, type: 3}
+    - {fileID: 5794579852630834137, guid: 21bfe7280aba6c44cb62fca18d8bf622, type: 3}
+    - {fileID: 7191764533790158120, guid: 06ae148ec8f5df64693f803c2966a88b, type: 3}
+    - {fileID: 6388197384393116579, guid: a8f0bd9364b88e94693fbe415a95d775, type: 3}
+    - {fileID: 7173534516637674880, guid: 22f95c162557d494d863cb3ea09f062b, type: 3}
+    - {fileID: 2175973574977427205, guid: 4886f5b4594bb424eb8fc1c35fe7fec5, type: 3}
+    - {fileID: 6581769093078193588, guid: fd50b9cd07a3885438e12e5910b43be8, type: 3}
   planetPrefabs:
   - {fileID: 3939581829011799183, guid: b48fe2d10c3e8a04981e68f7fdec99eb, type: 3}
   - {fileID: 8435972690130037652, guid: 924260ea738242f43905ab1d7d480918, type: 3}

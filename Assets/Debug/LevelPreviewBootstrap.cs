@@ -17,7 +17,7 @@ using UnityEngine.SceneManagement;
 internal static class LevelPreviewBootstrap
 {
     // The level to open on. Must match a levelName in the scene's PlanetSpawner.
-    const string PreviewLevel = "Mechanical";
+    const string PreviewLevel = "Alien";
 
     static readonly FieldInfo ScoreField = typeof(GameManager).GetField(
         "score",

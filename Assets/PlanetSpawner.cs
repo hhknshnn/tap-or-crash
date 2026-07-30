@@ -109,7 +109,8 @@ public class PlanetSpawner : MonoBehaviour
                 || string.Equals(levels[levelIndex].levelName, "Crystal", System.StringComparison.OrdinalIgnoreCase)
                 || string.Equals(levels[levelIndex].levelName, "Sakura", System.StringComparison.OrdinalIgnoreCase)
                 || string.Equals(levels[levelIndex].levelName, "Mushroom", System.StringComparison.OrdinalIgnoreCase)
-                || string.Equals(levels[levelIndex].levelName, "Cloud", System.StringComparison.OrdinalIgnoreCase));
+                || string.Equals(levels[levelIndex].levelName, "Cloud", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(levels[levelIndex].levelName, "Mechanical", System.StringComparison.OrdinalIgnoreCase));
 
         // Collections authored from the benchmark render pipeline use scale-independent
         // sprite bounds. Keep Crystal and Sakura on the same real body diameter as

@@ -11332,6 +11332,18 @@ MonoBehaviour:
     - {fileID: 5473017864073083624, guid: 474a8682a67260e4dbe7a28a7378066e, type: 3}
     - {fileID: 3403870476740191870, guid: f0eb2e1e9ca81c849aa6b2b8b8bc44e6, type: 3}
     - {fileID: 3313870464426758040, guid: 02cb7f84c41211e42a531432d8cc8485, type: 3}
+  - levelName: Mechanical
+    prefabs:
+    - {fileID: 6415972327199524811, guid: d7425dc28f7c77d488397e03fdd564f9, type: 3}
+    - {fileID: 3495279988427131533, guid: bdf6618b04aaed649a7b86f2761fdc42, type: 3}
+    - {fileID: 5571353600834137111, guid: 175b68609bc7fa04992585d64ab069bf, type: 3}
+    - {fileID: 1418564490550651592, guid: 86056f4d297884e49be6ec2e7ed6a782, type: 3}
+    - {fileID: 6479601031671103832, guid: 99c9859de602b8c4ba7f18a15ac27331, type: 3}
+    - {fileID: 8104572063466619866, guid: 69ad144824066de428b61e59ce6d31ea, type: 3}
+    - {fileID: 8404925895967567906, guid: fac4df43a5dcc244daad2899001fbc65, type: 3}
+    - {fileID: 1608202979866434612, guid: 0c11b7de5627ef5449222faaa9fb4f16, type: 3}
+    - {fileID: 7263369635340856999, guid: b04f15054f5a0914f83b8a67f2fc6b2b, type: 3}
+    - {fileID: 3477385367582923008, guid: 32c6f4f105a1cb64ab14b2873e4d1215, type: 3}
   planetPrefabs:
   - {fileID: 3939581829011799183, guid: b48fe2d10c3e8a04981e68f7fdec99eb, type: 3}
   - {fileID: 8435972690130037652, guid: 924260ea738242f43905ab1d7d480918, type: 3}

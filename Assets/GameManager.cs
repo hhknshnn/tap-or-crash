@@ -70,6 +70,14 @@ public class GameManager : MonoBehaviour
 
     }
 
+    void OnEnable()
+    {
+        // Unity invokes OnEnable, but not Awake, after recompiling scripts while
+        // Play Mode continues. Re-establish the authoritative runtime singleton
+        // before gameplay components resume their Update loops.
+        BecomeAuthoritativeInstance();
+    }
+
     bool BecomeAuthoritativeInstance()
     {
         if (instance == null || instance == this)

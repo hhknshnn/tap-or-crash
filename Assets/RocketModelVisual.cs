@@ -33,8 +33,21 @@ public sealed class RocketModelVisual : MonoBehaviour
     private Color themeAmbientTarget = Color.white;
     private float nextThemeSample;
     private float phase;
+    private bool runtimeInitialized;
 
     void Awake()
+    {
+        InitializeRuntimeState();
+    }
+
+    void OnEnable()
+    {
+        // Awake is not repeated when Unity recompiles scripts and continues Play
+        // Mode. Rebuild transient renderer state before LateUpdate resumes.
+        InitializeRuntimeState();
+    }
+
+    void InitializeRuntimeState()
     {
         stateSource = GetComponent<SpriteRenderer>();
         rocketController = GetComponent<RocketController>();
@@ -46,7 +59,9 @@ public sealed class RocketModelVisual : MonoBehaviour
         baseLocalRotation = model.localRotation;
         baseLocalScale = model.localScale;
         block = new MaterialPropertyBlock();
-        phase = Random.value * 10f;
+        if (!runtimeInitialized)
+            phase = Random.value * 10f;
+        runtimeInitialized = true;
 
         if (stateSource != null)
         {

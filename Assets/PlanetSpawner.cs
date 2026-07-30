@@ -103,18 +103,19 @@ public class PlanetSpawner : MonoBehaviour
         float difficulty = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 75f, score));
         float targetSize = Mathf.Lerp(0.70f, 0.28f, difficulty);
 
-        bool isDesertLevel = usingLevelPool
-            && string.Equals(levels[levelIndex].levelName, "Desert", System.StringComparison.OrdinalIgnoreCase);
+        bool usesBenchmarkAuthoringScale = usingLevelPool
+            && (string.Equals(levels[levelIndex].levelName, "Desert", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(levels[levelIndex].levelName, "Ocean", System.StringComparison.OrdinalIgnoreCase));
 
         // Natural, Ice and Lava were authored at 0.30 root scale. Desert was authored at 1.0,
         // so measuring scaled renderer bounds and then replacing the root scale made Desert
         // approximately four times smaller. Normalize Desert from scale-independent sprite
         // bounds and hold it at the measured gameplay-camera benchmark size.
-        if (isDesertLevel)
+        if (usesBenchmarkAuthoringScale)
             targetSize = DesertGameplayTargetSize;
 
         float naturalSize = sr != null
-            ? (isDesertLevel && sr.sprite != null
+            ? (usesBenchmarkAuthoringScale && sr.sprite != null
                 ? Mathf.Max(sr.sprite.bounds.size.x, sr.sprite.bounds.size.y) * BenchmarkPlanetAuthoringScale
                 : Mathf.Max(sr.bounds.size.x, sr.bounds.size.y))
             : 1f;

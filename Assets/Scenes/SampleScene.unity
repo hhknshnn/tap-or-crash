@@ -11296,6 +11296,18 @@ MonoBehaviour:
     - {fileID: 9089259617835574609, guid: ad10d8c9fd686364fa32585780c9a649, type: 3}
     - {fileID: 3719072917295084562, guid: bd3c03c5281ba494bb9b2f39aff8609e, type: 3}
     - {fileID: 2198983675768769173, guid: 14c532d8bd2fe124a91ede680f72d8a8, type: 3}
+  - levelName: Sakura
+    prefabs:
+    - {fileID: 6982484885513763474, guid: e7e3200f8a41d13449cf6d41611514ad, type: 3}
+    - {fileID: 2908698612777858792, guid: 966d038fcb6afa947a727a7350ef5081, type: 3}
+    - {fileID: 7104374957679756182, guid: efd09ffca7963fa4eb6ccbc8e6f39824, type: 3}
+    - {fileID: 8758346952359367784, guid: 28ddb8e2a4c07844c83c68af694eed88, type: 3}
+    - {fileID: 2348780307189664879, guid: 0e524b33521eebe40a26e5f2b1120202, type: 3}
+    - {fileID: 3904802019110997621, guid: f823d1df62815e943a5bab03062cd85f, type: 3}
+    - {fileID: 6025018558847134332, guid: 8e8e3ef3005260f428c2023b622476ce, type: 3}
+    - {fileID: 1508927890789453540, guid: b966717ccdfccd94cb1f42b6b2200a09, type: 3}
+    - {fileID: 7913777990928993513, guid: 5a25d47773dc6644d8a231be1ac460f1, type: 3}
+    - {fileID: 5255880009380497412, guid: 2555f28a204c73f42b31f9554655c7d0, type: 3}
   planetPrefabs:
   - {fileID: 3939581829011799183, guid: b48fe2d10c3e8a04981e68f7fdec99eb, type: 3}
   - {fileID: 8435972690130037652, guid: 924260ea738242f43905ab1d7d480918, type: 3}

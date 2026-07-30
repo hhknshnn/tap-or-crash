@@ -35,7 +35,7 @@
 # 5. Add a new `PlanetLevel` entry to PlanetSpawner's `levels` array in
 #    Assets/Scenes/SampleScene.unity (levelName + 10 prefab refs, same GUID/fileID
 #    pattern as the existing Natural/Ice entries).
-# 6. LevelIntroUI.cs and PlanetSpawner.cs need NO further code changes — the level
+# 6. PlanetSpawner.cs needs NO further code changes — the level
 #    system is fully data-driven off `levels[]` (see PlanetSpawner.LevelIndexForScore
 #    / LevelNames). Adding a level is purely a content + scene-wiring change.
 #

@@ -16,7 +16,12 @@ public class ThemePopupController : MonoBehaviour
         StylePopup();
 
         bool alreadyChosen = PlayerPrefs.GetInt(ThemeChosenKey, 0) == 1;
-        if (themePopupPanel != null) themePopupPanel.SetActive(!alreadyChosen);
+        if (themePopupPanel != null)
+        {
+            themePopupPanel.SetActive(!alreadyChosen);
+            if (!alreadyChosen)
+                PresentationGate.Acquire(PresentationGate.Kind.ThemePopup);
+        }
     }
 
     public void OnLightSelected() => SelectTheme(true);
@@ -41,6 +46,7 @@ public class ThemePopupController : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(0.32f);
         if (themePopupPanel != null) themePopupPanel.SetActive(false);
+        PresentationGate.Release(PresentationGate.Kind.ThemePopup);
         choosing = false;
     }
 

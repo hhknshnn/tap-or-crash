@@ -10,6 +10,7 @@ public class PauseManager : MonoBehaviour
     public GameObject gameUI;           // GameUI'ı Inspector'dan ata — pause'da gizlenecek
 
     private bool isPaused = false;
+    private bool pauseQueuedDuringTransition = false;
     public bool IsPaused => isPaused;
 
     void Awake()
@@ -39,16 +40,36 @@ public class PauseManager : MonoBehaviour
     {
         if (GameManager.isGameOver) return; // Game over'da pause olmaz
 
+        if (WorldTransitionManager.IsPlaying)
+        {
+            pauseQueuedDuringTransition = true;
+            return;
+        }
+
         if (isPaused)
             ResumeGame();
         else
             PauseGame();
     }
 
+    public void ExecuteQueuedPause()
+    {
+        if (!pauseQueuedDuringTransition || GameManager.isGameOver) return;
+        pauseQueuedDuringTransition = false;
+        PauseGame();
+    }
+
     public void PauseGame()
     {
+        if (WorldTransitionManager.IsPlaying)
+        {
+            pauseQueuedDuringTransition = true;
+            return;
+        }
+
         CancelRocketInput();
         isPaused = true;
+        PresentationGate.Acquire(PresentationGate.Kind.Pause);
         Time.timeScale = 0f;                    // Oyunu dondur
         if (pausePanel != null)
             pausePanel.SetActive(true);
@@ -58,6 +79,7 @@ public class PauseManager : MonoBehaviour
     {
         CancelRocketInput();
         isPaused = false;
+        PresentationGate.Release(PresentationGate.Kind.Pause);
         Time.timeScale = 1f;                    // Oyunu devam ettir
         if (pausePanel != null)
             pausePanel.SetActive(false);
@@ -68,6 +90,7 @@ public class PauseManager : MonoBehaviour
     {
         CancelRocketInput();
         isPaused = false;
+        PresentationGate.Release(PresentationGate.Kind.Pause);
         Time.timeScale = 1f;                    // timeScale'i sıfırla
         GameManager.isGameOver = false;         // Static değişkenleri temizle
         GameManager.isGameStarted = false;

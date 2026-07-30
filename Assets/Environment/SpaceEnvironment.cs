@@ -91,6 +91,7 @@ public sealed class SpaceEnvironment : MonoBehaviour
     float nextPoll;
     float dayFactor;
     bool paletteDirty = true;
+    float activeFadeDuration = ThemeFadeDuration;
 
     // ─── Installation ────────────────────────────────────────────────────────
 
@@ -571,9 +572,13 @@ public sealed class SpaceEnvironment : MonoBehaviour
 
     void AdvanceFade()
     {
-        if (fade >= 1f) return;
+        if (fade >= 1f)
+        {
+            activeFadeDuration = ThemeFadeDuration;
+            return;
+        }
 
-        fade = Mathf.Min(1f, fade + Time.unscaledDeltaTime / ThemeFadeDuration);
+        fade = Mathf.Min(1f, fade + Time.unscaledDeltaTime / activeFadeDuration);
         paletteDirty = true;
     }
 
@@ -584,6 +589,19 @@ public sealed class SpaceEnvironment : MonoBehaviour
 
         string[] names = PlanetSpawner.LevelNames;
         return names != null && index >= 0 && index < names.Length ? names[index] : null;
+    }
+
+    public static void CrossfadeToTheme(string themeName, float duration)
+    {
+        if (instance == null || string.IsNullOrEmpty(themeName)) return;
+
+        instance.from = instance.fade >= 1f ? instance.to : SpacePalette.Lerp(instance.from, instance.to, instance.fade);
+        instance.to = SpacePalette.For(themeName);
+        instance.themeName = themeName;
+        instance.fade = 0f;
+        instance.activeFadeDuration = Mathf.Max(0.05f, duration);
+        instance.paletteDirty = true;
+        instance.nextPoll = Time.unscaledTime + ThemePollInterval;
     }
 
     void ApplyPalette()

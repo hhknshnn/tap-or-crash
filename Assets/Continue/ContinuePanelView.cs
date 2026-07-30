@@ -64,6 +64,7 @@ public sealed class ContinuePanelView : MonoBehaviour
 
         root.transform.SetAsLastSibling();
         root.SetActive(true);
+        PresentationGate.Acquire(PresentationGate.Kind.ContinueOffer);
         StartFade(0f, 1f, false, null);
         return true;
     }
@@ -131,7 +132,10 @@ public sealed class ContinuePanelView : MonoBehaviour
         card.localScale = endScale;
         fadeCoroutine = null;
         if (deactivate)
+        {
             root.SetActive(false);
+            PresentationGate.Release(PresentationGate.Kind.ContinueOffer);
+        }
         onComplete?.Invoke();
     }
 

@@ -300,8 +300,17 @@ public class RocketController : MonoBehaviour
         if (!GameManager.isGameStarted || GameManager.isGameOver) return false;
         // The menu still owns the ship while the camera pulls back into the game.
         if (GameManager.isIntroPlaying) return false;
+        if (WorldTransitionManager.IsPlaying) return false;
         if (PauseManager.instance != null && PauseManager.instance.IsPaused) return false;
         return !Mathf.Approximately(Time.timeScale, 0f);
+    }
+
+    public Transform GetUpcomingPlanetTransform()
+    {
+        if (planets == null || planets.Count == 0) return null;
+        if (currentIndex + 1 < planets.Count) return planets[currentIndex + 1];
+        if (currentIndex >= 0 && currentIndex < planets.Count) return planets[currentIndex];
+        return null;
     }
 
     int CurrentOrbitDirection => persistentOrbitDirection;
@@ -484,12 +493,12 @@ public class RocketController : MonoBehaviour
                 // İlk temas açısını aynen koru; takip eden orbit frame'i aynı çemberden devam eder.
                 angle = Mathf.Atan2(outward.y, outward.x) * Mathf.Rad2Deg;
 
-                if (planetSpawner != null) planetSpawner.SpawnPlanet();
-
                 GameManager.instance.RegisterLanding(quality);
                 PlayLandingFeedback(next.position, quality);
 
                 GameManager.instance.AddScore();
+                if (planetSpawner != null) planetSpawner.SpawnPlanet();
+
                 if (CoinManager.instance != null)
                 {
                     CoinManager.instance.AwardLanding(

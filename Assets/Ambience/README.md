@@ -54,7 +54,7 @@ Eşleşme prefab/sprite adına bakar (`Desert_01`, `Desert_02(Clone)`...). Farkl
 gerekiyorsa `PlanetAmbienceTheme` yapıcısına kendi `Func<string, bool>` matcher'ını ver.
 
 Tema adı (`"Natural"`, `"Ice"`, `"Lava"`) `PlanetSpawner.levels[].levelName` ile aynı
-yazılırsa HUD (`LevelProgressUI`) ve giriş kartı (`LevelIntroUI`) vurgu rengini
+yazılırsa HUD (`LevelProgressUI`) vurgu rengini
 `PlanetAmbience.AccentColorFor` üzerinden kendiliğinden alır.
 
 ## Taban sınıfın verdikleri

@@ -77,7 +77,7 @@ public abstract class PlanetAmbience : MonoBehaviour
         return new Color(aura.r, aura.g, aura.b, fallback.a);
     }
 
-    // Tema adına göre vurgu rengi. HUD (LevelProgressUI, LevelIntroUI) bunu kullanır;
+    // Tema adına göre vurgu rengi. HUD (LevelProgressUI) bunu kullanır;
     // yeni bir tema kaydedildiğinde arayüz rengi kendiliğinden doğru olur.
     public static Color AccentColorFor(string themeName, Color fallback)
     {

@@ -125,6 +125,7 @@ public sealed class MainMenuShowcase : MonoBehaviour
 
         instance.launching = true;
         GameManager.isIntroPlaying = true;
+        PresentationGate.Acquire(PresentationGate.Kind.MenuIntro);
         instance.StartCoroutine(instance.LaunchSequence());
         return true;
     }
@@ -354,6 +355,7 @@ public sealed class MainMenuShowcase : MonoBehaviour
         if (cameraFollow != null) cameraFollow.enabled = true;
 
         GameManager.isIntroPlaying = false;
+        PresentationGate.Release(PresentationGate.Kind.MenuIntro);
     }
 
     void DestroyMenuOnlyChildren()
@@ -894,6 +896,7 @@ public sealed class MainMenuShowcase : MonoBehaviour
 
         handedOver = true;
         GameManager.isIntroPlaying = false;
+        PresentationGate.Release(PresentationGate.Kind.MenuIntro);
 
         // If the pose could not be adopted the game still has to start; RocketController
         // falls back to its own orbit maths on the next frame.

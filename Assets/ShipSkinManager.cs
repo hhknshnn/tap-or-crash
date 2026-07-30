@@ -157,6 +157,7 @@ public class ShipSkinManager : MonoBehaviour
         shopPanel.SetActive(true);
         shopPanel.transform.SetAsLastSibling();
         shopOpen = true;
+        PresentationGate.Acquire(PresentationGate.Kind.Shop);
         RefreshShop();
 
         Canvas.ForceUpdateCanvases();
@@ -715,6 +716,7 @@ public class ShipSkinManager : MonoBehaviour
             group.interactable = false;
             group.blocksRaycasts = false;
             shopPanel.SetActive(false);
+            PresentationGate.Release(PresentationGate.Kind.Shop);
             if (shopCard != null) shopCard.localScale = Vector3.one;
         }
 

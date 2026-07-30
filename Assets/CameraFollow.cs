@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
@@ -30,6 +31,7 @@ public class CameraFollow : MonoBehaviour
     private float kickDuration;
     private float kickStrength;
     private float zoomStrength;
+    private float transitionZoomStrength;
 
     void Awake()
     {
@@ -64,7 +66,9 @@ public class CameraFollow : MonoBehaviour
             // so the framing never feels frozen, never consciously noticeable.
             float breath = Mathf.Sin(Time.unscaledTime * 0.31f) * 0.0025f
                 + Mathf.Sin(Time.unscaledTime * 0.127f + 2.4f) * 0.0015f;
-            float targetSize = baseOrthographicSize * (1f + breath) - zoomStrength * envelope;
+            float targetSize = baseOrthographicSize * (1f + breath)
+                - zoomStrength * envelope
+                - transitionZoomStrength;
             controlledCamera.orthographicSize = Mathf.Lerp(
                 controlledCamera.orthographicSize,
                 targetSize,
@@ -115,5 +119,21 @@ public class CameraFollow : MonoBehaviour
         kickTimer = kickDuration;
         kickStrength = strength;
         zoomStrength = zoom;
+    }
+
+    public IEnumerator PlayTransitionFocus(float duration, float zoomAmount)
+    {
+        float total = Mathf.Max(0.01f, duration);
+        float elapsed = 0f;
+        while (elapsed < total)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float phase = elapsed / total;
+            float envelope = Mathf.Sin(phase * Mathf.PI);
+            transitionZoomStrength = baseOrthographicSize * zoomAmount * envelope;
+            yield return null;
+        }
+
+        transitionZoomStrength = 0f;
     }
 }

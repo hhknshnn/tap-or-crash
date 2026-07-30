@@ -301,6 +301,7 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return;
 
         isGameOver = true;
+        PresentationGate.Acquire(PresentationGate.Kind.GameOver);
         LevelProgressUI.RefreshState();
 
         if (AudioManager.instance != null)
@@ -459,6 +460,7 @@ public class GameManager : MonoBehaviour
         isNearMiss = false;
         isGameStarted = true;
         isGameOver = false;
+        PresentationGate.Release(PresentationGate.Kind.GameOver);
         Time.timeScale = 1f;
         LevelProgressUI.RefreshState();
     }
@@ -517,11 +519,13 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         isRestart      = true;
         isGameOver     = false;
+        PresentationGate.Release(PresentationGate.Kind.GameOver);
         isGameStarted  = false;
         isNearMiss     = false;
         isIntroPlaying = false;
         if (playerRocket != null) playerRocket.ResetForNewRun();
         ResetRunScore();
+        WorldTransitionManager.ResetForNewRun();
     }
 
     private void ResetRunScore()

@@ -208,17 +208,20 @@ public class AdManager : MonoBehaviour
         interstitialAd.OnAdFullScreenContentFailed +=
             OnInterstitialFailed;
 
+        PresentationGate.AcquireAdvertisement();
         interstitialAd.Show();
     }
 
     private void OnInterstitialClosed()
     {
+        PresentationGate.ReleaseAdvertisement();
         UnsubscribeInterstitialEvents();
         LoadInterstitialAd();
     }
 
     private void OnInterstitialFailed(AdError error)
     {
+        PresentationGate.ReleaseAdvertisement();
         Debug.LogError(
             "Interstitial gösterilemedi: " +
             error
@@ -337,6 +340,7 @@ public class AdManager : MonoBehaviour
         rewardedAd.OnAdFullScreenContentFailed +=
             OnRewardedFailed;
 
+        PresentationGate.AcquireAdvertisement();
         rewardedAd.Show(reward =>
         {
             if (rewardGranted)
@@ -363,6 +367,7 @@ public class AdManager : MonoBehaviour
 
     private void OnRewardedClosed()
     {
+        PresentationGate.ReleaseAdvertisement();
         UnsubscribeRewardedEvents();
 
         rewardedAdShowing = false;
@@ -373,6 +378,7 @@ public class AdManager : MonoBehaviour
 
     private void OnRewardedFailed(AdError error)
     {
+        PresentationGate.ReleaseAdvertisement();
         Debug.LogError(
             "Rewarded reklam gösterilemedi: " +
             error

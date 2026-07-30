@@ -343,6 +343,7 @@ public class TutorialManager : MonoBehaviour
         if (panelAnimation != null) StopCoroutine(panelAnimation);
         panelAnimation = null;
         if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        PresentationGate.Release(PresentationGate.Kind.Tutorial);
 
         if (isFromStartButton)
         {
@@ -414,6 +415,7 @@ public class TutorialManager : MonoBehaviour
 
         ApplyContent();
         tutorialPanel.SetActive(true);
+        PresentationGate.Acquire(PresentationGate.Kind.Tutorial);
         tutorialPanel.transform.SetAsLastSibling();
 
         // VisualPolishController owns the actual visual style (colors, layout, outline).

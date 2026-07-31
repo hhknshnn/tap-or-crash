@@ -19,7 +19,13 @@ public sealed class GameplayVFX : MonoBehaviour
     {
         Soft,
         Triangle,
-        Diamond
+        Diamond,
+
+        /// <summary>Thin expanding annulus — the shock front.</summary>
+        Ring,
+
+        /// <summary>Billboard stretched along its own velocity — a spark streak.</summary>
+        Spark
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -67,30 +73,58 @@ public sealed class GameplayVFX : MonoBehaviour
             BurstGeometry.Diamond, 0.20f, 0.42f, 0.16f);
     }
 
-    public void PlayCrash(Vector3 position)
-    {
-        PlayCrash(position, Quaternion.identity);
-    }
-
-    public void PlayCrash(Vector3 position, Quaternion rocketRotation)
+    public void PlayCrash(Vector3 position, Quaternion rocketRotation, float rocketWorldSize)
     {
         if (lastCrashFrame == Time.frameCount) return;
         lastCrashFrame = Time.frameCount;
 
-        CrashDebrisPresentation.Spawn(position, rocketRotation);
+        CrashDebrisPresentation.Spawn(position, rocketRotation, rocketWorldSize);
 
-        // Bright core, expanding fire, metal sparks and a short soft smoke tail.
-        // Every layer is realtime-driven so the complete beat remains inside 0.8 s.
-        CreateBurst(position, new Color(1f, 0.96f, 0.72f, 1f), 1, 0f, 0f, 0.58f, 0.68f,
-            BurstGeometry.Soft, 0.12f, 0.20f, 0f);
-        CreateBurst(position, new Color(1f, 0.25f, 0.055f, 0.96f), 2, 0.2f, 0.8f, 0.28f, 0.50f,
-            BurstGeometry.Soft, 0.32f, 0.48f, 0.08f);
-        CreateBurst(position, new Color(1f, 0.30f, 0.07f, 1f), 18, 1.9f, 4.8f, 0.065f, 0.18f,
-            BurstGeometry.Triangle, 0.24f, 0.52f, 0.14f);
-        CreateBurst(position, new Color(1f, 0.78f, 0.20f, 1f), 12, 1.25f, 3.8f, 0.045f, 0.12f,
-            BurstGeometry.Diamond, 0.22f, 0.46f, 0.11f);
-        CreateBurst(position + Vector3.up * 0.08f, new Color(0.18f, 0.20f, 0.25f, 0.62f),
-            7, 0.32f, 1.15f, 0.20f, 0.38f, BurstGeometry.Soft, 0.46f, 0.72f, 0.18f);
+        // Compact core, a thin translucent shock ring, spark streaks, glints and
+        // a short soft smoke tail. Every layer is realtime-driven so the complete
+        // beat remains inside 0.8 s.
+        //
+        // Sizes and speeds are fractions of the visible world height rather than
+        // absolute units, so the blast reads the same on any aspect ratio and
+        // never grows past the screen. The core stays under a tenth of screen
+        // height and the ring, the widest layer, opens to under a quarter of it.
+        float height = VisibleWorldHeight();
+
+        // Core: small, hot and gone quickly. It is deliberately narrower than the
+        // fire puffs behind it, translucent, and it burns from pale gold down to
+        // orange over its own life — a flash the flames grow out of rather than a
+        // flat white plate laid over them.
+        CreateBurst(position, new Color(1f, 0.86f, 0.46f, 0.88f), 1, 0f, 0f,
+            0.070f * height, 0.085f * height,
+            BurstGeometry.Soft, 0.09f, 0.15f, 0f);
+        CreateBurst(position, new Color(1f, 0.58f, 0.24f, 0.15f), 1, 0f, 0f,
+            0.185f * height, 0.185f * height,
+            BurstGeometry.Ring, 0.19f, 0.23f, 0f);
+        CreateBurst(position, new Color(1f, 0.34f, 0.07f, 0.92f), 2,
+            0.02f * height, 0.06f * height, 0.085f * height, 0.115f * height,
+            BurstGeometry.Soft, 0.30f, 0.46f, 0.008f * height);
+        CreateBurst(position, new Color(1f, 0.44f, 0.12f, 1f), 18,
+            0.095f * height, 0.235f * height, 0.006f * height, 0.013f * height,
+            BurstGeometry.Spark, 0.17f, 0.36f, 0.010f * height);
+        CreateBurst(position, new Color(1f, 0.78f, 0.20f, 1f), 12,
+            0.075f * height, 0.160f * height, 0.004f * height, 0.009f * height,
+            BurstGeometry.Diamond, 0.20f, 0.40f, 0.008f * height);
+        CreateBurst(position + Vector3.up * 0.008f * height, new Color(0.18f, 0.20f, 0.25f, 0.62f),
+            7, 0.020f * height, 0.055f * height, 0.022f * height, 0.045f * height,
+            BurstGeometry.Soft, 0.46f, 0.72f, 0.014f * height);
+    }
+
+    /// <summary>
+    /// The world height the camera currently shows. Crash presentation sizes
+    /// itself against this so the blast keeps the same share of the screen
+    /// whatever the camera is zoomed to.
+    /// </summary>
+    public static float VisibleWorldHeight()
+    {
+        Camera camera = Camera.main;
+        if (camera == null) camera = FindAnyObjectByType<Camera>();
+        if (camera == null || !camera.orthographic) return 16f;
+        return camera.orthographicSize * 2f;
     }
 
     public void PlayMilestone(int score)
@@ -118,7 +152,13 @@ public sealed class GameplayVFX : MonoBehaviour
         if (particles == null) return;
 
         GameObject go = particles.gameObject;
-        go.name = geometry == BurstGeometry.Soft ? "VFX_Flash" : "VFX_GeometricBurst";
+        go.name = geometry == BurstGeometry.Soft
+            ? "VFX_Flash"
+            : geometry == BurstGeometry.Ring
+                ? "VFX_ShockRing"
+                : geometry == BurstGeometry.Spark
+                    ? "VFX_SparkStreaks"
+                    : "VFX_GeometricBurst";
         go.transform.position = position;
         go.transform.rotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
@@ -145,44 +185,106 @@ public sealed class GameplayVFX : MonoBehaviour
         shape.radius = shapeRadius;
         shape.arc = 360f;
 
+        // A single soft particle is the explosion core; the multi-particle soft
+        // bursts are fire and smoke and keep the shared curves.
+        bool isExplosionCore = geometry == BurstGeometry.Soft && count == 1;
+
         ParticleSystem.ColorOverLifetimeModule colorOverLife = particles.colorOverLifetime;
         colorOverLife.enabled = true;
         Gradient gradient = new Gradient();
         gradient.SetKeys(
-            new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
-            new[] { new GradientAlphaKey(color.a, 0f), new GradientAlphaKey(color.a, 0.55f), new GradientAlphaKey(0f, 1f) });
+            isExplosionCore
+                // Cooling towards orange as it dies is what makes the core read
+                // as burning gas instead of a lit white shape.
+                ? new[]
+                {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(new Color(1f, 0.52f, 0.16f), 1f)
+                }
+                : new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+            isExplosionCore
+                // Falls away from its very first frame. Holding alpha flat, as
+                // the other layers do, is what gave the core its solid-disc edge.
+                ? new[]
+                {
+                    new GradientAlphaKey(color.a, 0f),
+                    new GradientAlphaKey(color.a * 0.45f, 0.30f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+                : new[]
+                {
+                    new GradientAlphaKey(color.a, 0f),
+                    new GradientAlphaKey(color.a, 0.55f),
+                    new GradientAlphaKey(0f, 1f)
+                });
         colorOverLife.color = gradient;
 
         ParticleSystem.SizeOverLifetimeModule sizeOverLife = particles.sizeOverLifetime;
         sizeOverLife.enabled = true;
-        AnimationCurve sizeCurve = geometry == BurstGeometry.Soft && count == 1
-            ? new AnimationCurve(
-                new Keyframe(0f, 0.55f),
-                new Keyframe(0.35f, 1.18f),
-                new Keyframe(1f, 0f))
-            : new AnimationCurve(
-                new Keyframe(0f, 1f),
-                new Keyframe(0.72f, 0.82f),
-                new Keyframe(1f, 0f));
-        sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, sizeCurve);
-
-        ParticleSystem.RotationOverLifetimeModule rotationOverLife = particles.rotationOverLifetime;
-        rotationOverLife.enabled = geometry != BurstGeometry.Soft;
-        rotationOverLife.z = new ParticleSystem.MinMaxCurve(-3.4f, 3.4f);
-
-        ParticleSystemRenderer renderer = particles.GetComponent<ParticleSystemRenderer>();
-        if (geometry == BurstGeometry.Soft)
+        AnimationCurve sizeCurve;
+        if (geometry == BurstGeometry.Ring)
         {
-            renderer.renderMode = ParticleSystemRenderMode.Billboard;
-            renderer.sharedMaterial = VfxSpriteFactory.ParticleMaterial;
+            // Opens from a tight collar rather than appearing at full width, so
+            // the shock front never lands as an oversized first frame. Snapping
+            // open early also keeps it away from the steady sweep of a UI dial.
+            sizeCurve = new AnimationCurve(
+                new Keyframe(0f, 0.30f),
+                new Keyframe(0.38f, 1.02f),
+                new Keyframe(1f, 1.22f));
+        }
+        else if (isExplosionCore)
+        {
+            // Punches out fast, then holds while the alpha carries it away —
+            // a shrinking core would read as a retracting shape.
+            sizeCurve = new AnimationCurve(
+                new Keyframe(0f, 0.42f),
+                new Keyframe(0.20f, 1f),
+                new Keyframe(1f, 0.55f));
         }
         else
         {
-            renderer.renderMode = ParticleSystemRenderMode.Mesh;
-            renderer.mesh = geometry == BurstGeometry.Triangle
-                ? VfxSpriteFactory.TriangleMesh
-                : VfxSpriteFactory.DiamondMesh;
-            renderer.sharedMaterial = VfxSpriteFactory.GeometricParticleMaterial;
+            sizeCurve = new AnimationCurve(
+                new Keyframe(0f, 1f),
+                new Keyframe(0.72f, 0.82f),
+                new Keyframe(1f, 0f));
+        }
+        sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, sizeCurve);
+
+        // Spinning a velocity-aligned streak would fight its direction, and a
+        // ring has no orientation to spin.
+        ParticleSystem.RotationOverLifetimeModule rotationOverLife = particles.rotationOverLifetime;
+        rotationOverLife.enabled =
+            geometry == BurstGeometry.Triangle || geometry == BurstGeometry.Diamond;
+        rotationOverLife.z = new ParticleSystem.MinMaxCurve(-3.4f, 3.4f);
+
+        ParticleSystemRenderer renderer = particles.GetComponent<ParticleSystemRenderer>();
+        renderer.lengthScale = 2f;
+        renderer.velocityScale = 0f;
+        switch (geometry)
+        {
+            case BurstGeometry.Soft:
+                renderer.renderMode = ParticleSystemRenderMode.Billboard;
+                renderer.sharedMaterial = VfxSpriteFactory.ParticleMaterial;
+                break;
+
+            case BurstGeometry.Spark:
+                // Stretching along velocity is what makes the sparks read as
+                // directional streaks instead of a symmetrical puff.
+                renderer.renderMode = ParticleSystemRenderMode.Stretch;
+                renderer.lengthScale = 2.6f;
+                renderer.velocityScale = 0.075f;
+                renderer.sharedMaterial = VfxSpriteFactory.ParticleMaterial;
+                break;
+
+            default:
+                renderer.renderMode = ParticleSystemRenderMode.Mesh;
+                renderer.mesh = geometry == BurstGeometry.Triangle
+                    ? VfxSpriteFactory.TriangleMesh
+                    : geometry == BurstGeometry.Ring
+                        ? VfxSpriteFactory.RingMesh
+                        : VfxSpriteFactory.DiamondMesh;
+                renderer.sharedMaterial = VfxSpriteFactory.GeometricParticleMaterial;
+                break;
         }
         renderer.sortingOrder = 12;
 
@@ -229,7 +331,37 @@ public sealed class GameplayVFX : MonoBehaviour
         yield return new WaitForSecondsRealtime(delay);
         if (particles == null) yield break;
 
-        activeBursts.Remove(particles);
+        // ClearActiveBursts may already have recycled it; releasing twice would
+        // return the same system to the pool twice.
+        if (!activeBursts.Remove(particles)) yield break;
+
+        Recycle(particles);
+    }
+
+    /// <summary>
+    /// Stops and recycles every burst still in flight. Called before Fly Again or
+    /// Restart hands control back, so a resumed run starts on a clean screen and
+    /// repeated crashes cannot accumulate particle objects.
+    /// </summary>
+    public void ClearActiveBursts()
+    {
+        if (activeBursts.Count > 0)
+        {
+            ParticleSystem[] inFlight = new ParticleSystem[activeBursts.Count];
+            activeBursts.CopyTo(inFlight);
+            activeBursts.Clear();
+
+            for (int i = 0; i < inFlight.Length; i++)
+            {
+                if (inFlight[i] != null) Recycle(inFlight[i]);
+            }
+        }
+
+        lastCrashFrame = -1;
+    }
+
+    void Recycle(ParticleSystem particles)
+    {
         particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         particles.gameObject.SetActive(false);
         particles.transform.SetParent(transform, false);
@@ -312,6 +444,7 @@ public static class VfxSpriteFactory
     private static Material trailMaterial;
     private static Mesh triangleMesh;
     private static Mesh diamondMesh;
+    private static Mesh ringMesh;
 
     public static Sprite SoftSprite
     {
@@ -466,6 +599,85 @@ public static class VfxSpriteFactory
                 diamondMesh.UploadMeshData(true);
             }
             return diamondMesh;
+        }
+    }
+
+    /// <summary>
+    /// A soft-edged annulus of outer radius 0.5, so a particle of size S draws a
+    /// ring exactly S across. Used for the crash shock front.
+    ///
+    /// The band is built from three concentric vertex rings — rim, centre, rim —
+    /// with the vertex alpha falling to zero at both rims. An evenly lit band of
+    /// constant width and hard edges is exactly what a targeting reticle looks
+    /// like; tapering it leaves a pressure line that thins into the background
+    /// instead. The taper costs 120 vertices and no extra draw call.
+    /// </summary>
+    public static Mesh RingMesh
+    {
+        get
+        {
+            if (ringMesh != null) return ringMesh;
+
+            const int segments = 40;
+            const float outerRadius = 0.5f;
+            const float centreRadius = 0.479f;
+            const float innerRadius = 0.458f;
+
+            Vector3[] vertices = new Vector3[segments * 3];
+            Vector2[] uv = new Vector2[segments * 3];
+            Color[] colors = new Color[segments * 3];
+            int[] triangles = new int[segments * 12];
+
+            Color rim = new Color(1f, 1f, 1f, 0f);
+
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = i / (float)segments * Mathf.PI * 2f;
+                float cos = Mathf.Cos(angle);
+                float sin = Mathf.Sin(angle);
+
+                int band = i * 3;
+                vertices[band] = new Vector3(cos * innerRadius, sin * innerRadius, 0f);
+                vertices[band + 1] = new Vector3(cos * centreRadius, sin * centreRadius, 0f);
+                vertices[band + 2] = new Vector3(cos * outerRadius, sin * outerRadius, 0f);
+
+                float u = i / (float)segments;
+                uv[band] = new Vector2(u, 0f);
+                uv[band + 1] = new Vector2(u, 0.5f);
+                uv[band + 2] = new Vector2(u, 1f);
+
+                colors[band] = rim;
+                colors[band + 1] = Color.white;
+                colors[band + 2] = rim;
+
+                int next = (i + 1) % segments * 3;
+                int t = i * 12;
+
+                // Inner half of the band.
+                triangles[t] = band;
+                triangles[t + 1] = band + 1;
+                triangles[t + 2] = next + 1;
+                triangles[t + 3] = band;
+                triangles[t + 4] = next + 1;
+                triangles[t + 5] = next;
+
+                // Outer half.
+                triangles[t + 6] = band + 1;
+                triangles[t + 7] = band + 2;
+                triangles[t + 8] = next + 2;
+                triangles[t + 9] = band + 1;
+                triangles[t + 10] = next + 2;
+                triangles[t + 11] = next + 1;
+            }
+
+            ringMesh = new Mesh { name = "Runtime VFX Ring" };
+            ringMesh.vertices = vertices;
+            ringMesh.uv = uv;
+            ringMesh.colors = colors;
+            ringMesh.triangles = triangles;
+            ringMesh.RecalculateBounds();
+            ringMesh.UploadMeshData(true);
+            return ringMesh;
         }
     }
 

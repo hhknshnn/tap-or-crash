@@ -65,7 +65,7 @@ public sealed class ContinuePanelView : MonoBehaviour
         root.transform.SetAsLastSibling();
         root.SetActive(true);
         PresentationGate.Acquire(PresentationGate.Kind.ContinueOffer);
-        StartFade(0f, 1f, false, null);
+        StartFade(0f, 1f, false, null, waitForCrashReveal: true);
         return true;
     }
 
@@ -104,20 +104,49 @@ public sealed class ContinuePanelView : MonoBehaviour
         StartFade(canvasGroup.alpha, 0f, true, onHidden);
     }
 
-    private void StartFade(float from, float to, bool deactivate, Action onComplete)
+    private void StartFade(
+        float from,
+        float to,
+        bool deactivate,
+        Action onComplete,
+        bool waitForCrashReveal = false)
     {
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
-        fadeCoroutine = StartCoroutine(Fade(from, to, deactivate, onComplete));
+        fadeCoroutine = StartCoroutine(Fade(from, to, deactivate, onComplete, waitForCrashReveal));
     }
 
-    private IEnumerator Fade(float from, float to, bool deactivate, Action onComplete)
+    private IEnumerator Fade(
+        float from,
+        float to,
+        bool deactivate,
+        Action onComplete,
+        bool waitForCrashReveal)
     {
         float elapsed = 0f;
         Vector3 startScale = to > from ? Vector3.one * 0.88f : Vector3.one;
         Vector3 endScale = to > from ? Vector3.one : Vector3.one * 0.94f;
         canvasGroup.alpha = from;
         card.localScale = startScale;
+
+        // The offer's overlay dims the whole screen, so the fade — and only the
+        // fade — holds until the crash has been read. The offer is already live
+        // by this point: the gate is held and the reward path is prepared.
+        if (waitForCrashReveal)
+        {
+            int revealToken = CrashRevealDelay.Token;
+            yield return CrashRevealDelay.WaitForReveal(revealToken);
+            if (!CrashRevealDelay.IsCurrent(revealToken))
+            {
+                // Gameplay was handed back while the offer was still invisible.
+                // Showing it now would drop an obsolete panel over a live run.
+                fadeCoroutine = null;
+                canvasGroup.alpha = 0f;
+                root.SetActive(false);
+                PresentationGate.Release(PresentationGate.Kind.ContinueOffer);
+                yield break;
+            }
+        }
 
         while (elapsed < fadeDuration)
         {

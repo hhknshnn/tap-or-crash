@@ -576,6 +576,33 @@ public class RocketController : MonoBehaviour
         return PlanetPresentation.GetOrbitRingRadius(planet) + GetRocketOrbitHalfSize();
     }
 
+    /// <summary>
+    /// The rocket's longest on-screen dimension in world units, with every parent
+    /// transform already folded in. Crash presentation sizes itself against this
+    /// so the debris always inherits the live rocket's effective world scale.
+    /// </summary>
+    public float VisualWorldSize
+    {
+        get
+        {
+            SpriteRenderer renderer = rocketSpriteRenderer;
+            if (renderer != null && renderer.sprite != null)
+            {
+                Vector3 scale = transform.lossyScale;
+                Vector3 size = renderer.sprite.bounds.size;
+                return Mathf.Max(
+                    0.05f,
+                    size.x * Mathf.Abs(scale.x),
+                    size.y * Mathf.Abs(scale.y));
+            }
+
+            Collider2D hitbox = rocketHitbox;
+            return hitbox != null
+                ? Mathf.Max(0.05f, hitbox.bounds.size.x, hitbox.bounds.size.y)
+                : 0.5f;
+        }
+    }
+
     float GetRocketOrbitHalfSize()
     {
         SpriteRenderer renderer = rocketSpriteRenderer;

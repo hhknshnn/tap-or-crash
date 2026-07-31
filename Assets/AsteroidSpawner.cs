@@ -36,6 +36,7 @@ public class AsteroidSpawner : MonoBehaviour
     private float nextSpawnTime;
     private int createdCount;
     private int spawnSequence;
+    private bool spawningArmed;
 
     void Start()
     {
@@ -44,7 +45,6 @@ public class AsteroidSpawner : MonoBehaviour
         prewarmCount = Mathf.Max(0, prewarmCount);
         maximumPoolSize = Mathf.Max(4, maximumPoolSize, prewarmCount);
         maximumScoreSpeedBonus = Mathf.Max(0f, maximumScoreSpeedBonus);
-        nextSpawnTime = Random.Range(minSpawnInterval, maxSpawnInterval);
         PrewarmPool();
     }
 
@@ -54,8 +54,16 @@ public class AsteroidSpawner : MonoBehaviour
         if (GameManager.instance == null) return;
 
         int score = GameManager.instance.GetScore();
-        // Score counts completed landings: score 20 is Planet 21.
-        if (score < PlanetSpawner.PlanetsPerLevel * 2) return;
+        if (!AsteroidDifficulty.IsActive(score)) return;
+
+        // The very first interval is drawn the moment the run reaches the
+        // activation planet, so the introduction is as sparse as the curve says.
+        if (!spawningArmed)
+        {
+            spawningArmed = true;
+            spawnTimer = 0f;
+            nextSpawnTime = GetNextSpawnInterval(score);
+        }
 
         spawnTimer += Time.deltaTime;
         if (spawnTimer < nextSpawnTime) return;
@@ -67,18 +75,8 @@ public class AsteroidSpawner : MonoBehaviour
 
     float GetNextSpawnInterval(int score)
     {
-        if (score < 20)
-            return Random.Range(4f, 8f);
-
-        if (score < 50)
-        {
-            float difficulty = Mathf.Clamp01((score - 20f) / 30f);
-            return Random.Range(
-                Mathf.Lerp(minSpawnInterval, 1.5f, difficulty),
-                Mathf.Lerp(maxSpawnInterval, 2.5f, difficulty));
-        }
-
-        return Random.Range(0.8f, 1.5f);
+        return Random.Range(minSpawnInterval, maxSpawnInterval)
+            * AsteroidDifficulty.EvaluateForScore(score).SpawnIntervalMultiplier;
     }
 
     void SpawnAsteroid(int score)
@@ -103,8 +101,11 @@ public class AsteroidSpawner : MonoBehaviour
 
         float scoreBonus = Mathf.Min(score * scoreSpeedPerPoint, maximumScoreSpeedBonus);
         float baseMovementSpeed = Random.Range(minSpeed, maxSpeed) + scoreBonus;
+        // The progression multiplier scales the randomised speed rather than
+        // replacing it, so every asteroid keeps its own variation.
         float variedMovementSpeed = baseMovementSpeed
-            * Random.Range(1f - movementVariation, 1f + movementVariation);
+            * Random.Range(1f - movementVariation, 1f + movementVariation)
+            * AsteroidDifficulty.EvaluateForScore(score).SpeedMultiplier;
         Vector2 movementDirection = new Vector2(Random.Range(-0.3f, 0.3f), -1f).normalized;
 
         AsteroidMover mover = asteroid.GetComponent<AsteroidMover>();

@@ -302,6 +302,7 @@ public class GameManager : MonoBehaviour
 
         isGameOver = true;
         PresentationGate.Acquire(PresentationGate.Kind.GameOver);
+        CrashRevealDelay.MarkImpact();
         LevelProgressUI.RefreshState();
 
         if (AudioManager.instance != null)
@@ -321,7 +322,10 @@ public class GameManager : MonoBehaviour
     void HandleRocketExplosion(RocketController rocket)
     {
         rocket.CancelHoldInput();
-        GameplayVFX.Ensure().PlayCrash(rocket.transform.position, rocket.transform.rotation);
+        GameplayVFX.Ensure().PlayCrash(
+            rocket.transform.position,
+            rocket.transform.rotation,
+            rocket.VisualWorldSize);
 
         rocket.enabled = false;
         rocket.GetComponent<SpriteRenderer>().enabled = false;
@@ -382,6 +386,14 @@ public class GameManager : MonoBehaviour
     {
         if (gameOverPanel == null) yield break;
 
+        // The panel is a full-screen dark Image, so it hides the break-up the
+        // instant it fades in. Everything the run itself needs — the result, the
+        // ad hook, the gate — is already committed by ShowNormalGameOver; only
+        // the entrance waits for the crash to have been read.
+        int revealToken = CrashRevealDelay.Token;
+        yield return CrashRevealDelay.WaitForReveal(revealToken);
+        if (!CrashRevealDelay.IsCurrent(revealToken) || !isGameOver) yield break;
+
         if (highScoreText  != null) highScoreText.text  = "BEST  "  + highScore;
         if (scoreResultText != null) scoreResultText.text = "SCORE  0";
 
@@ -400,7 +412,7 @@ public class GameManager : MonoBehaviour
         float t   = 0f;
         while (t < dur)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             float p       = Mathf.SmoothStep(0f, 1f, t / dur);
             cg.alpha      = p;
             panelRt.localScale = Vector3.Lerp(Vector3.one * 0.85f, Vector3.one, p);
@@ -445,6 +457,8 @@ public class GameManager : MonoBehaviour
             ShowNormalGameOver();
             return;
         }
+
+        ClearCrashPresentation();
 
         CameraFollow cameraFollow = Camera.main != null
             ? Camera.main.GetComponent<CameraFollow>()
@@ -515,8 +529,20 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    /// Debris and crash particles outlive the crash that spawned them, so both
+    /// restore paths clear them before gameplay is handed back. Cancelling the
+    /// reveal window with them stops a still-waiting presenter from opening an
+    /// obsolete Game Over panel over the resumed run.
+    private static void ClearCrashPresentation()
+    {
+        CrashDebrisPresentation.ClearAll();
+        if (GameplayVFX.instance != null) GameplayVFX.instance.ClearActiveBursts();
+        CrashRevealDelay.Cancel();
+    }
+
     private void PrepareForRestart()
     {
+        ClearCrashPresentation();
         Time.timeScale = 1f;
         isRestart      = true;
         isGameOver     = false;

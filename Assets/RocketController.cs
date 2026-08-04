@@ -56,6 +56,8 @@ public class RocketController : MonoBehaviour
     [SerializeField] private Color trajectoryColor = new Color(0.25f, 0.85f, 1f, 0.72f);
     [SerializeField] private Color targetColor = new Color(0.25f, 0.85f, 1f, 0.85f);
 
+    public const float OrbitRadiusMultiplier = 1.25f;
+
     [Header("Zorluk Ayarları")]
     private float baseOrbitSpeed = 120f;   // Oyun başındaki temel dönüş hızı
     public float speedIncreaseRate = 3f;   // Her skor artışında orbit hızına eklenen miktar
@@ -71,25 +73,48 @@ public class RocketController : MonoBehaviour
     private int currentIndex = 0;          // Şu an hangi gezegenin etrafında dönülüyor
 
     private bool isOrbiting = true;        // true = orbit, false = uçuş
+    public bool IsOrbiting => isOrbiting;
+
+    // Presentation-only view of the direction already used by the launch guide
+    // and DoLaunch. It exposes existing math without changing orbit, launch, or
+    // physics authority, allowing replacement visuals to agree with the guide.
+    public Vector3 PresentationHeadingDirection
+    {
+        get
+        {
+            if (!isOrbiting && flyDir.sqrMagnitude > Mathf.Epsilon)
+                return flyDir.normalized;
+            if (planets != null && planets.Count > 0 && currentIndex >= 0)
+                return CalculateLaunchDirection();
+            return transform.right;
+        }
+    }
     private float angle = 0f;             // Şu anki orbit açısı (derece)
     private Vector3 flyDir;               // Fırlatma anındaki uçuş yönü
     private LineRenderer targetRing;
+    private Transform launchGuideAnchor;
+    private GameObject dashedGuideRoot;
+    private readonly List<LineRenderer> dashedGuideSegments = new List<LineRenderer>();
     private TrailRenderer flightTrail;
     private SpriteRenderer rocketSpriteRenderer;
+    private MeshRenderer[] rocketModelRenderers;
     private Collider2D rocketHitbox;
     private Transform trackedFlightTarget;
     private Vector3 previousFlightTargetPosition;
     private Quaternion captureStartRotation;
+    private float captureStartOrbitRadius;
     private float captureSettleElapsed;
     private bool isSettlingCapture;
-
     void Awake()
     {
         // Sahneyi sadece bir kez tarar ve referansı saklar
         planetSpawner = FindAnyObjectByType<PlanetSpawner>();
         rocketSpriteRenderer = GetComponent<SpriteRenderer>();
+        rocketModelRenderers = GetComponentsInChildren<MeshRenderer>(true);
         rocketHitbox = GetComponent<Collider2D>();
+        EnsureLaunchGuideAnchor();
         ConfigureTrajectoryLine();
+        CreateDashedGuide();
         CreateTargetRing();
         ConfigureFlightTrail();
         GameplayVFX.Ensure();
@@ -103,6 +128,21 @@ public class RocketController : MonoBehaviour
         EnsureRocketFlame();
     }
 
+    void OnEnable()
+    {
+        rocketModelRenderers = GetComponentsInChildren<MeshRenderer>(true);
+
+        Transform anchor = transform.Find("LaunchGuideAnchor");
+        if (anchor != null) launchGuideAnchor = anchor;
+
+        Transform ring = transform.Find("TargetRing");
+        if (ring != null) targetRing = ring.GetComponent<LineRenderer>();
+
+        Transform dashRoot = transform.Find("LaunchGuideDashes");
+        if (dashRoot != null) dashedGuideRoot = dashRoot.gameObject;
+        RebindDashedGuideSegments();
+    }
+
     void OnDestroy()
     {
         if (targetRing != null) Destroy(targetRing.gameObject);
@@ -113,6 +153,7 @@ public class RocketController : MonoBehaviour
         CancelHoldInput();
         if (targetRing != null) targetRing.enabled = false;
         if (trajectoryLine != null) trajectoryLine.positionCount = 0;
+        SetDashedGuideVisible(false);
     }
 
     void OnApplicationFocus(bool hasFocus)
@@ -126,12 +167,16 @@ public class RocketController : MonoBehaviour
         {
             CancelHoldInput();
             if (targetRing != null) targetRing.enabled = false;
-            if (trajectoryLine != null) trajectoryLine.positionCount = 0;
+            if (trajectoryLine != null)
+            {
+                trajectoryLine.positionCount = 0;
+                trajectoryLine.enabled = false;
+            }
+            SetDashedGuideVisible(false);
             return;
         }
 
         if (planets.Count == 0) return;     // Gezegen yoksa hiçbir şey yapma
-
         if (isOrbiting)
         {
             // Process the threshold before moving so a HOLD toggle takes effect on the
@@ -143,13 +188,17 @@ public class RocketController : MonoBehaviour
             }
 
             DoOrbit();       // Gezegen etrafında dön
-            DrawTrajectory(); // Yön çizgisini güncelle (şu an boş)
         }
         else
         {
             CancelHoldInput();
             DoFlight(); // Düz uç
         }
+    }
+
+    void LateUpdate()
+    {
+        if (isOrbiting && CanRunGameplay()) DrawTrajectory();
     }
 
     bool HandleOrbitInput()
@@ -343,8 +392,10 @@ public class RocketController : MonoBehaviour
                 captureStartRotation,
                 targetRotation,
                 Mathf.SmoothStep(0f, 1f, progress));
-            orbitRadius = PlanetPresentation.GetOrbitRingRadius(planets[currentIndex])
-                + GetRocketSupport(outward);
+            orbitRadius = Mathf.Lerp(
+                captureStartOrbitRadius,
+                CalculateOrbitRadius(planets[currentIndex]),
+                Mathf.SmoothStep(0f, 1f, progress));
             if (progress >= 1f)
             {
                 transform.rotation = targetRotation;
@@ -370,32 +421,50 @@ public class RocketController : MonoBehaviour
         int score = GameManager.instance != null
             ? GameManager.instance.GetScore()
             : 0;
+        int globalLevel = score + 1;
 
-        bool canShowTrajectory = showTrajectoryHint
-            && score < trajectoryHintScoreLimit
+        bool canShowGuide = showTrajectoryHint
+            && OrbitAssistanceProgression.IsAvailableForScore(score)
+            && currentIndex >= 0
             && currentIndex + 1 < planets.Count;
 
-        if (trajectoryLine == null || !canShowTrajectory)
+        if (trajectoryLine == null || !canShowGuide)
         {
             if (trajectoryLine != null)
+            {
                 trajectoryLine.positionCount = 0;
-
+                trajectoryLine.enabled = false;
+            }
+            SetDashedGuideVisible(false);
             return;
         }
 
-        Vector3 direction = CalculateLaunchDirection();
-        float hintLength = Mathf.Min(
-            trajectoryLength,
-            Vector3.Distance(transform.position, planets[currentIndex + 1].position));
+        UpdateLaunchGuideAnchor();
+        Vector3 start = launchGuideAnchor != null ? launchGuideAnchor.position : transform.position;
+        Vector3 launchDirection = CalculateLaunchDirection();
+        float fullLength = Mathf.Max(0.5f, trajectoryLength);
+        if (OrbitAssistanceProgression.IsFullForPlanet(globalLevel))
+        {
+            SetDashedGuideVisible(false);
+            trajectoryLine.enabled = true;
+            trajectoryLine.positionCount = 2;
+            trajectoryLine.startColor = trajectoryColor;
+            trajectoryLine.endColor = trajectoryColor;
+            trajectoryLine.SetPosition(0, start);
+            trajectoryLine.SetPosition(1, start + launchDirection * fullLength);
+            return;
+        }
 
-        trajectoryLine.positionCount = 2;
-        trajectoryLine.SetPosition(0, transform.position + direction * 0.45f);
-        trajectoryLine.SetPosition(1, transform.position + direction * hintLength);
+        trajectoryLine.positionCount = 0;
+        trajectoryLine.enabled = false;
+        DrawDashedGuide(start, start + launchDirection * (fullLength * 0.48f), globalLevel);
     }
 
     void DoLaunch()
     {
         if (trajectoryLine != null) trajectoryLine.positionCount = 0;
+        if (targetRing != null) targetRing.enabled = false;
+        SetDashedGuideVisible(false);
         if (AudioManager.instance != null) AudioManager.instance.PlayLaunch();
         SetEmissionRate(flightEmissionRate);
 
@@ -475,6 +544,7 @@ public class RocketController : MonoBehaviour
                 outward.Normalize();
 
                 orbitRadius = attachmentCenterRadius;
+                captureStartOrbitRadius = attachmentCenterRadius;
                 captureStartRotation = transform.rotation;
                 captureSettleElapsed = 0f;
                 isSettlingCapture = true;
@@ -531,8 +601,10 @@ public class RocketController : MonoBehaviour
         float distToCurrent = Vector3.Distance(transform.position, planets[currentIndex].position);
         if (distToCurrent > 12f)
         {
+            // Compare against the same capture envelope used during flight contact tests,
+            // not the post-landing orbit radius (which includes OrbitRadiusMultiplier).
             float missRadius = currentIndex + 1 < planets.Count
-                ? CalculateOrbitRadius(planets[currentIndex + 1])
+                ? PlanetPresentation.GetOrbitRingRadius(planets[currentIndex + 1]) + GetRocketOrbitHalfSize()
                 : captureRadius;
             GameManager.isNearMiss = closestApproach > missRadius
                 && closestApproach <= missRadius * almostMissMultiplier;
@@ -573,8 +645,11 @@ public class RocketController : MonoBehaviour
 
     float CalculateOrbitRadius(Transform planet)
     {
-        return PlanetPresentation.GetOrbitRingRadius(planet) + GetRocketOrbitHalfSize();
+        return (PlanetPresentation.GetOrbitRingRadius(planet) + GetRocketOrbitHalfSize())
+            * OrbitRadiusMultiplier;
     }
+
+    public float GetOrbitEnvelopeRadius(Transform planet) => CalculateOrbitRadius(planet);
 
     /// <summary>
     /// The rocket's longest on-screen dimension in world units, with every parent
@@ -585,6 +660,13 @@ public class RocketController : MonoBehaviour
     {
         get
         {
+            float modelSize = 0f;
+            for (int i = 0; rocketModelRenderers != null && i < rocketModelRenderers.Length; i++)
+            {
+                Bounds bounds = rocketModelRenderers[i].bounds;
+                modelSize = Mathf.Max(modelSize, bounds.size.x, bounds.size.y);
+            }
+
             SpriteRenderer renderer = rocketSpriteRenderer;
             if (renderer != null && renderer.sprite != null)
             {
@@ -592,14 +674,15 @@ public class RocketController : MonoBehaviour
                 Vector3 size = renderer.sprite.bounds.size;
                 return Mathf.Max(
                     0.05f,
+                    modelSize,
                     size.x * Mathf.Abs(scale.x),
                     size.y * Mathf.Abs(scale.y));
             }
 
             Collider2D hitbox = rocketHitbox;
             return hitbox != null
-                ? Mathf.Max(0.05f, hitbox.bounds.size.x, hitbox.bounds.size.y)
-                : 0.5f;
+                ? Mathf.Max(0.05f, modelSize, hitbox.bounds.size.x, hitbox.bounds.size.y)
+                : Mathf.Max(0.5f, modelSize);
         }
     }
 
@@ -814,16 +897,146 @@ public class RocketController : MonoBehaviour
     {
         if (trajectoryLine == null) return;
         trajectoryLine.useWorldSpace = true;
-        trajectoryLine.startWidth = 0.075f;
-        trajectoryLine.endWidth = 0.025f;
+        trajectoryLine.loop = false;
+        trajectoryLine.startWidth = 0.055f;
+        trajectoryLine.endWidth = 0.055f;
         trajectoryLine.startColor = trajectoryColor;
-        trajectoryLine.endColor = new Color(trajectoryColor.r, trajectoryColor.g, trajectoryColor.b, 0.08f);
+        trajectoryLine.endColor = trajectoryColor;
         trajectoryLine.positionCount = 0;
+    }
+
+    void EnsureLaunchGuideAnchor()
+    {
+        Transform existing = transform.Find("LaunchGuideAnchor");
+        if (existing != null) launchGuideAnchor = existing;
+        else
+        {
+            GameObject anchor = new GameObject("LaunchGuideAnchor");
+            anchor.transform.SetParent(transform, false);
+            launchGuideAnchor = anchor.transform;
+        }
+        launchGuideAnchor.localPosition = Vector3.zero;
+        launchGuideAnchor.localRotation = Quaternion.identity;
+        launchGuideAnchor.localScale = Vector3.one;
+    }
+
+    void UpdateLaunchGuideAnchor()
+    {
+        if (launchGuideAnchor == null) EnsureLaunchGuideAnchor();
+
+        RocketModelVisual modelVisual = GetComponent<RocketModelVisual>();
+        Transform explicitNose = modelVisual != null ? modelVisual.ActiveNoseSocket : null;
+        if (explicitNose != null)
+        {
+            launchGuideAnchor.position = explicitNose.position;
+            return;
+        }
+
+        Vector3 nose = transform.position;
+        Vector3 noseAxis = transform.right;
+        float farthest = 0f;
+        for (int i = 0; rocketModelRenderers != null && i < rocketModelRenderers.Length; i++)
+        {
+            MeshRenderer renderer = rocketModelRenderers[i];
+            Bounds bounds = renderer.localBounds;
+            for (int x = -1; x <= 1; x += 2)
+            for (int y = -1; y <= 1; y += 2)
+            for (int z = -1; z <= 1; z += 2)
+            {
+                Vector3 localCorner = bounds.center + new Vector3(
+                    bounds.extents.x * x,
+                    bounds.extents.y * y,
+                    bounds.extents.z * z);
+                Vector3 worldCorner = renderer.transform.TransformPoint(localCorner);
+                farthest = Mathf.Max(farthest,
+                    Vector3.Dot(worldCorner - transform.position, noseAxis));
+            }
+        }
+
+        if (farthest <= 0.001f && rocketSpriteRenderer != null && rocketSpriteRenderer.sprite != null)
+            farthest = rocketSpriteRenderer.sprite.bounds.extents.x * Mathf.Abs(transform.lossyScale.x);
+
+        launchGuideAnchor.position = nose + noseAxis * farthest;
+    }
+
+    void CreateDashedGuide()
+    {
+        if (dashedGuideRoot == null)
+        {
+            Transform existing = transform.Find("LaunchGuideDashes");
+            dashedGuideRoot = existing != null ? existing.gameObject : null;
+        }
+        if (dashedGuideRoot == null)
+        {
+            dashedGuideRoot = new GameObject("LaunchGuideDashes");
+            dashedGuideRoot.transform.SetParent(transform, false);
+        }
+
+        RebindDashedGuideSegments();
+        const int segmentCount = 6;
+        for (int i = dashedGuideSegments.Count; i < segmentCount; i++)
+        {
+            GameObject go = new GameObject("Dash" + (i + 1).ToString("00"));
+            go.transform.SetParent(dashedGuideRoot.transform, false);
+            LineRenderer line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.loop = false;
+            line.positionCount = 0;
+            line.startWidth = line.endWidth = 0.045f;
+            line.sortingOrder = trajectoryLine != null ? trajectoryLine.sortingOrder : 1;
+            if (trajectoryLine != null) line.sharedMaterial = trajectoryLine.sharedMaterial;
+            dashedGuideSegments.Add(line);
+        }
+        dashedGuideRoot.SetActive(false);
+    }
+
+    void RebindDashedGuideSegments()
+    {
+        dashedGuideSegments.Clear();
+        if (dashedGuideRoot == null) return;
+
+        foreach (Transform child in dashedGuideRoot.transform)
+        {
+            LineRenderer line = child.GetComponent<LineRenderer>();
+            if (line != null) dashedGuideSegments.Add(line);
+        }
+    }
+
+    void DrawDashedGuide(Vector3 start, Vector3 end, int globalLevel)
+    {
+        if (dashedGuideRoot == null || dashedGuideSegments.Count == 0) CreateDashedGuide();
+        dashedGuideRoot.SetActive(true);
+        Vector3 delta = end - start;
+        int count = dashedGuideSegments.Count;
+        float stage = Mathf.InverseLerp(
+            OrbitAssistanceProgression.FullAssistanceLastPlanet + 1f,
+            OrbitAssistanceProgression.LastAssistedPlanet,
+            globalLevel);
+        float baseAlpha = Mathf.Lerp(0.58f, 0.34f, stage);
+        for (int i = 0; i < count; i++)
+        {
+            float segmentStart = i / (float)count;
+            float segmentEnd = Mathf.Min(1f, segmentStart + 0.58f / count);
+            LineRenderer line = dashedGuideSegments[i];
+            line.enabled = true;
+            line.positionCount = 2;
+            line.SetPosition(0, start + delta * segmentStart);
+            line.SetPosition(1, start + delta * segmentEnd);
+            Color color = trajectoryColor;
+            color.a = baseAlpha * Mathf.Lerp(1f, 0.28f, i / (float)Mathf.Max(1, count - 1));
+            line.startColor = line.endColor = color;
+        }
+    }
+
+    void SetDashedGuideVisible(bool visible)
+    {
+        if (dashedGuideRoot != null) dashedGuideRoot.SetActive(visible);
     }
 
     void CreateTargetRing()
     {
         GameObject go = new GameObject("TargetRing");
+        go.transform.SetParent(transform, false);
         targetRing = go.AddComponent<LineRenderer>();
         targetRing.useWorldSpace = true;
         targetRing.loop = true;
@@ -840,19 +1053,31 @@ public class RocketController : MonoBehaviour
     {
         if (targetRing == null) return;
         int score = GameManager.instance != null ? GameManager.instance.GetScore() : 0;
+        int globalLevel = score + 1;
         bool canShow = showTargetRing
-            && score < PlanetSpawner.PlanetsPerLevel
+            && OrbitAssistanceProgression.IsAvailableForScore(score)
             && isOrbiting
-            && currentIndex + 1 < planets.Count;
+            && currentIndex >= 0
+            && currentIndex < planets.Count;
         targetRing.enabled = canShow;
         if (!canShow) return;
 
-        Transform target = planets[currentIndex + 1];
+        Transform target = planets[currentIndex];
         Vector3 center = target.position;
         float radius = PlanetPresentation.GetOrbitRingRadius(target);
-        float pulse = (Mathf.Sin(Time.unscaledTime * 3f) + 1f) * 0.5f;
         Color pulsedColor = targetColor;
-        pulsedColor.a *= Mathf.Lerp(0.72f, 1f, pulse);
+        if (OrbitAssistanceProgression.IsFullForPlanet(globalLevel))
+        {
+            pulsedColor.a = targetColor.a;
+        }
+        else
+        {
+            float alphaRatio = globalLevel >= OrbitAssistanceProgression.LastAssistedPlanet
+                ? 0.20f
+                : 0.48f - (globalLevel
+                    - (OrbitAssistanceProgression.FullAssistanceLastPlanet + 1)) * 0.03f;
+            pulsedColor.a = targetColor.a * alphaRatio;
+        }
         targetRing.startColor = targetRing.endColor = pulsedColor;
         for (int i = 0; i < targetRing.positionCount; i++)
         {

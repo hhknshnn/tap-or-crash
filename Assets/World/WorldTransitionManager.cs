@@ -29,6 +29,9 @@ public sealed class WorldTransitionManager : MonoBehaviour
     public static bool IsPlaying =>
         instance != null && instance.transitionActive;
 
+    public static bool IsPendingOrPlaying =>
+        instance != null && (instance.transitionActive || instance.activeTransition != null);
+
     GameObject visualRoot;
     CanvasGroup overlayGroup;
     RectTransform cardRect;
@@ -506,6 +509,24 @@ public sealed class WorldTransitionManager : MonoBehaviour
     public static void ResetForNewRun()
     {
         if (instance == null) return;
+
+        // A transition belonging to the finished run is stopped here rather than
+        // left to expire. While one is still queued IsPendingOrPlaying stays true,
+        // and that is the flag asteroids, moving orbits and the milestone notices
+        // all wait on — a survivor would hold the new run's mechanics shut.
+        // Stopping it disposes the iterator, so PlayTransition's finally still
+        // gives back the gate, the gameplay hold and the planet's own scale.
+        if (instance.activeTransition != null)
+        {
+            instance.StopCoroutine(instance.activeTransition);
+            instance.activeTransition = null;
+        }
+        instance.ReleaseGameplayHold();
+        instance.transitionActive = false;
+        PresentationGate.Release(PresentationGate.Kind.WorldTransition);
+        if (instance.overlayGroup != null) instance.overlayGroup.alpha = 0f;
+        if (instance.visualRoot != null) instance.visualRoot.SetActive(false);
+
         instance.ResetAnnouncedWorlds();
         instance.lastTransitionScore = -1;
         instance.pendingNaturalIntro = true;

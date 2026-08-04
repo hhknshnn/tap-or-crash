@@ -7,11 +7,9 @@ public class SafeAreaFitter : MonoBehaviour
 {
     private static readonly HashSet<string> TargetNames = new HashSet<string>
     {
-        "ScoreText",
-        "ScorePlate",
         "CoinCounter",
+        "RocketFuelHud",
         "FirstTenProgress",
-        "ComboText",
         "SoundButton",
         "SoundButton2",
         "DayNightButton",
@@ -21,11 +19,14 @@ public class SafeAreaFitter : MonoBehaviour
         "StreakBanner",
         "LaunchPlate",
         "TAP TO START",
+        "TapToLaunch",
         "ControlHint",
         "BestScoreText"
     };
 
     private readonly Dictionary<RectTransform, Vector2> basePositions =
+        new Dictionary<RectTransform, Vector2>();
+    private readonly Dictionary<RectTransform, Vector2> appliedOffsets =
         new Dictionary<RectTransform, Vector2>();
 
     private Canvas canvas;
@@ -46,6 +47,12 @@ public class SafeAreaFitter : MonoBehaviour
     void Awake()
     {
         canvas = GetComponent<Canvas>();
+    }
+
+    void OnEnable()
+    {
+        canvas = GetComponent<Canvas>();
+        Rebaseline();
     }
 
     void Start()
@@ -80,13 +87,15 @@ public class SafeAreaFitter : MonoBehaviour
         {
             if (rect == null || !TargetNames.Contains(rect.gameObject.name)) continue;
             if (!basePositions.ContainsKey(rect))
+            {
                 basePositions.Add(rect, rect.anchoredPosition);
+                appliedOffsets.Add(rect, Vector2.zero);
+            }
         }
     }
 
     public void Rebaseline()
     {
-        basePositions.Clear();
         RefreshTargets();
         ApplySafeArea();
     }
@@ -105,6 +114,7 @@ public class SafeAreaFitter : MonoBehaviour
         float top = (Screen.height - safe.yMax) / Screen.height * canvasSize.y;
 
         var staleTargets = new List<RectTransform>();
+        var updatedBases = new List<KeyValuePair<RectTransform, Vector2>>();
         foreach (KeyValuePair<RectTransform, Vector2> entry in basePositions)
         {
             RectTransform rect = entry.Key;
@@ -112,6 +122,20 @@ public class SafeAreaFitter : MonoBehaviour
             {
                 staleTargets.Add(rect);
                 continue;
+            }
+
+            Vector2 previousOffset = appliedOffsets.TryGetValue(rect, out Vector2 recordedOffset)
+                ? recordedOffset
+                : Vector2.zero;
+            Vector2 basePosition = entry.Value;
+            Vector2 expectedPosition = basePosition + previousOffset;
+
+            // Runtime stylers write canonical anchored positions. Preserve those writes
+            // as the new baseline, but never promote our own previous safe-area offset.
+            if ((rect.anchoredPosition - expectedPosition).sqrMagnitude > 0.01f)
+            {
+                basePosition = rect.anchoredPosition;
+                updatedBases.Add(new KeyValuePair<RectTransform, Vector2>(rect, basePosition));
             }
 
             Vector2 anchor = (rect.anchorMin + rect.anchorMax) * 0.5f;
@@ -123,11 +147,18 @@ public class SafeAreaFitter : MonoBehaviour
             if (anchor.y <= 0.25f) offset.y += bottom;
             else if (anchor.y >= 0.75f) offset.y -= top;
 
-            rect.anchoredPosition = entry.Value + offset;
+            rect.anchoredPosition = basePosition + offset;
+            appliedOffsets[rect] = offset;
         }
 
+        foreach (KeyValuePair<RectTransform, Vector2> update in updatedBases)
+            basePositions[update.Key] = update.Value;
+
         foreach (RectTransform stale in staleTargets)
+        {
             basePositions.Remove(stale);
+            appliedOffsets.Remove(stale);
+        }
 
         lastSafeArea = safe;
         lastScreenSize = new Vector2Int(Screen.width, Screen.height);

@@ -76,6 +76,24 @@ public sealed class MenuBrandEmblem : MonoBehaviour
         heroRadius = heroBodyRadius;
         phase = Random.Range(0f, Mathf.PI * 2f);
 
+        Transform existingEmblem = stage.Find("BrandEmblem");
+        if (existingEmblem != null)
+        {
+            emblem = existingEmblem.GetComponent<SpriteRenderer>();
+            halo = stage.Find("BrandEmblemHalo")?.GetComponent<SpriteRenderer>();
+            spark = stage.Find("BrandEmblemSpark")?.GetComponent<SpriteRenderer>();
+            if (emblem == null || halo == null || spark == null) return false;
+            haloAlpha = halo.color.a;
+            CaptureSerializedFraming();
+            Reframe();
+            return true;
+        }
+        if (Application.isPlaying)
+        {
+            Debug.LogError("MenuBrandEmblem: serialized emblem renderers are missing. Run the Main Menu authoring command.", this);
+            return false;
+        }
+
         // A soft wash sitting behind the lettering: the emblem's only tie to the
         // current world's colour. Heavily desaturated and very faint — at full
         // accent it stops being a halo and becomes a coloured smudge behind the
@@ -105,6 +123,22 @@ public sealed class MenuBrandEmblem : MonoBehaviour
             ? new Color(accent.r / peak, accent.g / peak, accent.b / peak, 1f)
             : Color.white;
         return Color.Lerp(Color.white, normalised, 0.06f);
+    }
+
+    // The prefab already contains an approved, visible framing. Treat that as the last
+    // known-good layout before asking the runtime Canvas for measurements: on its first
+    // layout frame the top controls can temporarily report no usable band. Without this
+    // capture, Reframe's invalid-measurement guard had nothing to preserve and replaced
+    // the logo with a near-zero fallback scale for the rest of the menu session.
+    void CaptureSerializedFraming()
+    {
+        if (emblem == null || emblem.sprite == null) return;
+
+        basePosition = emblem.transform.position;
+        baseScale = Mathf.Abs(emblem.transform.localScale.x);
+        width = emblem.sprite.bounds.size.x * baseScale;
+        height = emblem.sprite.bounds.size.y * baseScale;
+        framed = width > 0.001f && height > 0.001f;
     }
 
     SpriteRenderer CreateRenderer(Transform parent, string name, Sprite sprite, int sortingOrder)

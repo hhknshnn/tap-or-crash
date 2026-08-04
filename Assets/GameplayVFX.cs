@@ -14,6 +14,46 @@ public sealed class GameplayVFX : MonoBehaviour
     private const int BurstPoolPrewarm = 5;
     private const int BurstPoolMaximum = 12;
     private int lastCrashFrame = -1;
+    private GameObject milestoneRoot;
+    private RectTransform milestoneRect;
+    private CanvasGroup milestoneGroup;
+    private Image milestoneImage;
+    private Outline milestoneOutline;
+    private TextMeshProUGUI milestoneTitle;
+    private TextMeshProUGUI milestoneSubtitle;
+    private Coroutine milestoneRoutine;
+    private readonly Queue<MilestoneNotice> milestoneQueue = new Queue<MilestoneNotice>();
+    private readonly HashSet<MilestoneNoticeId> shownMilestoneNotices =
+        new HashSet<MilestoneNoticeId>();
+    private bool noticeHoldingGameplay;
+    private float timeScaleBeforeNotice = 1f;
+
+    public enum MilestoneNoticeId
+    {
+        AssistanceEnded,
+        AsteroidsOnline,
+        MovingOrbits,
+    }
+
+    readonly struct MilestoneNotice
+    {
+        public readonly MilestoneNoticeId Id;
+        public readonly string Title;
+        public readonly string Subtitle;
+        public readonly Color Accent;
+
+        public MilestoneNotice(
+            MilestoneNoticeId id,
+            string title,
+            string subtitle,
+            Color accent)
+        {
+            Id = id;
+            Title = title;
+            Subtitle = subtitle;
+            Accent = accent;
+        }
+    }
 
     enum BurstGeometry
     {
@@ -35,7 +75,11 @@ public sealed class GameplayVFX : MonoBehaviour
     {
         if (instance != null) return instance;
         GameplayVFX existing = FindAnyObjectByType<GameplayVFX>();
-        if (existing != null) return existing;
+        if (existing != null)
+        {
+            instance = existing;
+            return existing;
+        }
 
         GameObject go = new GameObject("GameplayVFX");
         return go.AddComponent<GameplayVFX>();
@@ -47,10 +91,21 @@ public sealed class GameplayVFX : MonoBehaviour
         else { Destroy(gameObject); return; }
     }
 
+    void OnEnable()
+    {
+        if (instance == null) instance = this;
+    }
+
+    void OnDestroy()
+    {
+        CancelMilestoneNotices();
+        if (instance == this) instance = null;
+    }
+
     void Start()
     {
-        canvas = FindAnyObjectByType<Canvas>();
         PrewarmBurstPool();
+        EnsureMilestoneBanner();
     }
 
     public void PlayLaunch(Vector3 position, Vector3 direction)
@@ -127,12 +182,52 @@ public sealed class GameplayVFX : MonoBehaviour
         return camera.orthographicSize * 2f;
     }
 
-    public void PlayMilestone(int score)
+    /// <summary>
+    /// Clears every milestone notice the previous run left behind: the banner on
+    /// screen, the queue waiting behind it and the record of which notices were
+    /// already shown. Called only by <see cref="RunSession.Begin"/>, so a notice is
+    /// eligible again in every new run without any of them being suppressed twice
+    /// inside one run.
+    /// </summary>
+    public void ResetForNewRun()
     {
-        if (score == 10)
-            StartCoroutine(MilestoneBanner("ASTEROIDS ONLINE", "WATCH THE WARNING ARROW", new Color(1f, 0.40f, 0.12f)));
-        else if (score == 15)
-            StartCoroutine(MilestoneBanner("MOVING ORBITS", "TRACK THE PLANET BEFORE LAUNCH", new Color(0.30f, 0.84f, 1f)));
+        CancelMilestoneNotices();
+        shownMilestoneNotices.Clear();
+    }
+
+    public void EvaluateMilestoneNotices(int score)
+    {
+        QueueIfReached(score, OrbitAssistanceProgression.AssistanceEndingScore,
+            new MilestoneNotice(
+                MilestoneNoticeId.AssistanceEnded,
+                "NOW YOU ARE ALONE",
+                "NO MORE GUIDES — TRUST YOUR TIMING",
+                new Color(1f, 0.82f, 0.15f)));
+        QueueIfReached(score, AsteroidDifficulty.ActivationPlanet - 1,
+            new MilestoneNotice(
+                MilestoneNoticeId.AsteroidsOnline,
+                "ASTEROIDS ONLINE",
+                "WATCH THE WARNING ARROW",
+                new Color(1f, 0.40f, 0.12f)));
+        QueueIfReached(score, MovingOrbitProgression.ActivationScore,
+            new MilestoneNotice(
+                MilestoneNoticeId.MovingOrbits,
+                "MOVING ORBITS",
+                "TRACK THE PLANET BEFORE LAUNCH",
+                new Color(0.30f, 0.84f, 1f)));
+    }
+
+    void QueueIfReached(int score, int threshold, MilestoneNotice notice)
+    {
+        if (score < threshold || shownMilestoneNotices.Contains(notice.Id)) return;
+
+        EnsureMilestoneBanner();
+        if (milestoneRoot == null) return;
+
+        milestoneQueue.Enqueue(notice);
+        shownMilestoneNotices.Add(notice.Id);
+        if (milestoneRoutine == null)
+            milestoneRoutine = StartCoroutine(ProcessMilestoneQueue(RunSession.Id));
     }
 
     void CreateBurst(
@@ -372,69 +467,182 @@ public sealed class GameplayVFX : MonoBehaviour
             burstPool.Enqueue(particles);
     }
 
-    IEnumerator MilestoneBanner(string title, string subtitle, Color accent)
+    // The run that queued these notices owns them. Every wait below can outlive its
+    // own run — a restart is one tap away at any point — so the run identifier is
+    // captured on entry and rechecked around each wait. A queue drained on behalf
+    // of a finished run would show its notices over the new one.
+    IEnumerator ProcessMilestoneQueue(int runId)
     {
-        if (canvas == null) canvas = FindAnyObjectByType<Canvas>();
-        if (canvas == null) yield break;
+        EnsureMilestoneBanner();
+        if (milestoneRoot == null) { milestoneRoutine = null; yield break; }
 
-        GameObject go = new GameObject("MilestoneBanner");
-        go.transform.SetParent(canvas.transform, false);
-        RectTransform rect = go.AddComponent<RectTransform>();
-        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
-        rect.pivot = new Vector2(0.5f, 1f);
-        rect.anchoredPosition = new Vector2(0f, 80f);
-        rect.sizeDelta = new Vector2(600f, 112f);
-
-        Image image = go.AddComponent<Image>();
-        UIStyleKit.ApplyPanel(image, new Color(0.035f, 0.065f, 0.15f, 0.96f));
-        image.raycastTarget = false;
-        Outline outline = go.AddComponent<Outline>();
-        outline.effectColor = new Color(accent.r, accent.g, accent.b, 0.65f);
-        outline.effectDistance = new Vector2(2f, -2f);
-
-        TextMeshProUGUI titleText = UIStyleKit.MakeLabel(go.transform, title, 25f, accent,
-            new Vector2(0f, 20f), new Vector2(560f, 40f), FontStyles.Bold);
-        titleText.characterSpacing = 3f;
-        TextMeshProUGUI subtitleText = UIStyleKit.MakeLabel(go.transform, subtitle, 14f, UIStyleKit.TextSub,
-            new Vector2(0f, -24f), new Vector2(560f, 30f), FontStyles.Bold);
-        subtitleText.characterSpacing = 2f;
-
-        CanvasGroup group = go.AddComponent<CanvasGroup>();
-        group.alpha = 0f;
-        float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
-        float safeTop = Screen.height > 0
-            ? (Screen.height - Screen.safeArea.yMax) / Screen.height * canvasHeight
-            : 0f;
-        Vector2 hidden = new Vector2(0f, 80f - safeTop);
-        Vector2 shown = new Vector2(0f, -150f - safeTop);
-        float elapsed = 0f;
-        while (elapsed < 0.28f)
+        // ScoreChanged starts a same-boundary world transition before notices are
+        // evaluated. Let it claim its gate, then drain every notice in order.
+        yield return null;
+        while (milestoneQueue.Count > 0 && RunSession.IsCurrent(runId))
         {
-            elapsed += Time.unscaledDeltaTime;
-            float p = Mathf.SmoothStep(0f, 1f, elapsed / 0.28f);
-            rect.anchoredPosition = Vector2.Lerp(hidden, shown, p);
-            group.alpha = p;
-            yield return null;
+            while (RunSession.IsCurrent(runId)
+                && (WorldTransitionManager.IsPendingOrPlaying
+                    || PresentationGate.IsAnyFullScreenPresentationActive))
+                yield return null;
+            yield return new WaitForSecondsRealtime(0.12f);
+            while (RunSession.IsCurrent(runId)
+                && (WorldTransitionManager.IsPendingOrPlaying
+                    || PresentationGate.IsAnyFullScreenPresentationActive))
+                yield return null;
+
+            if (!RunSession.IsCurrent(runId)) break;
+
+            MilestoneNotice notice = milestoneQueue.Dequeue();
+            yield return ShowMilestoneBanner(notice);
         }
 
-        yield return new WaitForSecondsRealtime(1.35f);
+        milestoneRoutine = null;
+    }
 
-        elapsed = 0f;
-        while (elapsed < 0.24f)
+    IEnumerator ShowMilestoneBanner(MilestoneNotice notice)
+    {
+        timeScaleBeforeNotice = Time.timeScale;
+        noticeHoldingGameplay = true;
+        PresentationGate.Acquire(PresentationGate.Kind.GameplayNotice);
+        Time.timeScale = 0f;
+        try
         {
-            elapsed += Time.unscaledDeltaTime;
-            float p = Mathf.Clamp01(elapsed / 0.24f);
-            group.alpha = 1f - p;
-            rect.anchoredPosition = Vector2.Lerp(shown, new Vector2(0f, -205f - safeTop), p);
-            yield return null;
+            milestoneTitle.text = notice.Title;
+            milestoneTitle.color = notice.Accent;
+            milestoneSubtitle.text = notice.Subtitle;
+            milestoneOutline.effectColor = new Color(
+                notice.Accent.r, notice.Accent.g, notice.Accent.b, 0.65f);
+            milestoneRoot.SetActive(true);
+            milestoneGroup.alpha = 0f;
+            GameplayPresentationLayout.PlaceTopCentre(milestoneRect,
+                canvas.GetComponent<RectTransform>(), GameplayPresentationLayout.Lane.MechanicNotice);
+            Vector2 shown = milestoneRect.anchoredPosition;
+            Vector2 hidden = shown + Vector2.up * 28f;
+
+            float elapsed = 0f;
+            while (elapsed < 0.28f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / 0.28f));
+                milestoneRect.anchoredPosition = Vector2.Lerp(hidden, shown, p);
+                milestoneGroup.alpha = p;
+                yield return null;
+            }
+
+            yield return new WaitForSecondsRealtime(1.35f);
+
+            elapsed = 0f;
+            while (elapsed < 0.24f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float p = Mathf.Clamp01(elapsed / 0.24f);
+                milestoneGroup.alpha = 1f - p;
+                milestoneRect.anchoredPosition = Vector2.Lerp(shown, shown + Vector2.up * 28f, p);
+                yield return null;
+            }
         }
-        Destroy(go);
+        finally
+        {
+            HideMilestoneBanner();
+            ReleaseNoticeGameplayHold();
+        }
+    }
+
+    public void CancelMilestoneNotices()
+    {
+        if (milestoneRoutine != null)
+        {
+            StopCoroutine(milestoneRoutine);
+            milestoneRoutine = null;
+        }
+        milestoneQueue.Clear();
+        HideMilestoneBanner();
+        ReleaseNoticeGameplayHold();
+    }
+
+    void HideMilestoneBanner()
+    {
+        if (milestoneGroup != null) milestoneGroup.alpha = 0f;
+        if (milestoneRoot != null) milestoneRoot.SetActive(false);
+    }
+
+    void ReleaseNoticeGameplayHold()
+    {
+        if (!noticeHoldingGameplay) return;
+        noticeHoldingGameplay = false;
+        PresentationGate.Release(PresentationGate.Kind.GameplayNotice);
+        if (Mathf.Approximately(Time.timeScale, 0f))
+            Time.timeScale = timeScaleBeforeNotice;
+    }
+
+    void EnsureMilestoneBanner()
+    {
+        if (milestoneRoot != null) return;
+        if (canvas == null)
+        {
+            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < canvases.Length; i++)
+                if (canvases[i] != null && canvases[i].isRootCanvas) { canvas = canvases[i]; break; }
+            if (canvas == null && canvases.Length > 0) canvas = canvases[0];
+        }
+        if (canvas == null) return;
+        Transform gameUi = canvas.transform.Find("GameUI");
+        Transform parent = gameUi != null ? gameUi : canvas.transform;
+
+        Transform existing = parent.Find("MechanicNoticeLane");
+        milestoneRoot = existing != null
+            ? existing.gameObject
+            : new GameObject("MechanicNoticeLane");
+        milestoneRoot.transform.SetParent(parent, false);
+        milestoneRect = milestoneRoot.GetComponent<RectTransform>();
+        if (milestoneRect == null) milestoneRect = milestoneRoot.AddComponent<RectTransform>();
+        milestoneRect.sizeDelta = new Vector2(600f, GameplayPresentationLayout.MechanicNoticeHeight);
+
+        milestoneImage = milestoneRoot.GetComponent<Image>();
+        if (milestoneImage == null) milestoneImage = milestoneRoot.AddComponent<Image>();
+        UIStyleKit.ApplyPanel(milestoneImage, new Color(0.035f, 0.065f, 0.15f, 0.96f));
+        milestoneImage.raycastTarget = false;
+        milestoneOutline = milestoneRoot.GetComponent<Outline>();
+        if (milestoneOutline == null) milestoneOutline = milestoneRoot.AddComponent<Outline>();
+        milestoneOutline.effectDistance = new Vector2(2f, -2f);
+
+        Transform titleTransform = milestoneRoot.transform.Find("Title");
+        Transform subtitleTransform = milestoneRoot.transform.Find("Subtitle");
+        TextMeshProUGUI[] labels = milestoneRoot.GetComponentsInChildren<TextMeshProUGUI>(true);
+        milestoneTitle = titleTransform != null ? titleTransform.GetComponent<TextMeshProUGUI>() : null;
+        milestoneSubtitle = subtitleTransform != null ? subtitleTransform.GetComponent<TextMeshProUGUI>() : null;
+        if (milestoneTitle == null && labels.Length > 0) milestoneTitle = labels[0];
+        if (milestoneSubtitle == null && labels.Length > 1) milestoneSubtitle = labels[1];
+        if (milestoneTitle == null)
+            milestoneTitle = UIStyleKit.MakeLabel(milestoneRoot.transform, string.Empty, 25f, Color.white,
+                new Vector2(0f, 20f), new Vector2(560f, 40f), FontStyles.Bold);
+        if (milestoneSubtitle == null)
+            milestoneSubtitle = UIStyleKit.MakeLabel(milestoneRoot.transform, string.Empty, 14f,
+                UIStyleKit.TextSub, new Vector2(0f, -24f), new Vector2(560f, 30f), FontStyles.Bold);
+        milestoneTitle.gameObject.name = "Title";
+        milestoneTitle.characterSpacing = 3f;
+        milestoneSubtitle.gameObject.name = "Subtitle";
+        milestoneSubtitle.characterSpacing = 2f;
+
+        milestoneGroup = milestoneRoot.GetComponent<CanvasGroup>();
+        if (milestoneGroup == null) milestoneGroup = milestoneRoot.AddComponent<CanvasGroup>();
+        milestoneGroup.interactable = false;
+        milestoneGroup.blocksRaycasts = false;
+        milestoneGroup.alpha = 0f;
+        milestoneRoot.SetActive(false);
     }
 
 }
 
 public static class VfxSpriteFactory
 {
+    // The soft radial dot behind most of the game's glows. Named so it can be baked to an
+    // asset and referenced by the serialized Main Menu.
+    public const string SoftSpriteName = "Runtime Soft Sprite";
+    public const string SoftParticleMaterialName = "Runtime Soft Particle";
+    public const string GeometricParticleMaterialName = "Runtime Geometric Particle";
+
     private static Texture2D softTexture;
     private static Sprite softSprite;
     private static Texture2D sharpFlameTexture;
@@ -450,10 +658,17 @@ public static class VfxSpriteFactory
     {
         get
         {
+            if (softSprite != null) return softSprite;
+
+            // Baked first, so the menu layers drawn with it can be serialized. Identical
+            // pixels either way — see MenuBakedArt.
+            softSprite = MenuBakedArt.Load(SoftSpriteName);
+            if (softSprite != null) return softSprite;
+
             EnsureTexture();
-            if (softSprite == null)
-                softSprite = Sprite.Create(softTexture, new Rect(0f, 0f, softTexture.width, softTexture.height),
-                    new Vector2(0.5f, 0.5f), softTexture.width, 0, SpriteMeshType.FullRect);
+            softSprite = Sprite.Create(softTexture, new Rect(0f, 0f, softTexture.width, softTexture.height),
+                new Vector2(0.5f, 0.5f), softTexture.width, 0, SpriteMeshType.FullRect);
+            softSprite.name = SoftSpriteName;
             return softSprite;
         }
     }
@@ -462,8 +677,14 @@ public static class VfxSpriteFactory
     {
         get
         {
-            EnsureTexture();
             if (particleMaterial != null) return particleMaterial;
+
+            // Baked first — see MenuBakedArt. The baked copy carries the same shader and
+            // blend state the block below establishes.
+            particleMaterial = MenuBakedArt.LoadMaterial(SoftParticleMaterialName);
+            if (particleMaterial != null) return particleMaterial;
+
+            EnsureTexture();
 
             // Sprites/Default, not URP's particle shader.
             //
@@ -482,7 +703,7 @@ public static class VfxSpriteFactory
             Shader shader = Shader.Find("Sprites/Default");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
             if (shader == null) shader = Shader.Find("Particles/Standard Unlit");
-            particleMaterial = new Material(shader) { name = "Runtime Soft Particle" };
+            particleMaterial = new Material(shader) { name = SoftParticleMaterialName };
             particleMaterial.mainTexture = softTexture;
             if (particleMaterial.HasProperty("_BaseMap"))
                 particleMaterial.SetTexture("_BaseMap", softTexture);
@@ -544,8 +765,14 @@ public static class VfxSpriteFactory
         get
         {
             if (geometricParticleMaterial != null) return geometricParticleMaterial;
+
+            // Baked first, so particle renderers in the serialized menu point at a real
+            // material asset instead of one that only exists in Play Mode.
+            geometricParticleMaterial = MenuBakedArt.LoadMaterial(GeometricParticleMaterialName);
+            if (geometricParticleMaterial != null) return geometricParticleMaterial;
+
             Shader shader = Shader.Find("Sprites/Default");
-            geometricParticleMaterial = new Material(shader) { name = "Runtime Geometric Particle" };
+            geometricParticleMaterial = new Material(shader) { name = GeometricParticleMaterialName };
             geometricParticleMaterial.mainTexture = Texture2D.whiteTexture;
             return geometricParticleMaterial;
         }

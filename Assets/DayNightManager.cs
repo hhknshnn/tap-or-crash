@@ -26,8 +26,10 @@ public class DayNightManager : MonoBehaviour
     public Color nightBackgroundColor = new Color(1f, 1f, 1f, 1f);
 
     [Header("Gündüz Renkleri")]
-    public Color dayCameraColor       = new Color(0.45f, 0.65f, 0.85f, 1f);
-    public Color dayBackgroundColor   = new Color(0.7f, 0.85f, 1f, 1f);
+    // Deep blue-teal void base — matches SpacePalette.DayVoidBase so the clear
+    // colour never reads as flat sky blue when layered space is on screen.
+    public Color dayCameraColor       = new Color(0.06f, 0.14f, 0.24f, 1f);
+    public Color dayBackgroundColor   = new Color(0.14f, 0.28f, 0.38f, 1f);
 
     [Header("Geçiş Süresi")]
     [SerializeField] private float transitionDuration = 0.6f;

@@ -296,6 +296,10 @@ public sealed class LevelProgressUI : MonoBehaviour
         rootRect.pivot = new Vector2(0.5f, 1f);
         rootRect.anchoredPosition = new Vector2(0f, -165f);
         rootRect.sizeDelta = new Vector2(panelWidth, panelHeight);
+        Canvas parentCanvas = GetComponentInParent<Canvas>();
+        GameplayPresentationLayout.PlaceTopCentre(rootRect,
+            parentCanvas != null ? parentCanvas.GetComponent<RectTransform>() : null,
+            GameplayPresentationLayout.Lane.WorldProgress);
 
         // Sits over live gameplay, so it takes the quieter glass alpha and no
         // shadow — the same treatment as the score plate beside it.

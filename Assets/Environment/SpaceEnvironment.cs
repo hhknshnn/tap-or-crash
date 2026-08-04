@@ -27,11 +27,14 @@ using UnityEngine.Rendering.Universal;
 // Nothing in this file is lit, shadowed, post-processed or collidable. The one
 // concession to lighting is a 16% tint on the existing Global Light 2D, which is
 // what makes the hero planet and the rocket pick up the world's colour.
+// Runs after CameraFollow (0) so cover layers read the final orthographic size and
+// aspect for this frame before anything is drawn.
+[DefaultExecutionOrder(250)]
 [DisallowMultipleComponent]
 public sealed class SpaceEnvironment : MonoBehaviour
 {
     // Which palette entry a renderer takes its colour from.
-    enum Slot { Void, VoidGlow, NebulaNear, NebulaFar, Galaxy, Star, Dust, Rock, Atmosphere }
+    enum Slot { Void, VoidGlow, NebulaNear, NebulaFar, Galaxy, Star, Dust, Rock, Atmosphere, Vignette }
 
     sealed class Layer
     {
@@ -68,6 +71,11 @@ public sealed class SpaceEnvironment : MonoBehaviour
     const float BounceStrength = 0.16f;
     const float ThemeFadeDuration = 1.8f;
     const float ThemePollInterval = 0.4f;
+    const float VoidCoverScale = 2.4f;
+    const float VoidGlowHeightScale = 1.5f;
+    const float AtmosphereWideCoverScale = 2.6f;
+    const float AtmosphereCoreCoverScale = 1.3f;
+    const float VignetteCoverScale = 2.2f;
 
     static SpaceEnvironment instance;
 
@@ -83,6 +91,14 @@ public sealed class SpaceEnvironment : MonoBehaviour
     float halfWidth;
     float halfHeight;
     float tileHeight;
+    float fittedHalfWidth = float.NaN;
+    float fittedHalfHeight = float.NaN;
+
+    SpriteRenderer deepVoid;
+    SpriteRenderer voidGlow;
+    SpriteRenderer atmosphereWide;
+    SpriteRenderer atmosphereCore;
+    SpriteRenderer coverVignette;
 
     string themeName;
     SpacePalette from;
@@ -111,6 +127,7 @@ public sealed class SpaceEnvironment : MonoBehaviour
         if (FindAnyObjectByType<PlanetSpawner>() == null) return;
 
         RetireLegacyParallax();
+        RetireLegacyCameraBackground(camera);
 
         var go = new GameObject("SpaceEnvironment");
         instance = go.AddComponent<SpaceEnvironment>();
@@ -119,6 +136,24 @@ public sealed class SpaceEnvironment : MonoBehaviour
     // The old procedural starfield is left in the scene but switched off, so the
     // change is one component toggle away from being reverted. Disabling it
     // before its Start runs is what stops it generating its stars at all.
+    static void RetireLegacyCameraBackground(Camera camera)
+    {
+        if (camera == null) return;
+
+        // The scene still carries a fixed-scale "Background" child on the main
+        // camera from before SpaceEnvironment existed. It sits at sorting order
+        // -10 — in front of DeepVoid/VoidGlow — and is never refit during the
+        // menu handover, which leaves a visible rectangular gutter on tall Android
+        // aspects while the two skies crossfade. SpaceEnvironment owns the void;
+        // Day/Night still drives camera clear colour and the global light.
+        foreach (SpriteRenderer renderer in camera.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (renderer == null || renderer.gameObject.name.Trim() != "Background") continue;
+            renderer.enabled = false;
+            return;
+        }
+    }
+
     static void RetireLegacyParallax()
     {
         ParallaxBackground[] legacy = FindObjectsByType<ParallaxBackground>(FindObjectsInactive.Include);
@@ -167,10 +202,13 @@ public sealed class SpaceEnvironment : MonoBehaviour
         tints = buffer.ToArray();
 
         transform.position = new Vector3(0f, view.transform.position.y, 0f);
+        FitViewportCover();
         SyncLayers();
         RecycleItems();
         ApplyPalette();
     }
+
+    void Start() => FitViewportCover();
 
     Layer CreateLayer(string name, float follow)
     {
@@ -196,15 +234,15 @@ public sealed class SpaceEnvironment : MonoBehaviour
     {
         Layer layer = CreateLayer("Layer0_Void", 1f);
 
-        SpriteRenderer flat = SpaceArt.CreateSprite(layer.root, "DeepVoid", SpaceArt.Flat,
+        deepVoid = SpaceArt.CreateSprite(layer.root, "DeepVoid", SpaceArt.Flat,
             -200, Vector3.zero, 1f, Color.white);
-        SpaceArt.SetWorldSize(flat, halfWidth * 2.4f, halfHeight * 2.4f);
-        Add(buffer, flat, Slot.Void, 1f);
+        SpaceArt.SetWorldSize(deepVoid, halfWidth * VoidCoverScale, halfHeight * VoidCoverScale);
+        Add(buffer, deepVoid, Slot.Void, 1f);
 
-        SpriteRenderer gradient = SpaceArt.CreateSprite(layer.root, "VoidGlow", SpaceArt.VoidGradient,
+        voidGlow = SpaceArt.CreateSprite(layer.root, "VoidGlow", SpaceArt.VoidGradient,
             -199, new Vector3(0f, -halfHeight * 0.42f, 0f), 1f, Color.white);
-        SpaceArt.SetWorldSize(gradient, halfWidth * 2.4f, halfHeight * 1.5f);
-        Add(buffer, gradient, Slot.VoidGlow, 0.3f);
+        SpaceArt.SetWorldSize(voidGlow, halfWidth * VoidCoverScale, halfHeight * VoidGlowHeightScale);
+        Add(buffer, voidGlow, Slot.VoidGlow, 0.3f);
     }
 
     // Layer 1 — the deep field. The clouds sit on one diagonal band rather than
@@ -395,19 +433,59 @@ public sealed class SpaceEnvironment : MonoBehaviour
         // Both are deliberately faint. An atmosphere you can see as a shape is a
         // green (or blue, or orange) fog sitting over the whole frame; an
         // atmosphere at 2-3% is the world's colour being *felt* in the void.
-        SpriteRenderer wide = SpaceArt.CreateSprite(layer.root, "AtmosphereWide", SpaceArt.Dot, -150,
-            new Vector3(0f, -halfHeight * 0.15f, 0f), halfWidth * 2.6f, Color.white);
-        Add(buffer, wide, Slot.Atmosphere, 0.022f);
+        atmosphereWide = SpaceArt.CreateSprite(layer.root, "AtmosphereWide", SpaceArt.Dot, -150,
+            new Vector3(0f, -halfHeight * 0.15f, 0f), halfWidth * AtmosphereWideCoverScale, Color.white);
+        Add(buffer, atmosphereWide, Slot.Atmosphere, 0.022f);
 
-        SpriteRenderer core = SpaceArt.CreateSprite(layer.root, "AtmosphereCore", SpaceArt.Dot, -149,
-            Vector3.zero, halfWidth * 1.3f, Color.white);
-        Add(buffer, core, Slot.Atmosphere, 0.03f);
+        atmosphereCore = SpaceArt.CreateSprite(layer.root, "AtmosphereCore", SpaceArt.Dot, -149,
+            Vector3.zero, halfWidth * AtmosphereCoreCoverScale, Color.white);
+        Add(buffer, atmosphereCore, Slot.Atmosphere, 0.03f);
 
-        SpriteRenderer vignette = SpaceArt.CreateSprite(layer.root, "Vignette", SpaceArt.Vignette, -146,
+        coverVignette = SpaceArt.CreateSprite(layer.root, "Vignette", SpaceArt.Vignette, -146,
             Vector3.zero, 1f, new Color(0f, 0f, 0f, 0.6f));
-        SpaceArt.SetWorldSize(vignette, halfWidth * 2.2f, halfHeight * 2.2f);
-        // Black, so it takes no palette slot; only the day fade touches it.
-        Add(buffer, vignette, Slot.Void, 0.6f, 0f);
+        SpaceArt.SetWorldSize(coverVignette, halfWidth * VignetteCoverScale, halfHeight * VignetteCoverScale);
+        Add(buffer, coverVignette, Slot.Vignette, 0.6f);
+    }
+
+    // Camera-pinned cover layers must always exceed the live viewport. Orthographic
+    // size and aspect are not stable on the first scene load — CameraFollow adjusts
+    // them after Awake — so sizing once leaves a visible inner rectangle until a
+    // later refit happens to match.
+    void FitViewportCover()
+    {
+        if (view == null) return;
+
+        float hw = view.orthographicSize * view.aspect;
+        float hh = view.orthographicSize;
+        if (Mathf.Approximately(hw, fittedHalfWidth) && Mathf.Approximately(hh, fittedHalfHeight))
+            return;
+
+        fittedHalfWidth = hw;
+        fittedHalfHeight = hh;
+        halfWidth = hw;
+        halfHeight = hh;
+        tileHeight = hh * 3.4f;
+
+        if (deepVoid != null)
+            SpaceArt.SetWorldSize(deepVoid, hw * VoidCoverScale, hh * VoidCoverScale);
+        if (voidGlow != null)
+        {
+            SpaceArt.SetWorldSize(voidGlow, hw * VoidCoverScale, hh * VoidGlowHeightScale);
+            voidGlow.transform.localPosition = new Vector3(0f, -hh * 0.42f, 0f);
+        }
+        if (atmosphereWide != null)
+        {
+            float wideSize = hw * AtmosphereWideCoverScale;
+            SpaceArt.SetWorldSize(atmosphereWide, wideSize, wideSize);
+            atmosphereWide.transform.localPosition = new Vector3(0f, -hh * 0.15f, 0f);
+        }
+        if (atmosphereCore != null)
+        {
+            float coreSize = hw * AtmosphereCoreCoverScale;
+            SpaceArt.SetWorldSize(atmosphereCore, coreSize, coreSize);
+        }
+        if (coverVignette != null)
+            SpaceArt.SetWorldSize(coverVignette, hw * VignetteCoverScale, hh * VignetteCoverScale);
     }
 
     // Only the scene's global light is tinted. A spot or freeform light belongs to
@@ -439,9 +517,28 @@ public sealed class SpaceEnvironment : MonoBehaviour
 
     float appliedPresentationAlpha = 1f;
 
+    // LaunchSequence changes orthographic size during Update, but rendering happens
+    // before LateUpdate. Refit cover layers synchronously whenever the viewport moves
+    // so DeepVoid never draws one frame at a stale size during the menu handover.
+    public static void SyncCoverToViewport()
+    {
+        if (instance == null) return;
+
+        instance.FitViewportCover();
+
+        if (!Mathf.Approximately(instance.appliedPresentationAlpha, PresentationAlpha))
+        {
+            instance.appliedPresentationAlpha = PresentationAlpha;
+            instance.paletteDirty = true;
+            instance.ApplyPalette();
+        }
+    }
+
     void LateUpdate()
     {
         if (view == null) return;
+
+        FitViewportCover();
 
         // While the main menu showcase is up it parks the game camera's culling
         // mask at zero and stages its own backdrop on another layer. None of this
@@ -610,6 +707,8 @@ public sealed class SpaceEnvironment : MonoBehaviour
         if (tints == null) return;
 
         SpacePalette palette = fade >= 1f ? to : SpacePalette.Lerp(from, to, Mathf.SmoothStep(0f, 1f, fade));
+        if (dayFactor > 0f)
+            palette = palette.BlendDay(dayFactor);
 
         for (int i = 0; i < tints.Length; i++)
         {
@@ -648,24 +747,31 @@ public sealed class SpaceEnvironment : MonoBehaviour
             case Slot.Star: return palette.star;
             case Slot.Dust: return palette.dust;
             case Slot.Rock: return palette.rock;
+            case Slot.Vignette: return Color.black;
             default: return palette.atmosphere;
         }
     }
 
-    // Day mode turns the sky pale: the void has to get out of the way of the
-    // camera's own clear colour, and everything else steps back rather than
-    // disappearing, so the layers are still there when night returns.
+    // Day mode brightens through palette.BlendDay; layers stay present but softer.
+    // The void no longer vanishes — that was what left the camera clear colour as
+    // one flat sky-blue sheet with nothing behind it.
     float DayFade(Slot slot)
     {
         switch (slot)
         {
             case Slot.Void:
-            case Slot.VoidGlow: return 1f - dayFactor;
+            case Slot.VoidGlow:
+                return 1f;
             case Slot.NebulaNear:
             case Slot.NebulaFar:
-            case Slot.Galaxy: return 1f - 0.75f * dayFactor;
-            case Slot.Atmosphere: return 1f - 0.6f * dayFactor;
-            default: return 1f - 0.55f * dayFactor;
+            case Slot.Galaxy:
+                return 1f - 0.36f * dayFactor;
+            case Slot.Atmosphere:
+                return 1f + 0.95f * dayFactor;
+            case Slot.Vignette:
+                return 1f + 0.42f * dayFactor;
+            default:
+                return 1f - 0.40f * dayFactor;
         }
     }
 }

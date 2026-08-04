@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlanetSpawner : MonoBehaviour
@@ -23,11 +24,10 @@ public class PlanetSpawner : MonoBehaviour
     public float spawnDistance = 4f;
 
     // Hareketli gezegen şansı (0–1 arası). Skor 15'i geçince devreye girer.
-    [SerializeField] private float movingPlanetChance = 0.25f;
-
     private int   lastPlanetIndex = -1;
     private int[] lastLevelIndex;
     private Camera mainCamera;
+    private int spawnedPlanetCount;
 
     public static string[] LevelNames { get; private set; } = new string[0];
 
@@ -53,6 +53,10 @@ public class PlanetSpawner : MonoBehaviour
     public void SpawnPlanet()
     {
         if (rocket == null) return;
+        if (mainCamera == null) mainCamera = Camera.main;
+        if (mainCamera == null) return;
+
+        int planetNumber = ++spawnedPlanetCount;
 
         int score = GameManager.instance != null ? GameManager.instance.GetScore() : 0;
         int levelIndex = LevelIndexForScore(score);
@@ -76,7 +80,14 @@ public class PlanetSpawner : MonoBehaviour
         // B2 FIX: kameranın merkezi baz alınarak sınırlanır
         x = Mathf.Clamp(x, camCenterX - safeWidth, camCenterX + safeWidth);
 
-        Vector3 pos = new Vector3(x, lastPos.y + spawnDistance, 0);
+        Rect safeViewport = GameplayPresentationLayout.SafeGameplayViewport();
+        float safeWorldHeight = mainCamera.orthographicSize * 2f * safeViewport.height;
+        // Two fully decorated Natural/Ice/Lava planets require about 3.2 world
+        // units of the vertical span. The remaining span is the maximum safe
+        // centre-to-centre step for this aspect.
+        float safeVerticalStep = Mathf.Max(4f, safeWorldHeight - 3.2f);
+        float verticalStep = Mathf.Min(spawnDistance, safeVerticalStep);
+        Vector3 pos = new Vector3(x, lastPos.y + verticalStep, 0);
 
         // ── Aynı gezegen üst üste gelmesin ─────────────────────────────────
         int newIndex;
@@ -129,17 +140,45 @@ public class PlanetSpawner : MonoBehaviour
 
         // ── Y4: Hareketli gezegen ───────────────────────────────────────────
         // Skor 15'i geçtikten sonra %25 ihtimalle yatay salınım ekle
-        if (score >= 15)
+        PlanetPresentation.Attach(p.transform);
+        MovingPlanet movingPlanet = null;
+        if (planetNumber >= MovingOrbitProgression.ActivationPlanet)
         {
-            float movingDifficulty = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(15f, 60f, score));
-            float chance = Mathf.Lerp(movingPlanetChance * 0.45f, movingPlanetChance, movingDifficulty);
-            if (Random.value < chance)
-            {
-                MovingPlanet movingPlanet = p.AddComponent<MovingPlanet>();
-                movingPlanet.Configure(movingDifficulty);
-            }
+            movingPlanet = p.GetComponent<MovingPlanet>();
+            if (movingPlanet == null) movingPlanet = p.AddComponent<MovingPlanet>();
+            movingPlanet.Configure(planetNumber, mainCamera);
         }
 
+        ApplySpawnSafety(p.transform, movingPlanet);
         rocket.AddPlanet(p.transform);
+        StartCoroutine(FinalizeSpawnSafety(p.transform, movingPlanet));
+    }
+
+    IEnumerator FinalizeSpawnSafety(Transform planet, MovingPlanet moving)
+    {
+        yield return null;
+        if (planet == null) yield break;
+        ApplySpawnSafety(planet, moving);
+    }
+
+    void ApplySpawnSafety(Transform planet, MovingPlanet moving)
+    {
+        if (planet == null || mainCamera == null) return;
+
+        float rendererHalfWidth = PlanetPresentation.GetBodyRadius(planet);
+        Renderer[] renderers = planet.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (!(renderer is SpriteRenderer) && !(renderer is MeshRenderer)) continue;
+            rendererHalfWidth = Mathf.Max(rendererHalfWidth, renderer.bounds.extents.x);
+        }
+
+        float orbitHalfWidth = rocket.GetOrbitEnvelopeRadius(planet)
+            + rocket.VisualWorldSize * 0.5f;
+        float movement = moving != null ? moving.HorizontalAmplitude : 0f;
+        float halfEnvelope = Mathf.Max(rendererHalfWidth, orbitHalfWidth) + movement;
+        GameplayPresentationLayout.ClampHorizontalEnvelope(planet, mainCamera, halfEnvelope);
+        if (moving != null) moving.SetSafeOrigin(planet.position);
     }
 }

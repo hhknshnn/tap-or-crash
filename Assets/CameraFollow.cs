@@ -26,6 +26,7 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private float landingZoom = 0.18f;
 
     private Camera controlledCamera;
+    private float authoredOrthographicSize;
     private float baseOrthographicSize;
     private float kickTimer;
     private float kickDuration;
@@ -37,7 +38,11 @@ public class CameraFollow : MonoBehaviour
     {
         controlledCamera = GetComponent<Camera>();
         if (controlledCamera != null)
-            baseOrthographicSize = controlledCamera.orthographicSize;
+        {
+            authoredOrthographicSize = controlledCamera.orthographicSize;
+            baseOrthographicSize = RequiredOrthographicSize();
+            controlledCamera.orthographicSize = baseOrthographicSize;
+        }
     }
 
 
@@ -56,7 +61,9 @@ public class CameraFollow : MonoBehaviour
                 * kickStrength * envelope * envelope;
         }
 
-        Vector3 targetPos = new Vector3(kickOffset.x, target.position.y + lookAheadY + kickOffset.y, -10f);
+        baseOrthographicSize = RequiredOrthographicSize();
+        float framedY = CalculateSafeCameraY(target.position.y + lookAheadY);
+        Vector3 targetPos = new Vector3(kickOffset.x, framedY + kickOffset.y, -10f);
         // SmoothDamp: Lerp'ten farklı olarak frame rate'ten bağımsız çalışır
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, 1f / smoothSpeed);
 
@@ -74,6 +81,56 @@ public class CameraFollow : MonoBehaviour
                 targetSize,
                 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
         }
+    }
+
+    float RequiredOrthographicSize()
+    {
+        if (controlledCamera == null || !controlledCamera.orthographic) return authoredOrthographicSize;
+        const float minimumGameplayWorldWidth = 8.8f;
+        float aspect = Mathf.Max(0.1f, controlledCamera.aspect);
+        return Mathf.Max(authoredOrthographicSize, minimumGameplayWorldWidth / (2f * aspect));
+    }
+
+    float CalculateSafeCameraY(float preferredY)
+    {
+        RocketController rocket = target != null ? target.GetComponent<RocketController>() : null;
+        if (rocket == null || controlledCamera == null) return preferredY;
+
+        Bounds content = default;
+        bool hasBounds = EncapsulateVisibleBounds(rocket.transform, ref content, false);
+        if (rocket.TryCaptureContinueState(out RocketController.ContinueState state)
+            && state.planet != null)
+            hasBounds |= EncapsulateVisibleBounds(state.planet, ref content, hasBounds);
+        Transform upcoming = rocket.GetUpcomingPlanetTransform();
+        if (upcoming != null)
+            hasBounds |= EncapsulateVisibleBounds(upcoming, ref content, hasBounds);
+        if (!hasBounds) return preferredY;
+
+        MovingPlanet moving = upcoming != null ? upcoming.GetComponent<MovingPlanet>() : null;
+        float futureVertical = moving != null ? moving.VerticalAmplitude : 0f;
+        float minY = content.min.y - futureVertical;
+        float maxY = content.max.y + futureVertical;
+        Rect safe = GameplayPresentationLayout.SafeGameplayViewport();
+        float worldHeight = baseOrthographicSize * 2f;
+        float minimumCameraY = maxY - (safe.yMax - 0.5f) * worldHeight;
+        float maximumCameraY = minY - (safe.yMin - 0.5f) * worldHeight;
+        return minimumCameraY <= maximumCameraY
+            ? Mathf.Clamp(preferredY, minimumCameraY, maximumCameraY)
+            : (minimumCameraY + maximumCameraY) * 0.5f;
+    }
+
+    static bool EncapsulateVisibleBounds(Transform root, ref Bounds bounds, bool hasBounds)
+    {
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (!(renderer is SpriteRenderer) && !(renderer is MeshRenderer)) continue;
+            if (!renderer.enabled) continue;
+            if (!hasBounds) { bounds = renderer.bounds; hasBounds = true; }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        return hasBounds;
     }
 
     public void PlayLandingKick(bool precisionLanding)

@@ -376,6 +376,8 @@ public sealed class LavaPlanetAmbience : PlanetAmbience
 // Lav efektleri için çalışma zamanında üretilen, tek seferlik dokular.
 public static class LavaVfxAssets
 {
+    public const string CrackSpriteName = "Runtime Lava Cracks";
+
     private static Texture2D crackTexture;
     private static Sprite crackSprite;
 
@@ -383,18 +385,22 @@ public static class LavaVfxAssets
     {
         get
         {
+            if (crackSprite != null) return crackSprite;
+
+            // Baked first, so the menu's hero world can carry its crack layers into the
+            // serialized scene. Identical pixels either way — see MenuBakedArt.
+            crackSprite = MenuBakedArt.Load(CrackSpriteName);
+            if (crackSprite != null) return crackSprite;
+
             EnsureCrackTexture();
-            if (crackSprite == null)
-            {
-                crackSprite = Sprite.Create(
-                    crackTexture,
-                    new Rect(0f, 0f, crackTexture.width, crackTexture.height),
-                    new Vector2(0.5f, 0.5f),
-                    crackTexture.width,
-                    0,
-                    SpriteMeshType.FullRect);
-                crackSprite.name = "Runtime Lava Cracks";
-            }
+            crackSprite = Sprite.Create(
+                crackTexture,
+                new Rect(0f, 0f, crackTexture.width, crackTexture.height),
+                new Vector2(0.5f, 0.5f),
+                crackTexture.width,
+                0,
+                SpriteMeshType.FullRect);
+            crackSprite.name = CrackSpriteName;
             return crackSprite;
         }
     }

@@ -26,11 +26,14 @@ public static class UIStyleKit
     private static Sprite _circle;
     private static TMP_FontAsset _runtimeFont;
 
+    // Baked assets win over generation, so surfaces drawn with them can be stored in the
+    // serialized Main Menu rather than becoming null references. See MenuBakedArt.
     public static Sprite RoundedRect
     {
         get
         {
-            if (_roundRect == null) _roundRect = MakeRoundedRectSprite(64, 64, 14);
+            if (_roundRect == null)
+                _roundRect = MenuBakedArt.Load("UIStyleKit_RoundedRect") ?? MakeRoundedRectSprite(64, 64, 14);
             return _roundRect;
         }
     }
@@ -39,7 +42,8 @@ public static class UIStyleKit
     {
         get
         {
-            if (_circle == null) _circle = MakeCircleSprite(32);
+            if (_circle == null)
+                _circle = MenuBakedArt.Load("UIStyleKit_Circle") ?? MakeCircleSprite(32);
             return _circle;
         }
     }

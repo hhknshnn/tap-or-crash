@@ -11,6 +11,10 @@ public static class MenuShowcaseAssets
     // art, so the menu never depends on an asset being present.
     const string ArtFolder = "Menu/";
 
+    const string UnlitMaterialName = "Menu Showcase Unlit";
+    const string StarFlareName = "Menu Showcase Star Flare";
+    const string VignetteName = "Menu Showcase Vignette";
+
     static Material unlitSprite;
     static Sprite rock;
     static Sprite nebula;
@@ -27,10 +31,15 @@ public static class MenuShowcaseAssets
         {
             if (unlitSprite != null) return unlitSprite;
 
+            // Baked first, so every backdrop renderer in the serialized menu points at a
+            // real material asset instead of one that only exists in Play Mode.
+            unlitSprite = MenuBakedArt.LoadMaterial(UnlitMaterialName);
+            if (unlitSprite != null) return unlitSprite;
+
             Shader shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
             if (shader == null) shader = Shader.Find("Sprites/Default");
 
-            unlitSprite = new Material(shader) { name = "Menu Showcase Unlit" };
+            unlitSprite = new Material(shader) { name = UnlitMaterialName };
             return unlitSprite;
         }
     }
@@ -81,7 +90,7 @@ public static class MenuShowcaseAssets
     {
         get
         {
-            if (starFlare == null) starFlare = CreateStarFlare();
+            if (starFlare == null) starFlare = MenuBakedArt.Load(StarFlareName) ?? CreateStarFlare();
             return starFlare;
         }
     }
@@ -92,7 +101,7 @@ public static class MenuShowcaseAssets
     {
         get
         {
-            if (vignette == null) vignette = CreateVignette();
+            if (vignette == null) vignette = MenuBakedArt.Load(VignetteName) ?? CreateVignette();
             return vignette;
         }
     }
@@ -125,7 +134,7 @@ public static class MenuShowcaseAssets
             }
         }
 
-        return BuildSprite(pixels, size, "Menu Showcase Star Flare");
+        return BuildSprite(pixels, size, StarFlareName);
     }
 
     static Sprite CreateVignette()
@@ -147,7 +156,7 @@ public static class MenuShowcaseAssets
             }
         }
 
-        return BuildSprite(pixels, size, "Menu Showcase Vignette");
+        return BuildSprite(pixels, size, VignetteName);
     }
 
     static Sprite BuildSprite(Color32[] pixels, int size, string name)

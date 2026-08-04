@@ -65,6 +65,14 @@ public sealed class MenuHeroRocket : MonoBehaviour
     const float MenuFlameIntensity = 0.74f;
     const float MenuExhaustRate = 26f;
 
+    // How long, once the launch hand-over begins, the Retro UFO's Main Menu idle
+    // profile (see RetroUfoVisualPivot) takes to blend down to its approved gameplay
+    // profile. Deliberately shorter than LaunchDuration: the camera/ellipse settle is
+    // a slow one-piece move, but the idle richness should read as "handed off" early
+    // rather than linger through the whole pull-back. Heading authority itself is not
+    // affected by this timer — it stays with the Main Menu tangent until Release.
+    const float PresentationHandOverDuration = 0.32f;
+
     // The bloom on the nozzle, as a share of the ship's own height.
     const float GlowOuterRatio = 1.5f;
     const float GlowCoreRatio = 0.6f;
@@ -76,6 +84,9 @@ public sealed class MenuHeroRocket : MonoBehaviour
 
     Transform planet;
     Transform ship;
+    RocketModelVisual shipModelVisual;
+    bool presentationHandOverStarted;
+    float presentationHandOverStartTime;
 
     Renderer[] shipRenderers;
     int[] shipBaseSortingOrders;
@@ -139,6 +150,7 @@ public sealed class MenuHeroRocket : MonoBehaviour
 
         planet = heroPlanet;
         ship = liveRocket;
+        shipModelVisual = ship.GetComponent<RocketModelVisual>();
         shipBaseScale = ship.localScale;
 
         orbitFloor = planetRadius * (1f + ClearanceGapRatio) + ShipClearanceBeam();
@@ -162,6 +174,7 @@ public sealed class MenuHeroRocket : MonoBehaviour
         angle = Random.Range(0f, Mathf.PI * 2f);
         phase = Random.Range(0f, 10f);
         nextCorrection = Time.unscaledTime + Random.Range(4f, 8f);
+        presentationHandOverStarted = false;
         Animate(0f);
         return true;
     }
@@ -202,6 +215,22 @@ public sealed class MenuHeroRocket : MonoBehaviour
         glowCoreSize = shipHeight * GlowCoreRatio;
         // Behind the ship, and behind the flame layers and thruster sparks it sits under.
         glowSortingOrder = (proxy != null ? proxy.sortingOrder : 0) - 4;
+
+        engineGlow = transform.Find("MenuRocketEngineGlow");
+        if (engineGlow != null)
+        {
+            glowOuter = engineGlow.Find("EngineGlowOuter")?.GetComponent<SpriteRenderer>();
+            glowCore = engineGlow.Find("EngineGlowCore")?.GetComponent<SpriteRenderer>();
+            engineLight = engineGlow.Find("MenuRocketEngineLight")?.GetComponent<Light2D>();
+            if (glowOuter == null || glowCore == null || engineLight == null)
+                Debug.LogError("MenuHeroRocket: serialized engine presentation is incomplete.", this);
+            return;
+        }
+        if (Application.isPlaying)
+        {
+            Debug.LogError("MenuHeroRocket: serialized engine presentation is missing. Run the Main Menu authoring command.", this);
+            return;
+        }
 
         GameObject root = new GameObject("MenuRocketEngineGlow") { layer = gameObject.layer };
         root.transform.SetParent(transform, false);
@@ -260,6 +289,13 @@ public sealed class MenuHeroRocket : MonoBehaviour
     {
         if (released) return;
         released = true;
+
+        // Hands heading authority back to the gameplay launch-guide direction on the
+        // exact frame RocketController resumes driving the ship, so there is no gap
+        // where neither authority is writing the pivot's heading.
+        RetroUfoVisualPivot retroPresentation = shipModelVisual != null
+            ? shipModelVisual.ActiveRetroUfoPresentation : null;
+        if (retroPresentation != null) retroPresentation.ClearMenuHeadingOverride();
 
         if (ship != null) ship.localScale = shipBaseScale;
 
@@ -340,6 +376,30 @@ public sealed class MenuHeroRocket : MonoBehaviour
 
         float idleBank = Mathf.Sin(time * 0.9f + phase) * 3.5f * (1f - blend);
         ship.rotation = Quaternion.Euler(0f, 0f, heading + idleBank + bankDrift * (1f - blend));
+
+        // Retro UFO owns a separated HeadingPivot/StylePivot hierarchy (see
+        // RetroUfoVisualPivot) that writes its own world rotation every frame, so the
+        // root rotation above never reaches it. Feed it the same pure ellipse tangent
+        // directly — never the root's cosmetic idleBank/bankDrift, which is what the
+        // pivot's own richer idle profile is for.
+        RetroUfoVisualPivot retroPresentation = shipModelVisual != null
+            ? shipModelVisual.ActiveRetroUfoPresentation : null;
+        if (retroPresentation != null)
+        {
+            float headingRad = heading * Mathf.Deg2Rad;
+            retroPresentation.SetMenuHeadingOverride(
+                new Vector3(Mathf.Cos(headingRad), Mathf.Sin(headingRad), 0f));
+
+            if (blend > 0f && !presentationHandOverStarted)
+            {
+                presentationHandOverStarted = true;
+                presentationHandOverStartTime = time;
+            }
+            float presentationBlend = presentationHandOverStarted
+                ? 1f - Mathf.Clamp01((time - presentationHandOverStartTime) / PresentationHandOverDuration)
+                : 1f;
+            retroPresentation.SetMenuPresentationBlend(presentationBlend);
+        }
 
         // Top of the ellipse is the far side, so the ship is drawn smaller there. With no
         // overlap left to sell the distance, this and the pacing are what carry it.

@@ -14,6 +14,19 @@ using UnityEngine.UI;
 // game has exactly one "press this" colour and never moves it.
 public static class UIDesign
 {
+    // The deterministic palette baked into the Edit Mode Main Menu preview.
+    // Runtime still resolves the player's persisted/current world in Refresh().
+    public const string ApprovedStartupWorld = "Alien";
+
+    public struct Palette
+    {
+        public Color Accent;
+        public Color Glass;
+        public Color GlassDeep;
+        public Color GlassRim;
+        public Color Scrim;
+    }
+
     // ── Geometry ─────────────────────────────────────────────────────────────
     // One distance from every screen edge. The coin chip, the icon discs and the
     // shop pill used to sit at 30, 36 and 40 pixels of inset, which is enough to
@@ -80,6 +93,24 @@ public static class UIDesign
 
     public static string ActiveWorld { get; private set; }
 
+    public static Palette CurrentPalette
+    {
+        get
+        {
+            EnsureInitialised();
+            return new Palette
+            {
+                Accent = Accent,
+                Glass = Glass,
+                GlassDeep = GlassDeep,
+                GlassRim = GlassRim,
+                Scrim = Scrim,
+            };
+        }
+    }
+
+    public static Palette ApprovedStartupPalette => PaletteForWorld(ApprovedStartupWorld);
+
     static bool initialised;
 
     public static void EnsureInitialised()
@@ -97,6 +128,22 @@ public static class UIDesign
         ActiveWorld = world;
         initialised = true;
 
+        Palette palette = PaletteForWorld(world);
+        Accent = palette.Accent;
+        Glass = palette.Glass;
+        GlassDeep = palette.GlassDeep;
+        GlassRim = palette.GlassRim;
+        Scrim = palette.Scrim;
+
+        Version++;
+    }
+
+    // Pure palette resolution shared by runtime and deterministic authoring. It
+    // never reads PlayerPrefs and is therefore safe for editor preview baking.
+    public static Palette PaletteForWorld(string world)
+    {
+        Palette palette = new Palette();
+
         Color raw = PlanetAmbience.AccentColorFor(world, DefaultAccent);
         Color.RGBToHSV(raw, out float hue, out float saturation, out _);
 
@@ -106,18 +153,17 @@ public static class UIDesign
 
         // Accent: the world's hue at the system's own saturation and value, so
         // every world's UI accent carries identical weight on screen.
-        Accent = Color.HSVToRGB(hue, 0.52f, 0.98f);
+        palette.Accent = Color.HSVToRGB(hue, 0.52f, 0.98f);
 
         // Enough value to read as a lit surface. Any darker and the fill
         // disappears against space and the rim becomes a drawn outline, which
         // is the opposite of glass.
         Color hueTint = Color.HSVToRGB(hue, 0.55f, 0.30f);
-        Glass = Tint(Color.Lerp(Ink, hueTint, 0.38f), 0.84f);
-        GlassDeep = Tint(Color.Lerp(Ink, hueTint, 0.22f), 0.95f);
-        GlassRim = Tint(Color.HSVToRGB(hue, 0.42f, 1.00f), 0.34f);
-        Scrim = Tint(Color.Lerp(Ink, hueTint, 0.12f), 0.86f);
-
-        Version++;
+        palette.Glass = Tint(Color.Lerp(Ink, hueTint, 0.38f), 0.84f);
+        palette.GlassDeep = Tint(Color.Lerp(Ink, hueTint, 0.22f), 0.95f);
+        palette.GlassRim = Tint(Color.HSVToRGB(hue, 0.42f, 1.00f), 0.34f);
+        palette.Scrim = Tint(Color.Lerp(Ink, hueTint, 0.12f), 0.86f);
+        return palette;
     }
 
     static Color Tint(Color color, float alpha) => new Color(color.r, color.g, color.b, alpha);
@@ -143,65 +189,5 @@ public static class UIDesign
 
         int index = Mathf.Clamp(PlanetSpawner.LevelIndexForScore(score), 0, names.Length - 1);
         return names[index];
-    }
-}
-
-// Keeps one Graphic on the world palette. Attach it and forget it: when the
-// rocket flies from Natural into Ice, every tinted surface follows.
-public sealed class UITinted : MonoBehaviour
-{
-    public enum Role { Glass, GlassDeep, Rim, Accent, Scrim }
-
-    [SerializeField] private Role role = Role.Glass;
-    [SerializeField] private float alphaScale = 1f;
-
-    private Graphic graphic;
-    private Outline outline;
-    private int appliedVersion = -1;
-
-    public static UITinted Attach(GameObject target, Role role, float alphaScale = 1f)
-    {
-        UITinted tint = target.GetComponent<UITinted>();
-        if (tint == null) tint = target.AddComponent<UITinted>();
-        tint.role = role;
-        tint.alphaScale = alphaScale;
-        tint.appliedVersion = -1;
-        return tint;
-    }
-
-    void Awake()
-    {
-        graphic = GetComponent<Graphic>();
-        outline = GetComponent<Outline>();
-    }
-
-    void OnEnable() => appliedVersion = -1;
-
-    void LateUpdate()
-    {
-        if (appliedVersion == UIDesign.Version) return;
-        appliedVersion = UIDesign.Version;
-        Apply();
-    }
-
-    void Apply()
-    {
-        Color color = role switch
-        {
-            Role.GlassDeep => UIDesign.GlassDeep,
-            Role.Rim => UIDesign.GlassRim,
-            Role.Accent => UIDesign.Accent,
-            Role.Scrim => UIDesign.Scrim,
-            _ => UIDesign.Glass,
-        };
-        color.a *= alphaScale;
-
-        if (graphic != null) graphic.color = color;
-        if (outline != null)
-        {
-            Color rim = UIDesign.GlassRim;
-            rim.a = UIDesign.GlassRim.a * alphaScale;
-            outline.effectColor = rim;
-        }
     }
 }

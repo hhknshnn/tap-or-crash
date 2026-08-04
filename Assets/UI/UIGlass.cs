@@ -24,22 +24,34 @@ public static class UIGlass
     const float RimTop = 1.00f;
     const float RimBottom = 0.26f;
 
-    public static Sprite Panel(float radius) => Get("panel" + radius, () => BuildPanel(radius));
+    public static Sprite Panel(float radius)
+        => Get("panel" + radius, PanelName(radius), () => BuildPanel(radius));
 
     public static Sprite Rim(float radius, float stroke = 2.5f)
-        => Get("rim" + radius + "_" + stroke, () => BuildRim(radius, stroke));
+        => Get("rim" + radius + "_" + stroke, RimName(radius), () => BuildRim(radius, stroke));
 
-    public static Sprite Disc => Get("disc", BuildDisc);
+    public static Sprite Disc => Get("disc", "UIGlass_Disc", BuildDisc);
 
-    public static Sprite DiscRim => Get("discRim", BuildDiscRim);
+    public static Sprite DiscRim => Get("discRim", "UIGlass_DiscRim", BuildDiscRim);
 
     /// Soft radial falloff: halos behind a call to action, shadows beneath a card.
-    public static Sprite Glow => Get("glow", BuildGlow);
+    public static Sprite Glow => Get("glow", "UIGlass_Glow", BuildGlow);
 
-    static Sprite Get(string key, System.Func<Sprite> build)
+    // The radius is rounded the same way the builders round it, so the name a sprite is
+    // looked up by is the name it was baked under.
+    static string PanelName(float radius) => "UIGlass_Panel" + Mathf.Max(2, Mathf.RoundToInt(radius));
+
+    static string RimName(float radius) => "UIGlass_Rim" + Mathf.Max(2, Mathf.RoundToInt(radius));
+
+    // Baked assets win over generation. The pixels are the same either way; the difference
+    // is that a baked sprite has an asset path, so a surface drawn with it can be stored in
+    // the serialized menu instead of turning into a null reference. Radii the menu never
+    // uses are not baked and are still generated on demand — see MenuBakedArt.
+    static Sprite Get(string key, string assetName, System.Func<Sprite> build)
     {
         if (cache.TryGetValue(key, out Sprite sprite) && sprite != null) return sprite;
-        sprite = build();
+
+        sprite = MenuBakedArt.Load(assetName) ?? build();
         cache[key] = sprite;
         return sprite;
     }

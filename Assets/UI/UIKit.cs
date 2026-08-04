@@ -334,31 +334,3 @@ public static class UIKit
             new Vector2(0.6f, -0.9f), 0.36f);
     }
 }
-
-// Ties a shadow sibling's visibility to its host.
-//
-// Event-driven, not polled: a disabled GameObject cannot run its own Update to
-// switch itself back on, so the host has to drive it.
-[DisallowMultipleComponent]
-public sealed class UIShadowLink : MonoBehaviour
-{
-    [SerializeField] private GameObject shadow;
-
-    public void Bind(GameObject target)
-    {
-        shadow = target;
-        Sync();
-    }
-
-    void OnEnable() => Sync();
-
-    void OnDisable()
-    {
-        if (shadow != null) shadow.SetActive(false);
-    }
-
-    void Sync()
-    {
-        if (shadow != null) shadow.SetActive(isActiveAndEnabled && gameObject.activeInHierarchy);
-    }
-}

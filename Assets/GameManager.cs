@@ -12,6 +12,9 @@ public class GameManager : MonoBehaviour
     public static bool isNearMiss    = false;
     public static bool isRestart     = false;
 
+    /// <summary>True while the single AlmostText presentation is on screen.</summary>
+    public static bool IsAlmostFeedbackPlaying { get; private set; }
+
     // Presentation gate. The menu keeps flying the rocket for a beat after StartGame
     // while the camera pulls back, and hands it to RocketController mid-orbit. Gameplay
     // input stays asleep until then, so the launch tap is never spent on the transition.
@@ -49,6 +52,11 @@ public class GameManager : MonoBehaviour
     // Runtime'da oluşturulan combo metin nesnesi
     private TextMeshProUGUI comboText;
     private Coroutine comboAnimation;
+    private Coroutine almostAnimation;
+    private CanvasGroup comboGroup;
+    private CanvasGroup almostGroup;
+    private UnityEngine.UI.Outline comboOutline;
+    private UnityEngine.UI.Outline almostOutline;
 
     void Awake()
     {
@@ -131,6 +139,7 @@ public class GameManager : MonoBehaviour
         }
 
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        ResolveAlmostTextReference();
         if (almostText   != null) almostText.gameObject.SetActive(false);
 
         CreateComboTextUI();
@@ -150,31 +159,131 @@ public class GameManager : MonoBehaviour
         ScoreChanged?.Invoke(score);
     }
 
+    void ResolveAlmostTextReference()
+    {
+        if (almostText != null) return;
+
+        Canvas canvas = null;
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < canvases.Length; i++)
+            if (canvases[i] != null && canvases[i].isRootCanvas) { canvas = canvases[i]; break; }
+        if (canvas == null && canvases.Length > 0) canvas = canvases[0];
+        if (canvas == null) return;
+
+        Transform almostTransform = canvas.transform.Find("GameUI/PerfectFeedbackLane/AlmostText");
+        if (almostTransform != null)
+            almostText = almostTransform.GetComponent<TextMeshProUGUI>();
+    }
+
     // Combo göstergesi UI elementini kod ile oluşturur
     void CreateComboTextUI()
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = null;
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < canvases.Length; i++)
+            if (canvases[i] != null && canvases[i].isRootCanvas) { canvas = canvases[i]; break; }
+        if (canvas == null && canvases.Length > 0) canvas = canvases[0];
         if (canvas == null) return;
 
         Transform gameUI = canvas.transform.Find("GameUI");
         Transform parent = gameUI != null ? gameUI : canvas.transform;
 
-        GameObject go = new GameObject("ComboText");
-        go.transform.SetParent(parent, false);
+        Transform existingLane = parent.Find("PerfectFeedbackLane");
+        GameObject lane = existingLane != null
+            ? existingLane.gameObject
+            : new GameObject("PerfectFeedbackLane");
+        lane.transform.SetParent(parent, false);
+        lane.layer = parent.gameObject.layer;
+        lane.SetActive(true);
 
-        RectTransform rt = go.AddComponent<RectTransform>();
+        RectTransform rt = lane.GetComponent<RectTransform>();
+        if (rt == null) rt = lane.AddComponent<RectTransform>();
         rt.anchorMin       = new Vector2(0.5f, 1f);
         rt.anchorMax       = new Vector2(0.5f, 1f);
         rt.pivot           = new Vector2(0.5f, 1f);
-        rt.anchoredPosition = new Vector2(0f, -120f);
-        rt.sizeDelta       = new Vector2(320f, 60f);
+        rt.sizeDelta       = new Vector2(520f, GameplayPresentationLayout.PerfectFeedbackHeight);
+        GameplayPresentationLayout.PlaceTopCentre(rt, canvas.GetComponent<RectTransform>(),
+            GameplayPresentationLayout.Lane.PerfectFeedback);
 
-        comboText           = go.AddComponent<TextMeshProUGUI>();
-        comboText.fontSize  = 36;
+        Transform existingPerfect = lane.transform.Find("PerfectFeedback");
+        GameObject perfect = existingPerfect != null
+            ? existingPerfect.gameObject
+            : new GameObject("PerfectFeedback");
+        perfect.transform.SetParent(lane.transform, false);
+        perfect.layer = lane.layer;
+        RectTransform perfectRect = perfect.GetComponent<RectTransform>();
+        if (perfectRect == null) perfectRect = perfect.AddComponent<RectTransform>();
+        perfectRect.anchorMin = Vector2.zero;
+        perfectRect.anchorMax = Vector2.one;
+        perfectRect.offsetMin = Vector2.zero;
+        perfectRect.offsetMax = Vector2.zero;
+
+        comboText = perfect.GetComponent<TextMeshProUGUI>();
+        if (comboText == null) comboText = perfect.AddComponent<TextMeshProUGUI>();
+        comboGroup = perfect.GetComponent<CanvasGroup>();
+        if (comboGroup == null) comboGroup = perfect.AddComponent<CanvasGroup>();
+        comboGroup.alpha = 0f;
+        comboGroup.interactable = false;
+        comboGroup.blocksRaycasts = false;
+        UIStyleKit.ApplyRuntimeFont(comboText, parent);
+        comboText.fontSize  = 34;
         comboText.alignment = TextAlignmentOptions.Center;
-        comboText.color     = new Color(1f, 0.85f, 0.1f); // altın sarısı
         comboText.fontStyle = FontStyles.Bold;
-        go.SetActive(false);
+        comboText.color = new Color(1f, 0.89f, 0.62f);
+        comboText.characterSpacing = 2f;
+        comboText.textWrappingMode = TextWrappingModes.NoWrap;
+        comboText.overflowMode = TextOverflowModes.Overflow;
+        comboText.raycastTarget = false;
+        comboOutline = perfect.GetComponent<UnityEngine.UI.Outline>();
+        if (comboOutline == null) comboOutline = perfect.AddComponent<UnityEngine.UI.Outline>();
+        comboOutline.effectColor = new Color(0.11f, 0.07f, 0.16f, 0.78f);
+        comboOutline.effectDistance = new Vector2(1.5f, -1.5f);
+        comboOutline.useGraphicAlpha = true;
+        perfect.SetActive(false);
+
+        ConfigureAlmostFeedback(lane.transform, parent);
+    }
+
+    void ConfigureAlmostFeedback(Transform lane, Transform fontContext)
+    {
+        if (almostText == null) return;
+
+        almostText.transform.SetParent(lane, false);
+        RectTransform rect = almostText.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.localScale = Vector3.one;
+        rect.localRotation = Quaternion.identity;
+
+        UIStyleKit.ApplyRuntimeFont(almostText, fontContext);
+        almostText.text = "ALMOST";
+        almostText.fontSize = 32f;
+        almostText.fontStyle = FontStyles.Bold;
+        almostText.alignment = TextAlignmentOptions.Center;
+        almostText.color = new Color(1f, 0.76f, 0.48f);
+        almostText.characterSpacing = 1.5f;
+        almostText.enableVertexGradient = false;
+        almostText.textWrappingMode = TextWrappingModes.NoWrap;
+        almostText.overflowMode = TextOverflowModes.Overflow;
+        almostText.raycastTarget = false;
+
+        almostGroup = almostText.GetComponent<CanvasGroup>();
+        if (almostGroup == null) almostGroup = almostText.gameObject.AddComponent<CanvasGroup>();
+        almostGroup.alpha = 0f;
+        almostGroup.interactable = false;
+        almostGroup.blocksRaycasts = false;
+
+        almostOutline = almostText.GetComponent<UnityEngine.UI.Outline>();
+        if (almostOutline == null)
+            almostOutline = almostText.gameObject.AddComponent<UnityEngine.UI.Outline>();
+        almostOutline.effectColor = new Color(0.15f, 0.09f, 0.16f, 0.62f);
+        almostOutline.effectDistance = new Vector2(1.25f, -1.25f);
+        almostOutline.useGraphicAlpha = true;
+        almostText.gameObject.SetActive(false);
     }
 
     // ─── Skor ────────────────────────────────────────────────────────────────
@@ -191,7 +300,7 @@ public class GameManager : MonoBehaviour
         if (scoreText != null) scoreText.text = score.ToString();
         ScoreChanged?.Invoke(score);
 
-        GameplayVFX.Ensure().PlayMilestone(score);
+        GameplayVFX.Ensure().EvaluateMilestoneNotices(score);
 
         // Milestone kontrolü
         if (CoinManager.instance != null) CoinManager.instance.CheckMilestones(score);
@@ -244,48 +353,100 @@ public class GameManager : MonoBehaviour
 
     void ShowComboText(string eventLabel, Color color)
     {
-        if (comboText == null) return;
-        comboText.text = comboCount > 1
-            ? $"{eventLabel}  ·  x{comboCount}"
-            : eventLabel + "!";
-        comboText.color = color;
-        comboText.gameObject.SetActive(true);
+        if (comboText == null || comboGroup == null) return;
+        if (comboAnimation != null)
+        {
+            StopCoroutine(comboAnimation);
+            comboAnimation = null;
+        }
 
-        if (comboAnimation != null) StopCoroutine(comboAnimation);
+        RectTransform rt = comboText.rectTransform;
+        comboGroup.alpha = 0f;
+        rt.anchoredPosition = Vector2.zero;
+        rt.localScale = Vector3.one * 0.76f;
+        rt.localRotation = Quaternion.identity;
+        comboText.characterSpacing = 2f;
+        SetOutlineAlpha(comboOutline, 0.20f);
+        comboText.text = comboCount > 1
+            ? $"{eventLabel}!  ×{comboCount}"
+            : eventLabel + "!";
+        comboText.color = eventLabel == "PERFECT"
+            ? new Color(1f, 0.86f, 0.48f)
+            : color;
+        if (!comboText.transform.parent.gameObject.activeSelf)
+            comboText.transform.parent.gameObject.SetActive(true);
+        comboText.gameObject.SetActive(true);
         comboAnimation = StartCoroutine(ComboTextAnim());
     }
 
     IEnumerator ComboTextAnim()
     {
-        RectTransform rt = comboText.GetComponent<RectTransform>();
-        CanvasGroup   cg = comboText.GetComponent<CanvasGroup>();
-        if (cg == null) cg = comboText.gameObject.AddComponent<CanvasGroup>();
-        cg.alpha = 1f;
-        rt.localScale = Vector3.one * 1.4f;
+        RectTransform rt = comboText.rectTransform;
+        Vector2 rest = Vector2.zero;
 
-        // Pop-in
         float t = 0f;
-        while (t < 0.2f)
+        while (t < 0.06f)
         {
-            t += Time.deltaTime;
-            rt.localScale = Vector3.Lerp(Vector3.one * 1.4f, Vector3.one, t / 0.2f);
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / 0.06f);
+            comboGroup.alpha = Mathf.Lerp(0f, 0.7f, p);
+            rt.localScale = Vector3.one * Mathf.Lerp(0.76f, 0.92f, p);
             yield return null;
         }
-        rt.localScale = Vector3.one;
 
-        yield return new WaitForSeconds(0.8f);
-
-        // Fade-out
+        comboGroup.alpha = 1f;
         t = 0f;
-        while (t < 0.25f)
+        while (t < 0.09f)
         {
-            t += Time.deltaTime;
-            cg.alpha = 1f - (t / 0.25f);
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / 0.09f);
+            rt.localScale = Vector3.one * Mathf.Lerp(0.92f, 1.12f, p);
+            comboText.characterSpacing = Mathf.Lerp(2f, 3.5f, p);
+            SetOutlineAlpha(comboOutline, Mathf.Lerp(0.20f, 0.82f, p));
             yield return null;
         }
-        cg.alpha = 1f;
+
+        t = 0f;
+        while (t < 0.12f)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.12f));
+            rt.localScale = Vector3.one * Mathf.Lerp(1.12f, 1f, p);
+            comboText.characterSpacing = Mathf.Lerp(3.5f, 2f, p);
+            SetOutlineAlpha(comboOutline, Mathf.Lerp(0.82f, 0.55f, p));
+            yield return null;
+        }
+
+        rt.localScale = Vector3.one;
+        rt.anchoredPosition = rest;
+
+        yield return new WaitForSecondsRealtime(0.26f);
+
+        t = 0f;
+        while (t < 0.32f)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.32f));
+            comboGroup.alpha = 1f - p;
+            rt.anchoredPosition = rest + Vector2.up * (22f * p);
+            rt.localScale = Vector3.one * Mathf.Lerp(1f, 0.96f, p);
+            SetOutlineAlpha(comboOutline, Mathf.Lerp(0.55f, 0f, p));
+            yield return null;
+        }
+        comboGroup.alpha = 0f;
+        rt.anchoredPosition = rest;
+        rt.localScale = Vector3.one;
+        comboText.characterSpacing = 2f;
         comboText.gameObject.SetActive(false);
         comboAnimation = null;
+    }
+
+    static void SetOutlineAlpha(UnityEngine.UI.Outline outline, float alpha)
+    {
+        if (outline == null) return;
+        Color color = outline.effectColor;
+        color.a = alpha;
+        outline.effectColor = color;
     }
 
     // ─── Game Over ───────────────────────────────────────────────────────────
@@ -338,31 +499,103 @@ public class GameManager : MonoBehaviour
     {
         if (comboText != null) comboText.gameObject.SetActive(false);
 
-        // "ALMOST!" animasyonu
-        if (almostText != null && isNearMiss)
+        bool showingAlmost = almostText != null && isNearMiss;
+        if (showingAlmost)
         {
-            almostText.gameObject.SetActive(true);
-            RectTransform rt  = almostText.GetComponent<RectTransform>();
-            float elapsed = 0f;
-            while (elapsed < 0.25f)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                rt.localScale = Vector3.one * Mathf.Lerp(0.3f, 1f, elapsed / 0.25f);
-                yield return null;
-            }
+            if (almostAnimation != null) StopCoroutine(almostAnimation);
+            almostAnimation = StartCoroutine(AlmostTextAnim());
         }
+
+        // Preserve the original near-miss pause before the crash sequence continues.
+        if (showingAlmost) yield return new WaitForSecondsRealtime(0.25f);
 
         isNearMiss          = false;
         Time.timeScale      = 0.72f;
         yield return new WaitForSecondsRealtime(0.22f);
         Time.timeScale      = 1f;
 
-        if (almostText != null) almostText.gameObject.SetActive(false);
-
         if (rewardedContinue != null && rewardedContinue.TryShowOffer())
             yield break;
 
         ShowNormalGameOver();
+    }
+
+    IEnumerator AlmostTextAnim()
+    {
+        if (almostText == null || almostGroup == null) yield break;
+
+        IsAlmostFeedbackPlaying = true;
+        RectTransform rt = almostText.rectTransform;
+        Vector2 rest = Vector2.zero;
+        EnsureAlmostFeedbackHierarchyActive();
+        almostText.gameObject.SetActive(true);
+        almostGroup.alpha = 0f;
+        rt.anchoredPosition = rest;
+        rt.localScale = Vector3.one * 0.84f;
+        rt.localRotation = Quaternion.identity;
+        SetOutlineAlpha(almostOutline, 0.18f);
+
+        float t = 0f;
+        while (t < 0.10f)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / 0.10f);
+            almostGroup.alpha = p;
+            rt.localScale = Vector3.one * Mathf.Lerp(0.84f, 1.04f, p);
+            SetOutlineAlpha(almostOutline, Mathf.Lerp(0.18f, 0.58f, p));
+            yield return null;
+        }
+
+        t = 0f;
+        while (t < 0.14f)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.14f));
+            rt.localScale = Vector3.one * Mathf.Lerp(1.04f, 1f, p);
+            rt.anchoredPosition = rest + Vector2.right * (Mathf.Sin(p * Mathf.PI) * 5f);
+            rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(p * Mathf.PI) * -1.2f);
+            SetOutlineAlpha(almostOutline, Mathf.Lerp(0.58f, 0.42f, p));
+            yield return null;
+        }
+
+        rt.anchoredPosition = rest;
+        rt.localRotation = Quaternion.identity;
+        yield return new WaitForSecondsRealtime(0.26f);
+
+        t = 0f;
+        while (t < 0.30f)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.30f));
+            almostGroup.alpha = 1f - p;
+            rt.anchoredPosition = rest + Vector2.down * (14f * p);
+            rt.localScale = Vector3.one * Mathf.Lerp(1f, 0.96f, p);
+            SetOutlineAlpha(almostOutline, Mathf.Lerp(0.42f, 0f, p));
+            yield return null;
+        }
+
+        almostGroup.alpha = 0f;
+        rt.anchoredPosition = rest;
+        rt.localScale = Vector3.one;
+        rt.localRotation = Quaternion.identity;
+        almostText.gameObject.SetActive(false);
+        almostAnimation = null;
+        IsAlmostFeedbackPlaying = false;
+    }
+
+    void EnsureAlmostFeedbackHierarchyActive()
+    {
+        if (almostText == null) return;
+
+        Transform node = almostText.transform;
+        while (node != null)
+        {
+            if (!node.gameObject.activeSelf)
+                node.gameObject.SetActive(true);
+            if (node.name == "GameUI")
+                break;
+            node = node.parent;
+        }
     }
 
     public void ShowNormalGameOver()
@@ -470,6 +703,7 @@ public class GameManager : MonoBehaviour
         comboCount = Mathf.Max(0, restoredCombo);
         if (scoreText != null) scoreText.text = score.ToString();
         ScoreChanged?.Invoke(score);
+        GameplayVFX.Ensure().EvaluateMilestoneNotices(score);
 
         isNearMiss = false;
         isGameStarted = true;
@@ -503,6 +737,10 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (isGameStarted || isIntroPlaying) return;
+        if (!RocketFuelService.Instance.TryConsumeForNewRun()) return;
+
+        RunSession.Begin();
         isGameStarted = true;
         ResetRunScore();
 
@@ -525,6 +763,9 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (isRestart) return;
+        if (!RocketFuelService.Instance.TryConsumeForNewRun()) return;
+
         PrepareForRestart();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
@@ -543,16 +784,27 @@ public class GameManager : MonoBehaviour
     private void PrepareForRestart()
     {
         ClearCrashPresentation();
-        Time.timeScale = 1f;
+        if (GameplayVFX.instance != null) GameplayVFX.instance.CancelMilestoneNotices();
+
+        // The gate set is static and survives the scene load. A restart taken from
+        // inside Pause, the Continue offer or Game Over would otherwise carry that
+        // presentation's gate into the reloaded scene with nothing left alive to
+        // release it. RunSession.Begin does this again once the new run starts;
+        // doing it here means the gate is never held while the scene reloads.
+        PresentationGate.ReleaseRunScoped();
         isRestart      = true;
         isGameOver     = false;
-        PresentationGate.Release(PresentationGate.Kind.GameOver);
         isGameStarted  = false;
         isNearMiss     = false;
+        IsAlmostFeedbackPlaying = false;
         isIntroPlaying = false;
         if (playerRocket != null) playerRocket.ResetForNewRun();
         ResetRunScore();
         WorldTransitionManager.ResetForNewRun();
+
+        // Last, because the teardown above can restore a hold's remembered scale.
+        // The scene has to reload with the clock already running.
+        Time.timeScale = 1f;
     }
 
     private void ResetRunScore()
@@ -586,9 +838,13 @@ public class GameManager : MonoBehaviour
             rewardedContinue.CaptureCheckpoint();
     }
 
+    // The restart path: the scene has reloaded and this is where the new run is
+    // handed the game, so it is the restart's RunSession.Begin, exactly as
+    // StartGame is the Main Menu launch's.
     IEnumerator StartAfterDelay()
     {
         yield return null; // Tüm objeler yüklensin
+        RunSession.Begin();
         isGameStarted = true;
         ResetRunScore();
     }

@@ -4,30 +4,37 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
-// Turns the start screen into a showcase stage: the menu's Lava world, a rocket
-// orbiting it, layered space behind it and theme-driven light.
+// The one and only Main Menu. This component sits on the serialized MainMenu root in
+// SampleScene, and the Lava hero world and its light rig are serialized children of that
+// root — so the approved menu is what the scene shows in Edit Mode and what renders on
+// the very first frame of Play Mode. Nothing here reconstructs a menu from scene objects;
+// it measures the hero, frames the camera around it and animates what is already there.
 //
 // PRESENTATION AND GAMEPLAY ARE SEPARATE. The hero world is a dedicated menu-only asset
-// (Resources/Menu/LavaHero): the Lava sprite the game already ships, with no collider,
-// no Planet tag and no gameplay component on it. The menu builds it, dresses it with
+// (a LavaHero.prefab instance): the Lava sprite the game already ships, with no collider,
+// no Planet tag and no gameplay component on it. The menu owns it, dresses it with
 // MenuLavaAmbience — a far heavier volcanic pass than any gameplay planet may afford —
-// owns it, and destroys it on launch. The gameplay planets are only switched off while
-// the menu is up and switched back on as the camera pulls away; nothing gameplay owns is
-// scaled, moved or re-dressed.
+// and destroys it on launch. The gameplay planets are only switched off while the menu is
+// up and switched back on as the camera pulls away; nothing gameplay owns is scaled,
+// moved or re-dressed.
 //
-//   Main Menu -> LavaHero.prefab -> Play -> destroy the hero world
+//   MainMenu root (serialized) -> Play -> destroy the hero world
 //             -> gameplay planets revealed -> RocketController takes the ship
 //
 // The Rocket is the hero of the frame and the Lava world is what it is flying over: the
 // composition is framed for the ship, not for the planet. The ship is still the live
 // Rocket, still handed over mid-orbit in the pose it already has, so the launch reads as
 // one continuous camera move. See LaunchSequence.
+//
+// Runs late so the whole stage is built inside the first frame's Start phase — after the
+// spawner has placed the planets and after VisualPolishController has styled the UI, and
+// still before anything is rendered. That ordering is what removes the first-frame flash;
+// it is not a delay, and it must never become one.
+[DefaultExecutionOrder(200)]
 [DisallowMultipleComponent]
 public sealed class MainMenuShowcase : MonoBehaviour
 {
     public const string StageLayerName = "MenuShowcase";
-
-    const string HeroPrefabPath = "Menu/LavaHero";
 
     // The world the menu shows off. Drives the light rig, the backdrop stain and the
     // emblem, so the whole stage follows the hero rather than the run's first level.
@@ -67,9 +74,26 @@ public sealed class MainMenuShowcase : MonoBehaviour
 
     static MainMenuShowcase instance;
 
-    Transform stage;
+    [Header("Serialized stage")]
+    [Tooltip("The menu's own Lava hero world — a LavaHero.prefab instance parented to this root. " +
+             "Never a gameplay planet.")]
+    [SerializeField] Transform hero;
+
+    [Tooltip("Ambient fill, the local sun and the accent rim. Positioned and coloured at runtime " +
+             "from the hero's measured radius and the theme accent.")]
+    [SerializeField] Light2D fillLight;
+    [SerializeField] Light2D keyLight;
+    [SerializeField] Light2D rimLight;
+
+    [Header("Borrowed gameplay state")]
+    [SerializeField] Vector3 gameplayRocketPosition = new Vector3(3f, 0f, 0f);
+    [SerializeField] Vector3 gameplayRocketEuler = new Vector3(0f, 0f, 85f);
+    [SerializeField] Vector3 gameplayRocketScale = new Vector3(0.4f, 0.4f, 1f);
+    [SerializeField] Vector3 gameplayCameraPosition = new Vector3(0f, 0f, -10f);
+    [SerializeField] float gameplayCameraOrthoSize = 8f;
+
+    Transform stage;             // this root — the hero and the light rig hang off it
     Camera stageCamera;          // the main camera, borrowed for the length of the menu
-    Transform hero;              // the menu's own Hero Planet — never a gameplay object
     Transform firstPlanet;       // gameplay planet 0, only read for the hand-over radius
     float heroBodyRadius;        // measured once; immune to the spin turning the AABB
     float stageOrtho;            // derived from the Hero Planet, not a fixed constant
@@ -80,9 +104,6 @@ public sealed class MainMenuShowcase : MonoBehaviour
     float builtAspect;
     float idleBlend = 1f;        // 1 = full menu idle, 0 = handed over
 
-    Light2D fillLight;
-    Light2D keyLight;
-    Light2D rimLight;
     MenuLavaAmbience heroLava;   // the volcanic pass on the hero world
     SpriteRenderer heroAura;
     float heroAuraAlpha;
@@ -94,12 +115,6 @@ public sealed class MainMenuShowcase : MonoBehaviour
     Canvas menuCanvas;
     Image startPanelDim;
     Color startPanelDimColor;
-    GameObject legacyBackground;
-    GameObject legacyStarfield;
-    GameObject legacyEmblem;
-    GameObject legacyLogo;
-    GameObject legacyLogoRule;
-    GameObject legacySubtitle;
 
     MenuBrandEmblem brandEmblem;
     int pendingReframes;
@@ -123,26 +138,6 @@ public sealed class MainMenuShowcase : MonoBehaviour
     bool launching;
     bool handedOver;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoInstall() => SceneInstaller.RunOnEveryScene(Install);
-
-    // Runs after every scene load, which is what makes this the one and only main menu:
-    // Game Over → Main Menu reloads the scene, and the showcase is rebuilt with it.
-    static void Install()
-    {
-        // The sky fade is static and outlives a scene load. Clearing it here means a
-        // reload can never strand the world's sky at whatever the last menu left it on.
-        SpaceEnvironment.PresentationAlpha = 1f;
-
-        if (instance != null) return;
-        // A restart skips the menu entirely, so there is nothing to show off.
-        // (GameManager clears the flag in its own Start, i.e. after this runs.)
-        if (GameManager.isRestart || GameManager.isGameStarted) return;
-
-        GameObject go = new GameObject("MainMenuShowcase");
-        go.AddComponent<MainMenuShowcase>();
-    }
-
     // GameManager asks before it hides the start panel. Taking ownership here is what
     // lets the menu dissolve on its own terms instead of blinking out.
     public static bool TryBeginLaunch(GameObject panel)
@@ -159,8 +154,23 @@ public sealed class MainMenuShowcase : MonoBehaviour
 
     void Awake()
     {
-        if (instance == null) instance = this;
-        else { Destroy(gameObject); return; }
+        // The sky fade is static and outlives a scene load. Clearing it here means a
+        // reload can never strand the world's sky at whatever the last menu left it on.
+        SpaceEnvironment.PresentationAlpha = 1f;
+
+        if (instance != null && instance != this) { Destroy(gameObject); return; }
+        instance = this;
+
+        // A restart skips the menu entirely, so there is nothing to show off. Awake runs
+        // before the first frame is rendered, so the serialized stage is gone before it
+        // could ever be seen. (GameManager clears the flag in its own Start.)
+        if (GameManager.isRestart || GameManager.isGameStarted)
+        {
+            RestoreSerializedGameplayPreview();
+            instance = null;
+            gameObject.SetActive(false);
+            Destroy(gameObject);
+        }
     }
 
     void OnDestroy()
@@ -170,24 +180,31 @@ public sealed class MainMenuShowcase : MonoBehaviour
         instance = null;
     }
 
-    IEnumerator Start()
+    // Everything the first rendered frame needs happens here, synchronously. The late
+    // execution order above guarantees the spawner has placed the planets and the UI has
+    // been styled by the time this runs, so there is nothing left to wait for.
+    void Start()
     {
-        // Let the runtime-built UI settle first: VisualPolishController styles the start
-        // screen a frame in, ShipSkinManager applies the equipped tint and
-        // SplashScreenController fills its own particle parent. The spawner also needs
-        // these frames to place the first planets and PlanetPresentation to dress them.
-        yield return null;
-        yield return null;
+        if (!ResolveStartScreen() || !ResolveGameplayObjects() || !BuildStage(ResolveAccent()))
+        {
+            Debug.LogError("MainMenuShowcase: the serialized menu stage could not be built. " +
+                           "Check the MainMenu root's hero and light references in SampleScene.", this);
+            Destroy(gameObject);
+            return;
+        }
 
-        if (!ResolveStartScreen() || !ResolveGameplayObjects()) { Destroy(gameObject); yield break; }
-
-        if (!BuildStage(ResolveAccent())) { Destroy(gameObject); yield break; }
         HandOverScreen();
         BuildBrandEmblem(ResolveAccent());
         built = true;
 
-        // PlanetAmbience builds its decorative children in its own Start, so the layer
-        // has to be re-stamped once they exist.
+        StartCoroutine(RestampStageLayer());
+    }
+
+    // MenuLavaAmbience and PlanetAmbience build their decorative children in their own
+    // Start, so the layer has to be re-stamped once those children exist. Purely a
+    // culling-mask correction after the fact — the stage is already on screen.
+    IEnumerator RestampStageLayer()
+    {
         yield return null;
         ApplyStageLayer(stage);
         yield return new WaitForSecondsRealtime(1f);
@@ -253,14 +270,35 @@ public sealed class MainMenuShowcase : MonoBehaviour
         heroBasePosition = firstPlanet.position;
 
         rocket = rocketController.transform;
-        rocketBaseScale = rocket.localScale;
+        rocket.position = gameplayRocketPosition;
+        rocket.rotation = Quaternion.Euler(gameplayRocketEuler);
+        rocket.localScale = gameplayRocketScale;
+        rocketBaseScale = gameplayRocketScale;
 
         stageCamera = Camera.main;
         if (stageCamera == null || !stageCamera.orthographic) return false;
 
         cameraFollow = stageCamera.GetComponent<CameraFollow>();
-        cameraBaseOrthoSize = stageCamera.orthographicSize;
+        cameraBaseOrthoSize = gameplayCameraOrthoSize;
         return true;
+    }
+
+    void RestoreSerializedGameplayPreview()
+    {
+        RocketController controller = FindAnyObjectByType<RocketController>();
+        if (controller != null)
+        {
+            controller.transform.position = gameplayRocketPosition;
+            controller.transform.rotation = Quaternion.Euler(gameplayRocketEuler);
+            controller.transform.localScale = gameplayRocketScale;
+        }
+        Camera camera = Camera.main;
+        if (camera != null)
+        {
+            camera.transform.position = gameplayCameraPosition;
+            camera.transform.rotation = Quaternion.identity;
+            camera.orthographicSize = gameplayCameraOrthoSize;
+        }
     }
 
     // The hero world's accent, read from the ambience registry so the stage lighting,
@@ -274,79 +312,52 @@ public sealed class MainMenuShowcase : MonoBehaviour
         return accent;
     }
 
-    // The wordmark stops being UI and becomes a lit object on the stage. If the
-    // bake is missing the plain title comes straight back, so a failed emblem
-    // costs the menu nothing.
+    // The wordmark is not UI: it is a lit object on the stage, and the only title the
+    // menu has. There is no flat label behind it to fall back to.
     void BuildBrandEmblem(Color accent)
     {
-        if (stage == null || stageCamera == null || hero == null) return;
+        if (stageCamera == null || hero == null) return;
 
-        brandEmblem = stage.gameObject.AddComponent<MenuBrandEmblem>();
-        bool ok = brandEmblem.Build(stage, stageCamera, menuCanvas, hero,
-            heroBodyRadius, accent);
-
-        if (ok)
+        brandEmblem = GetComponent<MenuBrandEmblem>();
+        if (brandEmblem == null)
+        {
+            Debug.LogError("MainMenuShowcase: required serialized MenuBrandEmblem component is missing.", this);
+            return;
+        }
+        if (brandEmblem.Build(stage, stageCamera, menuCanvas, hero, heroBodyRadius, accent))
         {
             ApplyStageLayer(stage);
             return;
         }
 
+        Debug.LogError("MainMenuShowcase: the brand emblem bake could not be loaded, so the menu " +
+                       "has no title. Check Resources/Menu/brand_emblem.", this);
         Destroy(brandEmblem);
         brandEmblem = null;
-        SetActive(legacyLogo, true);
-        SetActive(legacyLogoRule, true);
-        SetActive(legacySubtitle, true);
     }
 
-    // The UI itself is untouched: same buttons, same positions, same navigation. Only
-    // the opaque art behind it steps aside so the stage can be seen.
+    // The UI itself is untouched: same buttons, same positions, same navigation. The
+    // panel's own fill is the only thing that changes — from an opaque plate to a dim
+    // over the stage.
     void HandOverScreen()
     {
         startPanelDim = startPanel.GetComponent<Image>();
-        if (startPanelDim != null)
-        {
-            startPanelDimColor = startPanelDim.color;
-            // Still dims the stage enough for the logo and buttons to stay legible, but
-            // no longer hides it. Raycasting is unaffected by alpha.
-            startPanelDim.color = new Color(0.02f, 0.035f, 0.09f, 0.22f);
-        }
+        if (startPanelDim == null) return;
 
-        legacyBackground = FindChild("Background");        // the flat space_background image
-        legacyStarfield = FindChild("Particle Parent");    // the old UI stars/nebulae/asteroids
-        legacyEmblem = FindChild("OrbitEmblem");           // its screen slot is now the planet
-
-        // The flat title, its hairline and the tagline under it are all replaced
-        // by the one baked emblem. Hidden before it is built, because the emblem
-        // measures the gap the remaining UI leaves and would otherwise duck
-        // under the very label it is standing in for.
-        legacyLogo = FindDeepChild("LogoText");
-        legacyLogoRule = FindDeepChild("LogoRule");
-        legacySubtitle = FindDeepChild("SubtitleText");
-
-        SetActive(legacyBackground, false);
-        SetActive(legacyStarfield, false);
-        SetActive(legacyEmblem, false);
-        SetActive(legacyLogo, false);
-        SetActive(legacyLogoRule, false);
-        SetActive(legacySubtitle, false);
+        startPanelDimColor = startPanelDim.color;
+        // Still dims the stage enough for the emblem and buttons to stay legible, but
+        // no longer hides it. Raycasting is unaffected by alpha.
+        startPanelDim.color = new Color(0.02f, 0.035f, 0.09f, 0.22f);
     }
 
     void Restore()
     {
         if (startPanelDim != null) startPanelDim.color = startPanelDimColor;
-        SetActive(legacyBackground, true);
-        SetActive(legacyStarfield, true);
-        SetActive(legacyEmblem, true);
-        SetActive(legacyLogo, true);
-        SetActive(legacyLogoRule, true);
-        SetActive(legacySubtitle, true);
 
         // A hand-over has already put every borrowed object back, in its own order and
         // on the exact frame the game took over. This is the path for every other exit —
         // and nothing is given back that was never taken.
         if (borrowed && !handedOver) ReturnBorrowedObjects();
-
-        if (stage != null) Destroy(stage.gameObject);
     }
 
     // Undoes everything the menu did to objects it does not own. The Hero Planet is not
@@ -354,6 +365,13 @@ public sealed class MainMenuShowcase : MonoBehaviour
     void ReturnBorrowedObjects()
     {
         if (heroRocket != null) heroRocket.Release();
+
+        if (rocket != null)
+        {
+            rocket.position = gameplayRocketPosition;
+            rocket.rotation = Quaternion.Euler(gameplayRocketEuler);
+            rocket.localScale = gameplayRocketScale;
+        }
 
         DestroyHeroPlanet();
         ShowWorldSky(1f);
@@ -375,7 +393,12 @@ public sealed class MainMenuShowcase : MonoBehaviour
         globalLights.Clear();
         globalLightIntensities.Clear();
 
-        if (stageCamera != null) stageCamera.orthographicSize = cameraBaseOrthoSize;
+        if (stageCamera != null)
+        {
+            stageCamera.transform.position = gameplayCameraPosition;
+            stageCamera.transform.rotation = Quaternion.identity;
+            stageCamera.orthographicSize = cameraBaseOrthoSize;
+        }
         if (cameraFollow != null) cameraFollow.enabled = true;
 
         GameManager.isIntroPlaying = false;
@@ -389,46 +412,25 @@ public sealed class MainMenuShowcase : MonoBehaviour
         hero = null;
     }
 
-    GameObject FindChild(string name)
-    {
-        Transform child = startPanel != null ? startPanel.transform.Find(name) : null;
-        return child != null ? child.gameObject : null;
-    }
-
-    // The scene nests some start-screen labels under other controls, so the flat
-    // lookup above is not enough for them.
-    GameObject FindDeepChild(string name)
-    {
-        if (startPanel == null) return null;
-        foreach (Transform child in startPanel.GetComponentsInChildren<Transform>(true))
-            if (child.name.Trim() == name) return child.gameObject;
-        return null;
-    }
-
-    static void SetActive(GameObject target, bool active)
-    {
-        if (target != null && target.activeSelf != active) target.SetActive(active);
-    }
-
     // ─── Stage ───────────────────────────────────────────────────────────────
 
     bool BuildStage(Color accent)
     {
         int layer = LayerMask.NameToLayer(StageLayerName);
-        if (layer < 0) layer = gameObject.layer;
+        if (layer >= 0) gameObject.layer = layer;
 
         // From here on the menu is holding the camera, the ship and the world's lights.
         // Anything that goes wrong past this line still has to give them back.
         borrowed = true;
 
-        // Parked on the hero world for now. Where the stage — and with it the camera —
-        // finally sits is a share of the visible height, which is only known once the
-        // hero has been measured and framed. See PlaceStage.
-        GameObject root = new GameObject("MenuShowcaseStage") { layer = layer };
-        root.transform.position = heroBasePosition;
-        stage = root.transform;
+        // This root is the stage: the hero world and the light rig are its serialized
+        // children. It is parked on the hero world for now — where the stage, and with it
+        // the camera, finally sits is a share of the visible height, which is only known
+        // once the hero has been measured and framed. See PlaceStage.
+        stage = transform;
+        stage.position = heroBasePosition;
 
-        if (!CreateHeroPlanet()) return false;
+        if (!MeasureHeroPlanet()) return false;
 
         PrepareCamera();
         BuildLights(accent);
@@ -437,10 +439,20 @@ public sealed class MainMenuShowcase : MonoBehaviour
         float halfHeight = stageOrtho;
         float halfWidth = stageOrtho * stageCamera.aspect;
 
-        MenuSpaceBackdrop backdrop = root.AddComponent<MenuSpaceBackdrop>();
+        MenuSpaceBackdrop backdrop = GetComponent<MenuSpaceBackdrop>();
+        if (backdrop == null)
+        {
+            Debug.LogError("MainMenuShowcase: required serialized MenuSpaceBackdrop component is missing.", this);
+            return false;
+        }
         backdrop.Build(halfWidth, halfHeight, accent);
 
-        heroRocket = root.AddComponent<MenuHeroRocket>();
+        heroRocket = GetComponent<MenuHeroRocket>();
+        if (heroRocket == null)
+        {
+            Debug.LogError("MainMenuShowcase: required serialized MenuHeroRocket component is missing.", this);
+            return false;
+        }
         // The orbit is capped to the frame so the ship can never swing off the side of a
         // narrow screen. It stays flat in the hero's own z plane: the hero is a sprite,
         // so depth would only push the ship out of the plane gameplay hands it back on.
@@ -460,16 +472,13 @@ public sealed class MainMenuShowcase : MonoBehaviour
         return true;
     }
 
-    // The hero world is the menu's own object, parented to the stage so it dies with it.
-    // Nothing gameplay owns is touched here.
-    bool CreateHeroPlanet()
+    // The hero world is already in the scene — a serialized LavaHero.prefab instance under
+    // this root — so there is nothing to load or spawn. It is only measured and moved onto
+    // the spot the first gameplay planet took. Nothing gameplay owns is touched here.
+    bool MeasureHeroPlanet()
     {
-        GameObject prefab = Resources.Load<GameObject>(HeroPrefabPath);
-        if (prefab == null) return false;
-
-        GameObject instance = Instantiate(prefab, heroBasePosition, Quaternion.identity, stage);
-        instance.name = "MenuLavaHero";
-        hero = instance.transform;
+        if (hero == null) return false;
+        hero.position = heroBasePosition;
 
         // Authored at its final size: the camera frames the planet, the planet is never
         // scaled to the camera.
@@ -561,55 +570,45 @@ public sealed class MainMenuShowcase : MonoBehaviour
         return Color.Lerp(baseColor, accent * 0.5f, 0.06f);
     }
 
-    // Three 2D lights, no shadows and no normal maps: the whole lighting rig costs a
-    // handful of blend operations and reacts entirely to the theme's accent colour, so
-    // a future theme lights itself correctly the moment it registers.
+    // Three serialized 2D lights, no shadows and no normal maps: the whole lighting rig
+    // costs a handful of blend operations. Only their colour and intensity are set here,
+    // and entirely from the theme's accent — so a future theme lights itself correctly the
+    // moment it registers, without the scene needing to be re-authored.
     void BuildLights(Color accent)
     {
         // Ambient fill — heavily desaturated accent. This is what makes Ice read cold
-        // and Lava read hot before any key light lands. Deliberately a very wide point
-        // light rather than a global one: URP 2D allows a single global light per
-        // sorting layer, and that slot already belongs to the gameplay scene.
-        fillLight = CreateLight("FillLight", Light2D.LightType.Point);
-        fillLight.color = Color.Lerp(accent, Color.white, 0.46f);
-        // Dimmer than the key by a clear margin: that gap is what gives the disc a lit
-        // side and a shadow side instead of the evenly-washed ball it used to be.
-        fillLight.intensity = 0.46f;
-        fillLight.falloffIntensity = 0.28f;
+        // and Lava read hot before any key light lands. A very wide point light rather
+        // than a global one: URP 2D allows a single global light per sorting layer, and
+        // that slot already belongs to the gameplay scene.
+        if (fillLight != null)
+        {
+            fillLight.color = Color.Lerp(accent, Color.white, 0.46f);
+            // Dimmer than the key by a clear margin: that gap is what gives the disc a lit
+            // side and a shadow side instead of an evenly-washed ball.
+            fillLight.intensity = 0.46f;
+            fillLight.falloffIntensity = 0.28f;
+        }
 
         // Key — the local sun, and a sun is a sun on every planet. Almost pure warm
         // white with a trace of the theme, so Natural reads as sunlight instead of
         // green light while Ice still resolves cold once fill and rim land on it.
-        keyLight = CreateLight("KeyLight", Light2D.LightType.Point);
-        keyLight.color = Color.Lerp(accent, KeyLightWarm, 0.76f);
-        keyLight.intensity = 1.12f;
-        keyLight.falloffIntensity = 0.5f;   // wider hot side: the surface detail reads
+        if (keyLight != null)
+        {
+            keyLight.color = Color.Lerp(accent, KeyLightWarm, 0.76f);
+            keyLight.intensity = 1.12f;
+            keyLight.falloffIntensity = 0.5f;   // wider hot side: the surface detail reads
+        }
 
         // Rim — pure accent from the opposite side. This is what carries the theme's
-        // colour and gives the sprite a silhouette instead of a flat disc.
-        rimLight = CreateLight("RimLight", Light2D.LightType.Point);
-        // Saturated rather than pale, and tight: it should draw a bright edge along the
-        // dark side, not add another wash of light to the whole planet.
-        rimLight.color = Color.Lerp(accent, Color.white, 0.12f);
-        rimLight.intensity = 0.92f;
-        rimLight.falloffIntensity = 0.86f;
-    }
-
-    Light2D CreateLight(string name, Light2D.LightType type)
-    {
-        GameObject go = new GameObject(name) { layer = stage.gameObject.layer };
-        go.transform.SetParent(stage, false);
-
-        Light2D light = go.AddComponent<Light2D>();
-        light.lightType = type;
-        light.shadowsEnabled = false;
-
-        // Only one sorting layer exists today, but adding every layer keeps the rig
-        // correct if the project ever gains more.
-        SortingLayer[] sortingLayers = SortingLayer.layers;
-        for (int i = 0; i < sortingLayers.Length; i++) light.AddTargetSortingLayer(sortingLayers[i].id);
-
-        return light;
+        // colour and gives the sprite a silhouette instead of a flat disc. Saturated
+        // rather than pale, and tight: it should draw a bright edge along the dark side,
+        // not add another wash of light to the whole planet.
+        if (rimLight != null)
+        {
+            rimLight.color = Color.Lerp(accent, Color.white, 0.12f);
+            rimLight.intensity = 0.92f;
+            rimLight.falloffIntensity = 0.86f;
+        }
     }
 
     // The hero world arrives as bare rock. Everything that makes it read as a live
@@ -626,12 +625,14 @@ public sealed class MainMenuShowcase : MonoBehaviour
         // The menu's own volcanic pass. MenuPlanetLife is deliberately not added: it
         // dresses living worlds with pollen, petals and birds, none of which belong on
         // molten rock.
-        heroLava = hero.gameObject.AddComponent<MenuLavaAmbience>();
+        heroLava = hero.GetComponent<MenuLavaAmbience>();
+        if (heroLava == null)
+            Debug.LogError("MainMenuShowcase: serialized Lava hero is missing MenuLavaAmbience.", hero);
 
         // One turn every few minutes: the world is alive, and the caldera stays in the
         // corner of the frame it was composed for for as long as the menu is up.
-        MenuHeroSpin spin = hero.gameObject.AddComponent<MenuHeroSpin>();
-        spin.Configure(true);
+        MenuHeroSpin spin = hero.GetComponent<MenuHeroSpin>();
+        if (spin != null) spin.Configure(true);
     }
 
     // The camera frames the planet; the planet is never resized. This is the only place
@@ -744,6 +745,9 @@ public sealed class MainMenuShowcase : MonoBehaviour
 
         builtAspect = stageCamera.aspect;
         FrameHero();
+        MenuSpaceBackdrop backdrop = GetComponent<MenuSpaceBackdrop>();
+        if (backdrop != null)
+            backdrop.FitViewport(stageOrtho * stageCamera.aspect, stageOrtho);
         PlaceLights(heroBodyRadius);
         // The emblem measures the UI, and the Canvas has not re-laid itself out
         // yet on this frame. Reframing for a few frames after the change is what
@@ -760,9 +764,6 @@ public sealed class MainMenuShowcase : MonoBehaviour
     IEnumerator LaunchSequence()
     {
         CanvasGroup panelGroup = null;
-        RectTransform panelRect = null;
-        Vector3 panelBaseScale = Vector3.one;
-        Vector2 panelBasePosition = Vector2.zero;
 
         if (startPanel != null)
         {
@@ -770,12 +771,6 @@ public sealed class MainMenuShowcase : MonoBehaviour
             if (panelGroup == null) panelGroup = startPanel.AddComponent<CanvasGroup>();
             panelGroup.interactable = false;
             panelGroup.blocksRaycasts = false;
-            panelRect = startPanel.GetComponent<RectTransform>();
-            if (panelRect != null)
-            {
-                panelBaseScale = panelRect.localScale;
-                panelBasePosition = panelRect.anchoredPosition;
-            }
         }
 
         CaptureHud();
@@ -792,8 +787,11 @@ public sealed class MainMenuShowcase : MonoBehaviour
             if (hiddenPlanets[i] != null) hiddenPlanets[i].SetActive(true);
         if (hiddenPlanetFader != null) hiddenPlanetFader.SetAlpha(0f);
 
+        MenuSpaceBackdrop launchBackdrop = GetComponent<MenuSpaceBackdrop>();
+        FitLaunchViewport(launchBackdrop);
+
         Vector3 cameraStart = stageCamera.transform.position;
-        float rocketHalfHeight = GetRocketOrbitHalfHeight();
+        float gameplayOrbitRadius = rocketController.GetOrbitEnvelopeRadius(firstPlanet);
         float lookAhead = cameraFollow != null ? cameraFollow.lookAheadY : 2f;
 
         float elapsed = 0f;
@@ -817,8 +815,7 @@ public sealed class MainMenuShowcase : MonoBehaviour
             // is being handed to.
             if (heroRocket != null)
             {
-                heroRocket.BeginHandOver(
-                    PlanetPresentation.GetOrbitRingRadius(firstPlanet) + rocketHalfHeight);
+                heroRocket.BeginHandOver(gameplayOrbitRadius);
                 heroRocket.SetHandOverProgress(settle);
             }
 
@@ -828,11 +825,14 @@ public sealed class MainMenuShowcase : MonoBehaviour
             Vector3 gameplayCamera = new Vector3(0f, rocket.position.y + lookAhead, -10f);
             stageCamera.transform.position = Vector3.Lerp(cameraStart, gameplayCamera, camera);
 
-            // The hero world is a sprite under the stage root, so the one stage fade
-            // carries it, its glow layers and the backdrop out together.
-            if (stageFader != null) stageFader.SetAlpha(1f - dissolve);
-            if (hiddenPlanetFader != null) hiddenPlanetFader.SetAlpha(reveal);
+            FitLaunchViewport(launchBackdrop);
             ShowWorldSky(reveal);
+
+            // The menu backdrop only dissolves once the gameplay void is refit and
+            // rising on the same frame — never ahead of it during the pull-back.
+            float menuDissolve = Mathf.Min(dissolve, reveal);
+            if (stageFader != null) stageFader.SetAlpha(1f - menuDissolve);
+            if (hiddenPlanetFader != null) hiddenPlanetFader.SetAlpha(reveal);
             SetHudAlpha(reveal);
 
             float lightFade = 1f - dissolve;
@@ -849,11 +849,6 @@ public sealed class MainMenuShowcase : MonoBehaviour
             {
                 float ui = SmootherStep(Curve(t, 0f, 0.30f));
                 panelGroup.alpha = 1f - ui;
-                if (panelRect != null)
-                {
-                    panelRect.localScale = panelBaseScale * (1f - 0.045f * ui);
-                    panelRect.anchoredPosition = panelBasePosition + Vector2.up * (26f * ui);
-                }
             }
 
             if (brandEmblem != null) brandEmblem.Reframe();
@@ -881,6 +876,16 @@ public sealed class MainMenuShowcase : MonoBehaviour
         SpriteRenderer renderer = rocket != null ? rocket.GetComponent<SpriteRenderer>() : null;
         if (renderer == null || renderer.sprite == null) return 0.25f;
         return Mathf.Max(0.05f, renderer.sprite.bounds.extents.y * Mathf.Abs(rocketBaseScale.y));
+    }
+
+    void FitLaunchViewport(MenuSpaceBackdrop backdrop)
+    {
+        if (stageCamera == null) return;
+
+        float halfHeight = stageCamera.orthographicSize;
+        float halfWidth = halfHeight * stageCamera.aspect;
+        if (backdrop != null) backdrop.FitViewport(halfWidth, halfHeight);
+        SpaceEnvironment.SyncCoverToViewport();
     }
 
     // The single frame where the ship changes owner. Its pose is read off the menu orbit

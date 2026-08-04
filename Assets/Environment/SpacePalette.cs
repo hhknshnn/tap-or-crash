@@ -32,6 +32,13 @@ public struct SpacePalette
     // Kept in every theme so the sky never collapses to one hue.
     static readonly Color CosmicViolet = new Color(0.34f, 0.20f, 0.62f, 1f);
 
+    // Day-space bases: deep blue-teal-cyan, clearly brighter than night void but never
+    // flat sky blue. Blended in by SpaceEnvironment when dayFactor rises.
+    static readonly Color DayVoidBase = new Color(0.06f, 0.14f, 0.24f, 1f);
+    static readonly Color DayGlowBase = new Color(0.10f, 0.30f, 0.40f, 1f);
+    static readonly Color DayAtmoBase = new Color(0.16f, 0.44f, 0.54f, 1f);
+    static readonly Color DayStarLift = new Color(0.88f, 0.94f, 1f, 1f);
+
     public static SpacePalette For(string themeName)
     {
         Color accent = PlanetAmbience.AccentColorFor(themeName, NeutralAccent);
@@ -74,6 +81,33 @@ public struct SpacePalette
 
         return palette;
     }
+
+    // Shifts the active night palette toward day-space without replacing it. Night
+    // values are returned unchanged at t = 0 so night mode stays identical.
+    public SpacePalette BlendDay(float t)
+    {
+        if (t <= 0f) return this;
+
+        float layerLift = t * 0.38f;
+        float starLift = t * 0.22f;
+
+        return new SpacePalette
+        {
+            deepVoid = Color.Lerp(deepVoid, DayVoidBase, t),
+            voidGlow = Color.Lerp(voidGlow, DayGlowBase, t),
+            nebulaNear = Color.Lerp(nebulaNear, Lift(nebulaNear, layerLift), t),
+            nebulaFar = Color.Lerp(nebulaFar, Lift(nebulaFar, layerLift * 0.85f), t),
+            galaxy = Color.Lerp(galaxy, Lift(galaxy, layerLift * 0.55f), t),
+            star = Color.Lerp(star, Color.Lerp(star, DayStarLift, 0.65f), t),
+            dust = Color.Lerp(dust, Lift(dust, layerLift * 0.45f), t),
+            rock = Color.Lerp(rock, Lift(rock, layerLift * 0.35f), t),
+            atmosphere = Color.Lerp(atmosphere, DayAtmoBase, t),
+            bounce = Color.Lerp(bounce, Lift(bounce, starLift), t)
+        };
+    }
+
+    static Color Lift(Color color, float amount) =>
+        Color.Lerp(color, Color.white, Mathf.Clamp01(amount));
 
     public static SpacePalette Lerp(SpacePalette a, SpacePalette b, float t)
     {

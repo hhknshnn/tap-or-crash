@@ -48,6 +48,24 @@ public class AsteroidSpawner : MonoBehaviour
         PrewarmPool();
     }
 
+    /// <summary>
+    /// Returns the spawner to the state it is in before a run has ever reached the
+    /// activation planet: nothing in flight and the first interval still undrawn,
+    /// so the introduction at Planet 21 is as sparse in every run as it is in the
+    /// first. Called only by <see cref="RunSession.Begin"/>.
+    /// </summary>
+    public void ResetForNewRun()
+    {
+        AsteroidMover[] movers = GetComponentsInChildren<AsteroidMover>(true);
+        for (int i = 0; i < movers.Length; i++)
+            if (movers[i] != null && movers[i].gameObject.activeSelf) Recycle(movers[i]);
+
+        spawningArmed = false;
+        spawnTimer = 0f;
+        nextSpawnTime = 0f;
+        spawnSequence = 0;
+    }
+
     void Update()
     {
         if (!GameManager.isGameStarted || GameManager.isGameOver || mainCamera == null) return;
@@ -55,6 +73,8 @@ public class AsteroidSpawner : MonoBehaviour
 
         int score = GameManager.instance.GetScore();
         if (!AsteroidDifficulty.IsActive(score)) return;
+        if (WorldTransitionManager.IsPendingOrPlaying
+            || PresentationGate.IsActive(PresentationGate.Kind.GameplayNotice)) return;
 
         // The very first interval is drawn the moment the run reaches the
         // activation planet, so the introduction is as sparse as the curve says.

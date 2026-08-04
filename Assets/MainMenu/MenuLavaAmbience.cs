@@ -98,6 +98,22 @@ public sealed class MenuLavaAmbience : PlanetAmbience
 
     protected override void Build()
     {
+        if (transform.Find("MenuLavaAtmosphere") != null)
+        {
+            if (!BindExisting())
+            {
+                Debug.LogError("MenuLavaAmbience: serialized Lava presentation is incomplete. Run the Main Menu authoring command.", this);
+                enabled = false;
+            }
+            return;
+        }
+        if (Application.isPlaying)
+        {
+            Debug.LogError("MenuLavaAmbience: serialized Lava presentation is missing. Run the Main Menu authoring command.", this);
+            enabled = false;
+            return;
+        }
+
         MultiplyTint(BasaltTint);
 
         Vector3 caldera = ResolveCaldera();
@@ -108,6 +124,92 @@ public sealed class MenuLavaAmbience : PlanetAmbience
         BuildParticles();
 
         nextMajorEruption = Time.time + Random.Range(4f, 7f);
+    }
+
+    bool BindExisting()
+    {
+        atmosphere = transform.Find("MenuLavaAtmosphere")?.GetComponent<SpriteRenderer>();
+        heatHalo = transform.Find("MenuLavaHeatHalo")?.GetComponent<SpriteRenderer>();
+        crackGlow = transform.Find("MenuLavaCracks")?.GetComponent<SpriteRenderer>();
+        crackGlowSecondary = transform.Find("MenuLavaCracksCore")?.GetComponent<SpriteRenderer>();
+        calderaShoulder = transform.Find("MenuLavaCalderaShoulder")?.GetComponent<SpriteRenderer>();
+        calderaCore = transform.Find("MenuLavaCalderaCore")?.GetComponent<SpriteRenderer>();
+        calderaLight = transform.Find("MenuLavaCalderaLight")?.GetComponent<Light2D>();
+        if (calderaCore != null) calderaCoreSize = calderaCore.transform.localScale.x;
+        if (calderaShoulder != null) calderaShoulderSize = calderaShoulder.transform.localScale.x;
+        if (calderaLight != null) calderaLightBase = calderaLight.intensity;
+
+        vents.Clear();
+        runs.Clear();
+        foreach (Transform child in transform)
+        {
+            if (child.name == "MenuLavaVentGlow")
+            {
+                SpriteRenderer renderer = child.GetComponent<SpriteRenderer>();
+                Transform haze = null;
+                for (int i = child.GetSiblingIndex() + 1; i < transform.childCount; i++)
+                    if (transform.GetChild(i).name == "MenuLavaHeatHaze") { haze = transform.GetChild(i); break; }
+                vents.Add(new Vent { position = child.localPosition, direction = ((Vector2)child.localPosition).normalized, radius = child.localScale.x, phase = vents.Count * 1.7f, nextEruption = Time.time + 2f + vents.Count, nextEmberPuff = Time.time + 0.5f, mouthGlow = renderer, haze = haze, hazeRenderer = haze != null ? haze.GetComponent<SpriteRenderer>() : null });
+            }
+            else if (child.name == "MenuLavaRun")
+            {
+                SpriteRenderer renderer = child.GetComponent<SpriteRenderer>();
+                Vector2 direction = child.localRotation * Vector2.right;
+                float travel = Mathf.Abs(child.localScale.x);
+                float thickness = Mathf.Abs(child.localScale.y) / 2.2f;
+                Vector2 start = (Vector2)child.localPosition - direction * (travel * 0.5f);
+                const float lifetime = 2.7f;
+                runs.Add(new LavaRun
+                {
+                    start = start,
+                    direction = direction.normalized,
+                    speed = travel / lifetime,
+                    lifetime = lifetime,
+                    size = thickness,
+                    interval = 0.22f,
+                    nextDrop = Time.time + runs.Count * 0.2f,
+                    glow = renderer
+                });
+            }
+            else if (child.name == "MenuLavaFire") fireParticles = child.GetComponent<ParticleSystem>();
+            else if (child.name == "MenuLavaFlow") flowParticles = child.GetComponent<ParticleSystem>();
+            else if (child.name == "MenuLavaSmoke") smokeParticles = child.GetComponent<ParticleSystem>();
+            else if (child.name == "MenuLavaRocks") rockParticles = child.GetComponent<ParticleSystem>();
+        }
+
+        AdoptParticles(fireParticles, VfxSpriteFactory.ParticleMaterial,
+            ParticleSystemRenderMode.Billboard, null);
+        AdoptParticles(flowParticles, VfxSpriteFactory.ParticleMaterial,
+            ParticleSystemRenderMode.Billboard, null);
+        AdoptParticles(smokeParticles, VfxSpriteFactory.ParticleMaterial,
+            ParticleSystemRenderMode.Billboard, null);
+        AdoptParticles(rockParticles, VfxSpriteFactory.GeometricParticleMaterial,
+            ParticleSystemRenderMode.Mesh, VfxSpriteFactory.TriangleMesh);
+
+        nextMajorEruption = Time.time + Random.Range(4f, 7f);
+        return atmosphere != null && heatHalo != null && crackGlow != null && calderaCore != null &&
+               calderaLight != null && vents.Count == 3 && runs.Count == 3 &&
+               fireParticles != null && flowParticles != null && smokeParticles != null && rockParticles != null;
+    }
+
+    // Particle modules are already serialized. Adoption restores only the references that
+    // cannot survive serialization (the generated triangle mesh) and the exact rendering
+    // invariants; it never multiplies a saved transform or particle size.
+    static void AdoptParticles(ParticleSystem particles, Material material,
+        ParticleSystemRenderMode renderMode, Mesh mesh)
+    {
+        if (particles == null) return;
+
+        particles.transform.localScale = Vector3.one;
+        ParticleSystem.MainModule main = particles.main;
+        main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+
+        ParticleSystemRenderer renderer = particles.GetComponent<ParticleSystemRenderer>();
+        if (renderer == null) return;
+        renderer.sharedMaterial = material;
+        renderer.renderMode = renderMode;
+        if (renderMode == ParticleSystemRenderMode.Mesh) renderer.mesh = mesh;
     }
 
     // The painted crater of the hero sprite, straight from the theme's own table, so a

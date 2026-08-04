@@ -14,6 +14,15 @@ public class ShipSkinManager : MonoBehaviour
         public string name;
         public Color tint;
         public string prefsKey;
+        public GameObject modelPrefab;
+        // Full root euler for the shop preview render. Most models are authored
+        // facing sideways and need the shared (0,0,90) spin to face the icon
+        // camera; a model with its own visual pivot (e.g. Retro UFO) already
+        // orients itself in OnEnable and specifies Vector3.zero here so the
+        // preview doesn't stack a second, conflicting rotation on top.
+        public Vector3 shopPreviewEuler;
+        public bool temporarilyUnlocked;
+        public LowPolyRocketFlame.FlameProfile? flameProfile;
     }
 
     private sealed class SkinCardView
@@ -26,6 +35,8 @@ public class ShipSkinManager : MonoBehaviour
         // below now drive that instead.
         public Image rim;
         public Image preview;
+        public RawImage modelPreview;
+        public Texture2D previewTexture;
         public TextMeshProUGUI priceText;
         public TextMeshProUGUI statusText;
         public Button actionButton;
@@ -33,19 +44,19 @@ public class ShipSkinManager : MonoBehaviour
         public TextMeshProUGUI actionText;
     }
 
-    private static readonly SkinData[] Skins =
-    {
-        new SkinData { name = "DEFAULT", tint = Color.white, prefsKey = "skin_0" },
-        new SkinData { name = "FIRE", tint = new Color(1f, 0.35f, 0.1f), prefsKey = "skin_1" },
-        new SkinData { name = "ICE", tint = new Color(0.4f, 0.85f, 1f), prefsKey = "skin_2" },
-        new SkinData { name = "GOLD", tint = new Color(1f, 0.82f, 0.1f), prefsKey = "skin_3" },
-    };
-
     private const string SelectedSkinKey = "SelectedSkin";
+    private const int ShopPreviewLayer = 31;
+
+    [Header("Optional Model Skins")]
+    [SerializeField] private GameObject catRocketPrefab;
+    [SerializeField] private GameObject dogRocketPrefab;
+    [SerializeField] private GameObject retroUfoRocketPrefab;
 
     private readonly List<SkinCardView> cardViews = new List<SkinCardView>();
+    private SkinData[] skins;
     private int selectedSkin;
     private SpriteRenderer rocketRenderer;
+    private RocketModelVisual rocketVisual;
     private GameObject shopPanel;
     private RectTransform shopCard;
     private ScrollRect shopScroll;
@@ -63,11 +74,69 @@ public class ShipSkinManager : MonoBehaviour
         if (instance == null) instance = this;
         else { Destroy(gameObject); return; }
 
-        PlayerPrefs.SetInt(Skins[0].prefsKey, 1);
+        skins = new[]
+        {
+            new SkinData { name = "DEFAULT", tint = Color.white, prefsKey = "skin_0" },
+            new SkinData { name = "FIRE", tint = new Color(1f, 0.35f, 0.1f), prefsKey = "skin_1" },
+            new SkinData { name = "ICE", tint = new Color(0.4f, 0.85f, 1f), prefsKey = "skin_2" },
+            new SkinData { name = "GOLD", tint = new Color(1f, 0.82f, 0.1f), prefsKey = "skin_3" },
+            // Development-only availability. Premium ownership can replace this flag later;
+            // no Cat Rocket purchase key is written while it is enabled.
+            new SkinData
+            {
+                name = "CAT ROCKET",
+                tint = Color.white,
+                modelPrefab = catRocketPrefab,
+                shopPreviewEuler = new Vector3(0f, 0f, 90f),
+                temporarilyUnlocked = true
+            },
+            // Development-only availability, same isolation as Cat Rocket: the
+            // temporarilyUnlocked flag is the single switch premium ownership will
+            // replace, and no Dog Rocket purchase key is written while it is set.
+            new SkinData
+            {
+                name = "DOG ROCKET",
+                tint = Color.white,
+                modelPrefab = dogRocketPrefab,
+                shopPreviewEuler = new Vector3(0f, 0f, 90f),
+                temporarilyUnlocked = true
+            },
+            // Development-only availability, same isolation as Cat/Dog Rocket: the
+            // temporarilyUnlocked flag is the single switch premium ownership will
+            // replace, and no Retro UFO purchase key is written while it is set.
+            new SkinData
+            {
+                name = "RETRO UFO",
+                tint = Color.white,
+                modelPrefab = retroUfoRocketPrefab,
+                // RetroUfoVisualPivot already orients the saucer correctly in its own
+                // OnEnable; stacking the shared 90 degree spin on top of that pushed the
+                // preview edge-on, so this skin supplies no extra root rotation.
+                shopPreviewEuler = Vector3.zero,
+                temporarilyUnlocked = true,
+                flameProfile = new LowPolyRocketFlame.FlameProfile
+                {
+                    outer = new Color(0.55f, 0.18f, 0.85f, 0.88f),
+                    inner = new Color(0.35f, 0.95f, 1f, 0.98f),
+                    particleStart = new Color(0.6f, 0.95f, 1f),
+                    particleMid = new Color(0.55f, 0.3f, 0.95f),
+                    particleEnd = new Color(0.3f, 0.08f, 0.55f),
+                    lengthMultiplier = 0.65f,
+                }
+            },
+        };
+
+        if (catRocketPrefab == null)
+            Debug.LogError("ShipSkinManager: Cat Rocket prefab is not assigned.", this);
+        if (dogRocketPrefab == null)
+            Debug.LogError("ShipSkinManager: Dog Rocket prefab is not assigned.", this);
+        if (retroUfoRocketPrefab == null)
+            Debug.LogError("ShipSkinManager: Retro UFO Rocket prefab is not assigned.", this);
+
+        PlayerPrefs.SetInt(skins[0].prefsKey, 1);
         selectedSkin = PlayerPrefs.GetInt(SelectedSkinKey, 0);
 
-        if (selectedSkin < 0 || selectedSkin >= Skins.Length
-            || PlayerPrefs.GetInt(Skins[selectedSkin].prefsKey, 0) != 1)
+        if (selectedSkin < 0 || selectedSkin >= skins.Length || !IsOwned(selectedSkin))
         {
             selectedSkin = 0;
             PlayerPrefs.SetInt(SelectedSkinKey, selectedSkin);
@@ -90,33 +159,88 @@ public class ShipSkinManager : MonoBehaviour
     {
         if (CoinManager.instance != null)
             CoinManager.instance.BalanceChanged -= OnBalanceChanged;
+
+        for (int i = 0; i < cardViews.Count; i++)
+        {
+            Texture2D texture = cardViews[i] != null ? cardViews[i].previewTexture : null;
+            if (texture == null) continue;
+            Destroy(texture);
+        }
+
         if (instance == this) instance = null;
     }
 
     SpriteRenderer FindRocketRenderer()
     {
         RocketController controller = FindAnyObjectByType<RocketController>();
-        return controller != null ? controller.GetComponent<SpriteRenderer>() : null;
+        if (controller == null) return null;
+        rocketVisual = controller.GetComponent<RocketModelVisual>();
+        return controller.GetComponent<SpriteRenderer>();
     }
 
     public void ApplySkin(int index)
     {
-        if (index < 0 || index >= Skins.Length) return;
+        if (index < 0 || index >= skins.Length) return;
         selectedSkin = index;
         if (rocketRenderer == null) rocketRenderer = FindRocketRenderer();
-        if (rocketRenderer != null) rocketRenderer.color = Skins[index].tint;
+        if (rocketRenderer != null) rocketRenderer.color = skins[index].tint;
+        if (rocketVisual == null && rocketRenderer != null)
+            rocketVisual = rocketRenderer.GetComponent<RocketModelVisual>();
+        if (rocketVisual != null)
+            rocketVisual.SetReplacementModel(skins[index].modelPrefab);
+
+        LowPolyRocketFlame flame = rocketRenderer != null
+            ? rocketRenderer.GetComponent<LowPolyRocketFlame>()
+            : null;
+        if (flame != null)
+            flame.SetFlameProfile(skins[index].flameProfile ?? LowPolyRocketFlame.FlameProfile.Classic);
     }
 
     public void ReapplyCurrent() => ApplySkin(selectedSkin);
 
+    static Canvas FindMainCanvas()
+    {
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas candidate = canvases[i];
+            if (candidate != null && candidate.isRootCanvas
+                && candidate.transform.Find("StartPanel") != null)
+                return candidate;
+        }
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas candidate = canvases[i];
+            if (candidate != null && candidate.isRootCanvas)
+                return candidate;
+        }
+
+        return canvases.Length > 0 ? canvases[0] : null;
+    }
+
     void CreateShopButton()
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = FindMainCanvas();
         if (canvas == null) return;
 
         Transform startPanel = canvas.transform.Find("StartPanel");
         Transform parent = startPanel != null ? startPanel : canvas.transform;
-        if (parent.Find("ShopButton") != null) return;
+        Transform existingShopButton = parent.Find("ShopButton");
+        if (existingShopButton != null)
+        {
+            Button button = existingShopButton.GetComponent<Button>();
+            if (button == null)
+            {
+                Debug.LogError("ShipSkinManager: ShopButton has no Button component.", this);
+                return;
+            }
+
+            button.onClick.RemoveListener(ToggleShop);
+            button.onClick.AddListener(ToggleShop);
+            return;
+        }
 
         UIStyleKit.MakeButtonAnchored(
             parent: parent,
@@ -183,7 +307,7 @@ public class ShipSkinManager : MonoBehaviour
 
     void BuildShopPanel()
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = FindMainCanvas();
         if (canvas == null)
         {
             Debug.LogError("Rocket Shop could not be created because no active Canvas was found.", this);
@@ -367,18 +491,18 @@ public class ShipSkinManager : MonoBehaviour
 
         try
         {
-            for (int i = 0; i < Skins.Length; i++) BuildSkinCard(shopContent, i);
+            for (int i = 0; i < skins.Length; i++) BuildSkinCard(shopContent, i);
         }
         catch (Exception exception)
         {
-            Debug.LogError("Rocket Shop card creation failed. Expected Default, Fire, Ice and Gold.\n"
+            Debug.LogError("Rocket Shop card creation failed. Expected Default, Fire, Ice, Gold and Cat Rocket.\n"
                 + exception, this);
             return false;
         }
 
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(shopContent);
-        return cardViews.Count == Skins.Length;
+        return cardViews.Count == skins.Length;
     }
 
     bool EnsureShopContentReady(out string error)
@@ -401,12 +525,12 @@ public class ShipSkinManager : MonoBehaviour
 
         if (cardViews.Count == 0 && shopContent.childCount == 0 && !BuildShopCards())
         {
-            error = "the four product cards could not be created.";
+            error = "the five product cards could not be created.";
             return false;
         }
-        if (cardViews.Count != Skins.Length)
+        if (cardViews.Count != skins.Length)
         {
-            error = "expected 4 product cards but found " + cardViews.Count + ".";
+            error = "expected 5 product cards but found " + cardViews.Count + ".";
             return false;
         }
 
@@ -437,7 +561,7 @@ public class ShipSkinManager : MonoBehaviour
 
     void BuildSkinCard(Transform parent, int index)
     {
-        SkinData skin = Skins[index];
+        SkinData skin = skins[index];
         GameObject cardGo = new GameObject("SkinCard_" + index);
         cardGo.transform.SetParent(parent, false);
         RectTransform rect = cardGo.AddComponent<RectTransform>();
@@ -480,14 +604,29 @@ public class ShipSkinManager : MonoBehaviour
         RectTransform previewRect = previewGo.AddComponent<RectTransform>();
         previewRect.anchorMin = previewRect.anchorMax = new Vector2(0.5f, 0.5f);
         previewRect.sizeDelta = new Vector2(116f, 116f);
-        Image preview = previewGo.AddComponent<Image>();
-        // The gameplay rocket is a 3D model now; its root sprite is an invisible
-        // bounds proxy, so shop cards use a pre-rendered snapshot of the model.
-        Sprite modelPreview = Resources.Load<Sprite>("RocketPreview");
-        preview.sprite = modelPreview != null ? modelPreview : UIStyleKit.Circle;
-        preview.color = skin.tint;
-        preview.preserveAspect = true;
-        preview.raycastTarget = false;
+        Image preview = null;
+        RawImage prefabPreview = null;
+        Texture2D previewTexture = skin.modelPrefab != null
+            ? RenderModelPreview(skin.modelPrefab, skin.shopPreviewEuler)
+            : null;
+        if (previewTexture != null)
+        {
+            prefabPreview = previewGo.AddComponent<RawImage>();
+            prefabPreview.texture = previewTexture;
+            prefabPreview.color = Color.white;
+            prefabPreview.raycastTarget = false;
+        }
+        else
+        {
+            preview = previewGo.AddComponent<Image>();
+            // The gameplay rocket is a 3D model now; its root sprite is an invisible
+            // bounds proxy, so tint skins use the existing pre-rendered snapshot.
+            Sprite modelPreview = Resources.Load<Sprite>("RocketPreview");
+            preview.sprite = modelPreview != null ? modelPreview : UIStyleKit.Circle;
+            preview.color = skin.tint;
+            preview.preserveAspect = true;
+            preview.raycastTarget = false;
+        }
 
         // Three sizes, three trackings, one falling hierarchy: name, then price,
         // then state. Previously all three were within six points of each other.
@@ -531,6 +670,8 @@ public class ShipSkinManager : MonoBehaviour
             background = background,
             rim = rim,
             preview = preview,
+            modelPreview = prefabPreview,
+            previewTexture = previewTexture,
             priceText = priceText,
             statusText = statusText,
             actionButton = actionButton,
@@ -544,16 +685,20 @@ public class ShipSkinManager : MonoBehaviour
         int balance = CoinManager.instance != null ? CoinManager.instance.GetCoins() : 0;
         if (shopBalanceText != null) shopBalanceText.text = balance + " COINS";
 
-        for (int i = 0; i < cardViews.Count && i < Skins.Length; i++)
+        for (int i = 0; i < cardViews.Count && i < skins.Length; i++)
         {
             SkinCardView view = cardViews[i];
-            int price = GameEconomyConfig.Current.GetSkinPrice(i);
-            bool owned = PlayerPrefs.GetInt(Skins[i].prefsKey, i == 0 ? 1 : 0) == 1;
+            SkinData skin = skins[i];
+            int price = skin.temporarilyUnlocked ? 0 : GameEconomyConfig.Current.GetSkinPrice(i);
+            bool owned = IsOwned(i);
             bool equipped = selectedSkin == i;
             bool affordable = balance >= price;
 
-            view.priceText.text = price == 0 ? "PRICE  •  FREE" : "PRICE  •  " + price + " COINS";
-            view.preview.color = Skins[i].tint;
+            view.priceText.gameObject.SetActive(!skin.temporarilyUnlocked);
+            if (!skin.temporarilyUnlocked)
+                view.priceText.text = price == 0 ? "PRICE  •  FREE" : "PRICE  •  " + price + " COINS";
+            if (view.preview != null) view.preview.color = skin.tint;
+            if (view.modelPreview != null) view.modelPreview.color = Color.white;
 
             // One equipped card carries the call-to-action colour; everything
             // else stays on the world palette. That is the same rule the launch
@@ -567,7 +712,7 @@ public class ShipSkinManager : MonoBehaviour
             }
             else if (owned)
             {
-                view.statusText.text = "OWNED";
+                view.statusText.text = skin.temporarilyUnlocked ? "AVAILABLE" : "OWNED";
                 view.statusText.color = UIDesign.TextSub;
                 SetActionState(view, "EQUIP", UIDesign.Cta, UIDesign.CtaText, true);
                 SetRim(view, UIDesign.GlassRim, 1f);
@@ -613,11 +758,11 @@ public class ShipSkinManager : MonoBehaviour
 
     void OnSkinClicked(int index)
     {
-        if (index < 0 || index >= Skins.Length) return;
+        if (index < 0 || index >= skins.Length) return;
 
-        SkinData skin = Skins[index];
-        int price = GameEconomyConfig.Current.GetSkinPrice(index);
-        bool owned = PlayerPrefs.GetInt(skin.prefsKey, index == 0 ? 1 : 0) == 1;
+        SkinData skin = skins[index];
+        int price = skin.temporarilyUnlocked ? 0 : GameEconomyConfig.Current.GetSkinPrice(index);
+        bool owned = IsOwned(index);
 
         if (!owned)
         {
@@ -641,6 +786,140 @@ public class ShipSkinManager : MonoBehaviour
         PlayerPrefs.Save();
         ApplySkin(selectedSkin);
         RefreshShop();
+    }
+
+    bool IsOwned(int index)
+    {
+        if (index < 0 || index >= skins.Length) return false;
+        SkinData skin = skins[index];
+        return skin.temporarilyUnlocked
+            || (!string.IsNullOrEmpty(skin.prefsKey)
+                && PlayerPrefs.GetInt(skin.prefsKey, index == 0 ? 1 : 0) == 1);
+    }
+
+    static Texture2D RenderModelPreview(GameObject prefab, Vector3 rotationEuler)
+    {
+        if (prefab == null) return null;
+
+        Texture2D texture = null;
+        RenderTexture renderTarget = null;
+        GameObject previewObject = null;
+        GameObject cameraObject = null;
+        List<Material> previewMaterials = new List<Material>();
+        try
+        {
+            renderTarget = new RenderTexture(256, 256, 24, RenderTextureFormat.ARGB32)
+            {
+                name = prefab.name + "_ShopPreviewTarget",
+                antiAliasing = 2,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            renderTarget.Create();
+
+            previewObject = Instantiate(prefab);
+            previewObject.name = prefab.name + "_ShopPreviewModel";
+            previewObject.hideFlags = HideFlags.HideAndDontSave;
+            previewObject.transform.rotation = Quaternion.Euler(rotationEuler);
+            RetroUfoVisualPivot retroPreview = previewObject.GetComponentInChildren<RetroUfoVisualPivot>(true);
+            if (retroPreview != null) retroPreview.ApplyShopPreviewPose();
+            SetLayerRecursively(previewObject.transform, ShopPreviewLayer);
+
+            Renderer[] previewRenderers = previewObject.GetComponentsInChildren<Renderer>(true);
+            if (previewRenderers.Length == 0) throw new InvalidOperationException("prefab has no renderers");
+
+            // Sprite-Lit materials require a 2D Light, so a standalone preview
+            // camera otherwise renders the real Cat Rocket as a black silhouette.
+            // Clone only the preview instance's materials and use the matching
+            // unlit 2D shader so vertex colours remain intact without touching
+            // the gameplay prefab or its shared materials.
+            Shader previewShader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (previewShader == null) throw new InvalidOperationException("URP 2D preview shader is missing");
+            for (int rendererIndex = 0; rendererIndex < previewRenderers.Length; rendererIndex++)
+            {
+                Renderer previewRenderer = previewRenderers[rendererIndex];
+                Material[] sourceMaterials = previewRenderer.sharedMaterials;
+                Material[] unlitMaterials = new Material[sourceMaterials.Length];
+                for (int materialIndex = 0; materialIndex < sourceMaterials.Length; materialIndex++)
+                {
+                    Material sourceMaterial = sourceMaterials[materialIndex];
+                    if (sourceMaterial == null) continue;
+                    Material previewMaterial = new Material(sourceMaterial)
+                    {
+                        shader = previewShader,
+                        hideFlags = HideFlags.HideAndDontSave
+                    };
+                    previewMaterials.Add(previewMaterial);
+                    unlitMaterials[materialIndex] = previewMaterial;
+                }
+                previewRenderer.sharedMaterials = unlitMaterials;
+            }
+
+            Bounds bounds = previewRenderers[0].bounds;
+            for (int i = 1; i < previewRenderers.Length; i++) bounds.Encapsulate(previewRenderers[i].bounds);
+
+            cameraObject = new GameObject(prefab.name + "_ShopPreviewCamera");
+            cameraObject.hideFlags = HideFlags.HideAndDontSave;
+            Camera previewCamera = cameraObject.AddComponent<Camera>();
+            previewCamera.enabled = false;
+            previewCamera.orthographic = true;
+            previewCamera.orthographicSize = Mathf.Max(bounds.extents.y, bounds.extents.x) * 1.18f;
+            previewCamera.clearFlags = CameraClearFlags.SolidColor;
+            previewCamera.backgroundColor = Color.clear;
+            previewCamera.cullingMask = 1 << ShopPreviewLayer;
+            previewCamera.nearClipPlane = 0.01f;
+            previewCamera.farClipPlane = 50f;
+            previewCamera.allowHDR = false;
+            previewCamera.targetTexture = renderTarget;
+            cameraObject.transform.position = bounds.center + Vector3.back * 10f;
+            cameraObject.transform.rotation = Quaternion.identity;
+
+            previewCamera.Render();
+
+            RenderTexture previousTarget = RenderTexture.active;
+            try
+            {
+                RenderTexture.active = renderTarget;
+                texture = new Texture2D(256, 256, TextureFormat.RGBA32, false)
+                {
+                    name = prefab.name + "_ShopPreview",
+                    hideFlags = HideFlags.HideAndDontSave
+                };
+                texture.ReadPixels(new Rect(0f, 0f, 256f, 256f), 0, 0);
+                texture.Apply(false, false);
+            }
+            finally
+            {
+                RenderTexture.active = previousTarget;
+            }
+            return texture;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning("Cat Rocket shop preview fell back to the existing preview: "
+                + exception.Message);
+            if (texture != null) Destroy(texture);
+            texture = null;
+            return null;
+        }
+        finally
+        {
+            if (renderTarget != null)
+            {
+                renderTarget.Release();
+                Destroy(renderTarget);
+            }
+            if (previewObject != null) { previewObject.SetActive(false); Destroy(previewObject); }
+            if (cameraObject != null) { cameraObject.SetActive(false); Destroy(cameraObject); }
+            for (int i = 0; i < previewMaterials.Count; i++)
+                if (previewMaterials[i] != null) Destroy(previewMaterials[i]);
+        }
+    }
+
+    static void SetLayerRecursively(Transform root, int layer)
+    {
+        root.gameObject.layer = layer;
+        for (int i = 0; i < root.childCount; i++)
+            SetLayerRecursively(root.GetChild(i), layer);
     }
 
     void OnBalanceChanged(int _) => RefreshShop();

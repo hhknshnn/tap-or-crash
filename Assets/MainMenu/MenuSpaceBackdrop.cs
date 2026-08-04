@@ -46,6 +46,9 @@ public sealed class MenuSpaceBackdrop : MonoBehaviour
         public float spin;
     }
 
+    const float VignetteCoverScale = 2.15f;
+    const float GlowCoverScale = 1.8f;
+
     readonly List<Layer> layers = new List<Layer>(6);
     readonly List<Twinkle> twinkles = new List<Twinkle>(40);
     readonly List<Asteroid> asteroids = new List<Asteroid>(5);
@@ -57,8 +60,19 @@ public sealed class MenuSpaceBackdrop : MonoBehaviour
 
     public void Build(float visibleHalfWidth, float visibleHalfHeight, Color accent)
     {
-        halfWidth = visibleHalfWidth;
-        halfHeight = visibleHalfHeight;
+        FitViewport(visibleHalfWidth, visibleHalfHeight);
+
+        if (transform.Find("Layer1_Nebulae") != null)
+        {
+            BindExisting();
+            return;
+        }
+        if (Application.isPlaying)
+        {
+            Debug.LogError("MenuSpaceBackdrop: serialized backdrop layers are missing. Run the Main Menu authoring command.", this);
+            enabled = false;
+            return;
+        }
 
         // Sorting orders keep the backdrop strictly behind the planet (order 0) and its
         // ambience layers, whatever the prefab does with its own offsets.
@@ -69,6 +83,42 @@ public sealed class MenuSpaceBackdrop : MonoBehaviour
         BuildAsteroids(-60);
         BuildGlow(accent, -50);
         BuildVignette(-45);
+    }
+
+    public void FitViewport(float visibleHalfWidth, float visibleHalfHeight)
+    {
+        halfWidth = visibleHalfWidth;
+        halfHeight = visibleHalfHeight;
+
+        Transform vignette = transform.Find("Vignette");
+        if (vignette != null)
+            vignette.localScale = new Vector3(halfWidth * VignetteCoverScale, halfHeight * VignetteCoverScale, 1f);
+
+        if (glow != null)
+            glow.transform.localScale = Vector3.one * (halfWidth * GlowCoverScale);
+    }
+
+    public bool BindExisting()
+    {
+        layers.Clear();
+        twinkles.Clear();
+        asteroids.Clear();
+        string[] names = { "Layer1_Nebulae", "Layer2_FarStars", "Layer3_NearStars", "Layer4_BrightStars", "Layer5_Asteroids", "Layer6_AtmosphericGlow" };
+        for (int i = 0; i < names.Length; i++)
+        {
+            Transform root = transform.Find(names[i]);
+            if (root == null) return false;
+            layers.Add(new Layer { root = root, sway = new Vector2(0.015f + i * 0.008f, 0.012f + i * 0.006f), swaySpeed = new Vector2(0.05f + i * 0.012f, 0.04f + i * 0.009f), phase = i * 0.91f });
+            foreach (SpriteRenderer renderer in root.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                if (renderer.name == "NearStar" || renderer.name == "BrightStar")
+                    twinkles.Add(new Twinkle { renderer = renderer, baseAlpha = renderer.color.a, period = 2.8f + (i % 4), offset = i * 0.73f });
+                if (renderer.name == "Asteroid")
+                    asteroids.Add(new Asteroid { body = renderer.transform, velocity = new Vector2(0.008f, -0.004f), spin = 1.5f });
+                if (renderer.name == "AtmosphericGlow") { glow = renderer; glowBaseAlpha = renderer.color.a; }
+            }
+        }
+        return transform.Find("Vignette") != null;
     }
 
     void Update()
@@ -306,7 +356,7 @@ public sealed class MenuSpaceBackdrop : MonoBehaviour
 
         glowBaseAlpha = 0.032f;
         glow = MenuShowcaseAssets.CreateSprite(layer.root, "AtmosphericGlow", VfxSpriteFactory.SoftSprite,
-            sortingOrder, Vector3.zero, halfWidth * 1.8f,
+            sortingOrder, Vector3.zero, halfWidth * GlowCoverScale,
             new Color(tint.r, tint.g, tint.b, glowBaseAlpha));
 
         // A tighter pool of colour hugging the planet itself.
@@ -322,7 +372,7 @@ public sealed class MenuSpaceBackdrop : MonoBehaviour
         SpriteRenderer renderer = MenuShowcaseAssets.CreateSprite(transform, "Vignette",
             MenuShowcaseAssets.Vignette, sortingOrder, new Vector3(0f, 0f, 1.5f), 1f,
             new Color(0f, 0f, 0f, 0.62f));
-        renderer.transform.localScale = new Vector3(halfWidth * 2.15f, halfHeight * 2.15f, 1f);
+        renderer.transform.localScale = new Vector3(halfWidth * VignetteCoverScale, halfHeight * VignetteCoverScale, 1f);
     }
 
     // ─── Animation ───────────────────────────────────────────────────────────

@@ -13,9 +13,15 @@ using UnityEngine.EventSystems;
 // rather than being restated at every call site.
 public static class TapInput
 {
-    // Device Simulator and phones report a touchscreen and feed real Touches; a desktop
-    // editor does not, and falls through to the mouse.
-    static bool UsesTouch => Input.touchSupported;
+    // A build on a phone is always touch-only, which is what keeps a hardware key off the
+    // launch. Everywhere else the touch path is taken only while a finger is actually down,
+    // so Device Simulator and a real touchscreen still drive gameplay through Touches while
+    // a mouse keeps working.
+    //
+    // Capability is deliberately not the test here: Input.touchSupported is true on any
+    // touch-capable Windows device even when a mouse is driving it, and reading it locked
+    // such machines out of every gameplay input path — mouse and Space alike.
+    static bool UsesTouch => Application.isMobilePlatform || Input.touchCount > 0;
 
     public static bool PointerPressedThisFrame
     {

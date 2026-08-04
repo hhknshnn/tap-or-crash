@@ -1,33 +1,72 @@
 using UnityEngine;
 
-// PlanetSpawner tarafından belirli gezegenlere eklenir.
-// Gezegeni yatayda sinüs dalgasıyla hareket ettirir — roket yakalamayı zorlaştırır.
-public class MovingPlanet : MonoBehaviour
+// Moves the complete authoritative planet rig. Because the component lives on
+// the planet root, its mesh, collider, capture trigger, ambience, ring target,
+// tether target and RocketController coordinates remain one coherent transform.
+[DisallowMultipleComponent]
+public sealed class MovingPlanet : MonoBehaviour
 {
-    [SerializeField] private float amplitude = 0.35f;
-    [SerializeField] private float frequency = 0.18f;
+    [SerializeField] private int planetNumber = MovingOrbitProgression.ActivationPlanet;
+    [SerializeField] private float horizontalAmplitude;
+    [SerializeField] private float verticalAmplitude;
+    [SerializeField] private float period = 6f;
+    [SerializeField] private float phase;
+    [SerializeField] private float horizontalSign = 1f;
+    [SerializeField] private float verticalSign = 1f;
 
     private Vector3 origin;
-    private float   timeOffset; // Her gezegen farklı fazda başlasın
+    private float motionClock;
+    private bool configured;
 
-    void Start()
+    public float HorizontalAmplitude => horizontalAmplitude;
+    public float VerticalAmplitude => verticalAmplitude;
+    public int PlanetNumber => planetNumber;
+
+    public void Configure(int number, Camera camera)
     {
-        origin     = transform.position;
-        timeOffset = Random.Range(0f, Mathf.PI * 2f);
+        planetNumber = Mathf.Max(1, number);
+        MovingOrbitProgression.Evaluate(planetNumber, camera,
+            out horizontalAmplitude, out verticalAmplitude, out period);
+
+        // Stable hashes: no frame-by-frame randomness and identical motion for
+        // a given planet number across Continue, pause and device aspect.
+        uint hash = (uint)planetNumber * 2654435761u;
+        phase = (hash % 1009u) / 1009f * Mathf.PI * 2f;
+        horizontalSign = (hash & 1u) == 0u ? 1f : -1f;
+        verticalSign = (hash & 2u) == 0u ? 1f : -1f;
+        origin = transform.position;
+        motionClock = 0f;
+        configured = true;
     }
 
-    public void Configure(float difficulty)
+    private void Start()
     {
-        float t = Mathf.Clamp01(difficulty);
-        amplitude = Mathf.Lerp(0.35f, 1.0f, t);
-        frequency = Mathf.Lerp(0.18f, 0.48f, t);
+        if (!configured)
+        {
+            Configure(planetNumber, Camera.main);
+            origin = transform.position;
+        }
     }
 
-    void Update()
+    public void SetSafeOrigin(Vector3 safeOrigin)
     {
-        if (GameManager.isGameOver) return;
+        origin = safeOrigin;
+        transform.position = safeOrigin;
+    }
 
-        float x = origin.x + Mathf.Sin((Time.time * frequency * Mathf.PI * 2f) + timeOffset) * amplitude;
-        transform.position = new Vector3(x, origin.y, origin.z);
+    private void Update()
+    {
+        if (GameManager.isGameOver || !GameManager.isGameStarted) return;
+        if (GameManager.instance == null
+            || !MovingOrbitProgression.IsActiveForScore(GameManager.instance.GetScore())) return;
+        if (WorldTransitionManager.IsPendingOrPlaying
+            || PresentationGate.IsActive(PresentationGate.Kind.GameplayNotice)) return;
+        if (Time.deltaTime <= 0f) return;
+
+        motionClock += Time.deltaTime;
+        float angle = phase + motionClock / Mathf.Max(0.01f, period) * Mathf.PI * 2f;
+        float x = Mathf.Sin(angle) * horizontalAmplitude * horizontalSign;
+        float y = Mathf.Sin(angle * 0.73f + phase * 0.37f) * verticalAmplitude * verticalSign;
+        transform.position = origin + new Vector3(x, y, 0f);
     }
 }

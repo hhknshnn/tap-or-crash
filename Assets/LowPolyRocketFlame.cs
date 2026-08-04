@@ -3,8 +3,32 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class LowPolyRocketFlame : MonoBehaviour
 {
-    private static readonly Color OuterColor = new Color(1f, 0.25f, 0.045f, 0.94f);
-    private static readonly Color InnerColor = new Color(0.25f, 0.88f, 1f, 0.98f);
+    // Per-skin propulsion look. ShipSkinManager assigns one of these on equip; the
+    // classic orange/cyan rocket flame stays the default for every skin that doesn't
+    // specify its own, so Cat/Dog/Default/Fire/Ice/Gold render exactly as before.
+    public struct FlameProfile
+    {
+        public Color outer;
+        public Color inner;
+        public Color particleStart;
+        public Color particleMid;
+        public Color particleEnd;
+        public float lengthMultiplier;
+
+        public static FlameProfile Classic => new FlameProfile
+        {
+            outer = new Color(1f, 0.25f, 0.045f, 0.94f),
+            inner = new Color(0.25f, 0.88f, 1f, 0.98f),
+            particleStart = new Color(0.45f, 0.92f, 1f),
+            particleMid = new Color(1f, 0.52f, 0.08f),
+            particleEnd = new Color(1f, 0.16f, 0.04f),
+            lengthMultiplier = 1f,
+        };
+    }
+
+    private FlameProfile profile = FlameProfile.Classic;
+
+    private const string FlameRootName = "LowPolyFlame_Root";
 
     // What the engine idles at before the game starts. Correct for a ship the size of a
     // thumbnail behind a start panel; far too small for one drawn as a portrait.
@@ -29,10 +53,33 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
     private bool crashStopped;
     private float presentationIdleIntensity;
     private int gameplayMaxParticles = -1;
+    private Transform activeEngineSocket;
+    private Transform particleDefaultParent;
+    private Quaternion particleDefaultLocalRotation;
+    private Vector3 particleDefaultLocalScale;
+    private bool particleDefaultsCaptured;
 
     // Where the engine exits, in rocket-local space. Presentation hangs its own glow
     // here rather than guessing at the model's proportions.
-    public Vector3 EngineLocalPosition => flameLocalPosition;
+    public Vector3 EngineLocalPosition => activeEngineSocket != null
+        ? transform.InverseTransformPoint(activeEngineSocket.position)
+        : flameLocalPosition;
+    public Transform ActiveEngineSocket => activeEngineSocket;
+
+    public void SetEngineSocket(Transform socket)
+    {
+        activeEngineSocket = socket;
+        ResolveOrBuildFlameLayers();
+        ConfigureGeometricSparks();
+    }
+
+    // Called by ShipSkinManager on equip. Skins that don't specify a profile keep
+    // the classic flame, so this never touches Cat/Dog/Default/Fire/Ice/Gold.
+    public void SetFlameProfile(FlameProfile newProfile)
+    {
+        profile = newProfile;
+        ConfigureGeometricSparks();
+    }
 
     // Presentation borrows the engine while the ship is a portrait rather than a HUD
     // element: the main menu draws it several times its gameplay size with nothing else
@@ -100,6 +147,11 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
             return;
         }
 
+        // Switching skins destroys the socket the root was hanging on. Rebuild before
+        // the layer writes below dereference it.
+        if (flameRoot == null || outerFlame == null || innerFlame == null)
+            ResolveOrBuildFlameLayers();
+
         if (crashStopped && thrusterParticles != null && !thrusterParticles.isPlaying)
             thrusterParticles.Play();
         crashStopped = false;
@@ -126,8 +178,8 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
             + Mathf.Sin(phase * 14.2f + 0.9f) * 0.08f
             + Mathf.Sin(phase * 5.4f) * 0.035f;
 
-        SetLayerShape(outerFlame, intensity * outerLength, intensity * outerWidth);
-        SetLayerShape(innerFlame, intensity * innerLength * 0.66f,
+        SetLayerShape(outerFlame, intensity * outerLength * profile.lengthMultiplier, intensity * outerWidth);
+        SetLayerShape(innerFlame, intensity * innerLength * 0.66f * profile.lengthMultiplier,
             intensity * (2f - outerWidth) * 0.5f);
 
         // Two incommensurate sines: brightness never repeats, never strobes (±5%).
@@ -135,50 +187,62 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
             + Mathf.Sin(phase * 9.1f) * 0.035f
             + Mathf.Sin(phase * 4.3f + 1.2f) * 0.02f;
 
-        Color outer = OuterColor;
+        Color outer = profile.outer;
         outer.a *= Mathf.Clamp01(intensity * 1.35f * brightness);
         outerFlame.color = outer;
 
-        Color inner = InnerColor;
+        Color inner = profile.inner;
         inner.a *= Mathf.Clamp01(intensity * 1.5f * brightness);
         innerFlame.color = inner;
     }
 
     void ResolveOrBuildFlameLayers()
     {
-        Transform firstRoot = null;
-        for (int i = transform.childCount - 1; i >= 0; i--)
-        {
-            Transform child = transform.GetChild(i);
-            if (child.name != "LowPolyFlame_Root") continue;
-            if (firstRoot == null) firstRoot = child;
-            else Destroy(child.gameObject);
-        }
-
-        if (firstRoot == null)
-        {
-            GameObject root = new GameObject("LowPolyFlame_Root");
-            firstRoot = root.transform;
-            firstRoot.SetParent(transform, false);
-        }
-
-        flameRoot = firstRoot;
+        flameRoot = ResolveOwnedFlameRoot();
         flameRoot.gameObject.SetActive(true);
-        flameRoot.localPosition = flameLocalPosition;
-        flameRoot.localRotation = GetFlameLocalRotation();
+        flameRoot.SetParent(activeEngineSocket != null ? activeEngineSocket : transform, false);
+        flameRoot.localPosition = activeEngineSocket != null ? Vector3.zero : flameLocalPosition;
+        flameRoot.localRotation = activeEngineSocket != null ? Quaternion.identity : GetFlameLocalRotation();
         flameRoot.localScale = new Vector3(
             Mathf.Max(0.01f, Mathf.Abs(flameScale.x)),
             Mathf.Max(0.01f, Mathf.Abs(flameScale.y)),
             Mathf.Max(0.01f, Mathf.Abs(flameScale.z)));
 
         outerFlame = ResolveOrCreateLayer("LowPolyFlame_Outer",
-            rocketRenderer != null ? rocketRenderer.sortingOrder - 2 : -2, OuterColor);
+            rocketRenderer != null ? rocketRenderer.sortingOrder - 2 : -2, profile.outer);
         innerFlame = ResolveOrCreateLayer("LowPolyFlame_Inner",
-            rocketRenderer != null ? rocketRenderer.sortingOrder - 1 : -1, InnerColor);
+            rocketRenderer != null ? rocketRenderer.sortingOrder - 1 : -1, profile.inner);
 
         intensity = GameManager.isGameStarted ? 0.58f : GameplayIdleIntensity;
         SetLayerShape(outerFlame, intensity, intensity);
         SetLayerShape(innerFlame, intensity * 0.66f, intensity * 0.5f);
+    }
+
+    // The flame root does not stay a direct child of the rocket: every skin with an
+    // EngineSocket takes it a level or two deeper, and switching skins destroys the
+    // socket it was hanging on. Ownership is therefore tracked by reference, and a
+    // lost reference is recovered by sweeping the whole rocket hierarchy — a direct
+    // child scan stopped finding it after the first attachment and built a second
+    // root on every rebuild. Only this rocket's own subtree is ever considered, so
+    // an unrelated object sharing the name is never touched.
+    Transform ResolveOwnedFlameRoot()
+    {
+        Transform owned = flameRoot != null && flameRoot.IsChildOf(transform) ? flameRoot : null;
+
+        Transform[] hierarchy = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < hierarchy.Length; i++)
+        {
+            Transform candidate = hierarchy[i];
+            if (candidate == owned || candidate.name != FlameRootName) continue;
+            if (owned == null) owned = candidate;
+            else Destroy(candidate.gameObject);
+        }
+
+        if (owned != null) return owned;
+
+        Transform created = new GameObject(FlameRootName).transform;
+        created.SetParent(transform, false);
+        return created;
     }
 
     SpriteRenderer ResolveOrCreateLayer(string objectName, int sortingOrder, Color color)
@@ -239,8 +303,26 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
         // The scene emitter used to sit at the baked sprite flame's tip. Move it
         // to the same engine-exit point without changing its existing parent.
         Transform particleTransform = thrusterParticles.transform;
-        if (particleTransform.parent != null)
+        if (!particleDefaultsCaptured)
         {
+            particleDefaultParent = particleTransform.parent;
+            particleDefaultLocalRotation = particleTransform.localRotation;
+            particleDefaultLocalScale = particleTransform.localScale;
+            particleDefaultsCaptured = true;
+        }
+
+        if (activeEngineSocket != null)
+        {
+            particleTransform.SetParent(activeEngineSocket, false);
+            particleTransform.localPosition = Vector3.zero;
+            particleTransform.localRotation = Quaternion.identity;
+            particleTransform.localScale = Vector3.one;
+        }
+        else if (particleDefaultParent != null)
+        {
+            particleTransform.SetParent(particleDefaultParent, false);
+            particleTransform.localRotation = particleDefaultLocalRotation;
+            particleTransform.localScale = particleDefaultLocalScale;
             Vector3 engineWorldPosition = transform.TransformPoint(flameLocalPosition);
             particleTransform.localPosition = particleTransform.parent.InverseTransformPoint(engineWorldPosition);
         }
@@ -291,9 +373,9 @@ public sealed class LowPolyRocketFlame : MonoBehaviour
         gradient.SetKeys(
             new[]
             {
-                new GradientColorKey(new Color(0.45f, 0.92f, 1f), 0f),
-                new GradientColorKey(new Color(1f, 0.52f, 0.08f), 0.48f),
-                new GradientColorKey(new Color(1f, 0.16f, 0.04f), 1f)
+                new GradientColorKey(profile.particleStart, 0f),
+                new GradientColorKey(profile.particleMid, 0.48f),
+                new GradientColorKey(profile.particleEnd, 1f)
             },
             new[]
             {

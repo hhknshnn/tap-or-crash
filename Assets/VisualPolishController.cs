@@ -1,10 +1,14 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // Existing scene UI is kept intact; this layer applies a consistent mobile presentation at runtime.
+//
+// Runs late enough that every runtime-built control exists (the shop pill, the fuel gauges,
+// the combo label) and early enough to still be inside the first frame's Start phase — so
+// the menu is never rendered in its unstyled scene state. MainMenuShowcase runs after this
+// and measures the styled UI, so its order must stay higher than this one.
+[DefaultExecutionOrder(100)]
 public sealed class VisualPolishController : MonoBehaviour
 {
     private static VisualPolishController instance;
@@ -18,7 +22,6 @@ public sealed class VisualPolishController : MonoBehaviour
     private const float BestChipCentre = 376f;
 
     private Canvas canvas;
-    private RectTransform startEmblem;
     private GameObject gameOverDim;
     private GameObject gameOverPanel;
     private TextMeshProUGUI gameOverCoinsText;
@@ -50,13 +53,10 @@ public sealed class VisualPolishController : MonoBehaviour
 #endif
     }
 
-    IEnumerator Start()
+    void Start()
     {
-        // Runtime-created HUD elements are added during other Start calls.
-        yield return null;
-
         canvas = FindAnyObjectByType<Canvas>();
-        if (canvas == null) yield break;
+        if (canvas == null) return;
 
         UIDesign.EnsureInitialised();
         ConfigureCanvas();
@@ -174,53 +174,18 @@ public sealed class VisualPolishController : MonoBehaviour
         if (panel == null) return;
         startPanel = panel.gameObject;
 
-        TextMeshProUGUI logo = FindTmp(panel, "LogoText");
-        if (logo != null)
-        {
-            logo.text = "TAP OR CRASH";
-            // The outline is gone: display type at this size needs separation
-            // from the planet behind it, not thicker strokes. The shadow inside
-            // StyleDisplay does that job without touching the letterforms.
-            logo.outlineWidth = 0f;
-            UIKit.StyleDisplay(logo, UIDesign.TypeDisplay, UIDesign.TrackDisplay, UIDesign.TextMain);
-            // Below the top row of controls: a full-width title cannot share that band
-            // with the coin counter and the sound button on a narrow phone.
-            SetRect(logo.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -300f), new Vector2(840f, 110f));
-        }
-
-        // Hairline between title and tagline: the cheapest way to make a stacked pair of
-        // labels read as one designed lockup.
-        EnsureAccentRule(panel, "LogoRule", new Vector2(0f, -360f), new Vector2(240f, 3f));
-
-        TextMeshProUGUI subtitle = FindTmp(panel, "SubtitleText");
-        if (subtitle != null)
-        {
-            subtitle.text = "ONE TAP  •  ONE ORBIT";
-            Color tagline = UIDesign.Accent;
-            tagline.a = 0.80f;
-            UIKit.StyleText(subtitle, UIDesign.TypeLabel, UIDesign.TrackCaption, tagline,
-                FontStyles.Bold);
-            SetRect(subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -398f), new Vector2(760f, 48f));
-        }
-
-        CreateStartEmblem(panel);
+        // The title is not UI. The flat LogoText / LogoRule / SubtitleText lockup and the
+        // OrbitEmblem that sat under it were the old 2D menu; MenuBrandEmblem replaces all
+        // four with one lit object on the showcase stage.
         StyleLaunchCall(panel);
         StyleBestScore(panel);
         StyleControlHint(panel);
         StyleShopButton(panel);
 
-        // One disc size for all three. The old layout gave them 84, 116 and 86
-        // pixels, which is most of why the top row never settled.
-        //
-        // Every disc now hangs off the same screen margin as the coin chip above
-        // it and the shop pill opposite it: a disc's centre is one margin plus
-        // its own radius from the edge, so all four controls share one gutter.
+        // Sound and Help share a compact top-right row, opposite the Coin readout.
         const float discEdge = UIDesign.ScreenMargin + UIDesign.IconButtonSize * 0.5f;
         const float discGap = 20f;
-        // One gap below the coin chip rather than a hand-picked -180 that left
-        // eight pixels of air once the chip moved onto the shared margin.
-        const float discRow = -(UIDesign.ScreenMargin + UIDesign.ChipHeight + 24f
-                                + UIDesign.IconButtonSize * 0.5f);
+        const float discRow = -(UIDesign.ScreenMargin + UIDesign.IconButtonSize * 0.5f);
 
         StyleIconButton(panel, "SoundButton", new Vector2(1f, 1f),
             new Vector2(-(discEdge + UIDesign.IconButtonSize + discGap), discRow));
@@ -232,18 +197,14 @@ public sealed class VisualPolishController : MonoBehaviour
             new Vector2(-discEdge, BottomRowCentre));
         AddSoftGlow(panel, "DayNightButton", new Vector2(1f, 0f),
             new Vector2(-discEdge, BottomRowCentre), 210f, 0.09f);
-
-        // The splash controller floats the logo around wherever it found it, so it has to
-        // be told about the new layout.
-        SplashScreenController splash = panel.GetComponent<SplashScreenController>();
-        if (splash != null) splash.RebaselineLogo();
     }
 
     // The single call to action: a wide glass pill with the theme's warm accent, a soft
     // halo behind it and a breathing rhythm slow enough to invite rather than nag.
     void StyleLaunchCall(Transform panel)
     {
-        TextMeshProUGUI tap = FindTmp(panel, "TAP TO START");
+        TextMeshProUGUI tap = FindTmp(panel, "TapToLaunch");
+        if (tap == null) tap = FindTmp(panel, "TAP TO START");
         if (tap == null) return;
 
         int siblingIndex = tap.transform.GetSiblingIndex();
@@ -280,34 +241,22 @@ public sealed class VisualPolishController : MonoBehaviour
         if (best == null) return;
 
         int value = PlayerPrefs.GetInt("HighScore", 0);
-        best.text = value > 0 ? "BEST  " + value : "FIRST FLIGHT";
-        UIKit.StyleText(best, UIDesign.TypeLabel, UIDesign.TrackLabel, UIDesign.TextSub,
+        best.text = value + "\n<size=58%><color=#A9A4BD>BEST</color></size>";
+        best.lineSpacing = -20f;
+        UIKit.StyleText(best, UIDesign.TypeHeading, UIDesign.TrackLabel, UIDesign.TextMain,
             FontStyles.Bold);
         best.gameObject.SetActive(true);
 
         // Its scene parent is the tap label, which now moves with the launch pill; a chip
         // needs its own slot on the panel to stay put.
         if (best.transform.parent != panel) best.transform.SetParent(panel, false);
-        // Offset right of centre by half the star's width, so the icon and the
-        // text together are optically centred rather than the text alone.
-        SetRect(best.rectTransform, new Vector2(0.5f, 0f), new Vector2(19f, BestChipCentre),
-            new Vector2(300f, 52f));
+        SetRect(best.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre),
+            new Vector2(260f, 78f));
 
         Image chip = EnsurePlate(panel, "BestScorePlate", best.transform.GetSiblingIndex(),
-            new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre), new Vector2(332f, 66f),
+            new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre), new Vector2(286f, 88f),
             Color.white, null, null);
         UIKit.MakeGlass(chip.gameObject, UIDesign.RadiusChip, UITinted.Role.Glass, 0.82f, false);
-
-        // The best score earns the gold star: it is the only place in the menu
-        // that reports an achievement, so it is the only place gold appears.
-        Image star = UIKit.EnsureChildImage(chip.gameObject, "Star", UIIcons.Get(UIIcons.Star),
-            Image.Type.Simple, Vector2.zero, UITinted.Role.Glass, 1f, 1, UIDesign.Gold);
-        star.preserveAspect = true;
-        RectTransform starRect = star.rectTransform;
-        starRect.anchorMin = starRect.anchorMax = new Vector2(0f, 0.5f);
-        starRect.pivot = new Vector2(0f, 0.5f);
-        starRect.anchoredPosition = new Vector2(26f, 0f);
-        starRect.sizeDelta = new Vector2(34f, 34f);
 
         best.transform.SetAsLastSibling();
     }
@@ -318,7 +267,7 @@ public sealed class VisualPolishController : MonoBehaviour
         if (hint == null)
         {
             hint = UIStyleKit.MakeLabel(
-                panel, string.Empty, 17f, Color.white, new Vector2(0f, 112f), new Vector2(560f, 34f),
+                panel, string.Empty, 19f, Color.white, new Vector2(0f, 112f), new Vector2(560f, 38f),
                 FontStyles.Bold, TextAlignmentOptions.Center,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
             hint.gameObject.name = "ControlHint";
@@ -329,11 +278,11 @@ public sealed class VisualPolishController : MonoBehaviour
         hint.text = "TAP  LAUNCH  •  HOLD  REVERSE";
         Color muted = UIDesign.TextMuted;
         muted.a = 0.68f;
-        UIKit.StyleText(hint, UIDesign.TypeCaption, UIDesign.TrackCaption, muted, FontStyles.Bold);
+        UIKit.StyleText(hint, 19f, UIDesign.TrackCaption, muted, FontStyles.Bold);
         // Was at 112, where a 560-wide centred line ran straight through the shop
         // pill. It belongs to the launch call, so it now sits in the gap between
         // that pill and the best-score chip instead of in the bottom row.
-        SetRect(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 292f), new Vector2(480f, 34f));
+        SetRect(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 292f), new Vector2(540f, 40f));
     }
 
     void StyleShopButton(Transform panel)
@@ -424,50 +373,6 @@ public sealed class VisualPolishController : MonoBehaviour
         return image;
     }
 
-    void EnsureAccentRule(Transform panel, string name, Vector2 position, Vector2 size)
-    {
-        Transform existing = FindDeep(panel, name);
-        GameObject go = existing != null ? existing.gameObject : new GameObject(name);
-        if (existing == null) go.transform.SetParent(panel, false);
-
-        RectTransform rect = go.GetComponent<RectTransform>();
-        if (rect == null) rect = go.AddComponent<RectTransform>();
-        SetRect(rect, new Vector2(0.5f, 1f), position, size);
-
-        Image image = go.GetComponent<Image>();
-        if (image == null) image = go.AddComponent<Image>();
-        image.sprite = UIGlass.Panel(1f);
-        image.type = Image.Type.Sliced;
-        image.raycastTarget = false;
-        UITinted.Attach(go, UITinted.Role.Accent, 0.42f);
-    }
-
-    void CreateStartEmblem(Transform panel)
-    {
-        if (FindDeep(panel, "OrbitEmblem") != null) return;
-
-        Texture2D texture = Resources.Load<Texture2D>("Visuals/orbit_emblem");
-        if (texture == null) return;
-
-        Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height),
-            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
-
-        GameObject go = new GameObject("OrbitEmblem");
-        go.transform.SetParent(panel, false);
-        startEmblem = go.AddComponent<RectTransform>();
-        SetRect(startEmblem, new Vector2(0.5f, 1f), new Vector2(0f, -505f), new Vector2(430f, 430f));
-
-        Image image = go.AddComponent<Image>();
-        image.sprite = sprite;
-        image.preserveAspect = true;
-        image.raycastTarget = false;
-        image.color = new Color(1f, 1f, 1f, 0.96f);
-
-        // Was a bespoke sine in Update(); it now drifts on the same clock and
-        // the same amplitudes as every other floating element.
-        UIMotion.Attach(go, UIMotion.Mode.Hover, 1.6f, 5.4f);
-    }
-
     void StyleHud()
     {
         TextMeshProUGUI score = FindTmp(canvas.transform, "ScoreText");
@@ -476,6 +381,9 @@ public sealed class VisualPolishController : MonoBehaviour
             score.outlineWidth = 0f;
             UIKit.StyleDisplay(score, UIDesign.TypeTitle, UIDesign.TrackTitle, UIDesign.TextMain);
             SetRect(score.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(180f, 66f));
+            GameplayPresentationLayout.PlaceTopCentre(score.rectTransform,
+                canvas.GetComponent<RectTransform>(), GameplayPresentationLayout.Lane.OrbitScore);
+            score.rectTransform.anchoredPosition += Vector2.down * 10f;
             CreateScorePlate(score.transform.parent, score.transform.GetSiblingIndex());
             scoreDisplay = score.gameObject;
         }
@@ -511,6 +419,8 @@ public sealed class VisualPolishController : MonoBehaviour
         if (existing != null)
         {
             scorePlate = existing.gameObject;
+            GameplayPresentationLayout.PlaceTopCentre(existing as RectTransform,
+                canvas.GetComponent<RectTransform>(), GameplayPresentationLayout.Lane.OrbitScore);
             return;
         }
 
@@ -518,6 +428,8 @@ public sealed class VisualPolishController : MonoBehaviour
         go.transform.SetParent(parent, false);
         RectTransform rect = go.AddComponent<RectTransform>();
         SetRect(rect, new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(198f, 104f));
+        GameplayPresentationLayout.PlaceTopCentre(rect, canvas.GetComponent<RectTransform>(),
+            GameplayPresentationLayout.Lane.OrbitScore);
 
         // Lower alpha than the menu's chrome: this one sits over live gameplay
         // and must never compete with the rocket.
@@ -641,6 +553,13 @@ public sealed class VisualPolishController : MonoBehaviour
             UIStyleKit.MakeButtonAnchored(panel, "RestartButton", "RESTART RUN",
                 new Vector2(0f, -65f), new Vector2(600f, UIDesign.ButtonHeightPill),
                 UIDesign.Glass, RestartFromPause, UIDesign.TypeButton);
+        }
+
+        Button pauseRestart = FindDeep(panel, "RestartButton")?.GetComponent<Button>();
+        if (pauseRestart != null)
+        {
+            pauseRestart.onClick.RemoveListener(RestartFromPause);
+            pauseRestart.onClick.AddListener(RestartFromPause);
         }
 
         StyleMajorButton(panel, "ResumeButton", "RESUME", new Vector2(0f, 70f), true,
@@ -900,9 +819,12 @@ public sealed class VisualPolishController : MonoBehaviour
         go.transform.SetAsFirstSibling();
     }
 
+    // Restarting from Pause is a new run, so it asks for the same Fuel every other
+    // new run asks for. The frozen clock is left to RestartGame, which resets it as
+    // part of the accepted restart — unfreezing here would resume gameplay behind a
+    // still-open Pause panel whenever the request is refused.
     void RestartFromPause()
     {
-        Time.timeScale = 1f;
         if (GameManager.instance != null) GameManager.instance.RestartGame();
     }
 
@@ -1036,39 +958,4 @@ public sealed class VisualPolishController : MonoBehaviour
         rect.offsetMin = offsetMin;
         rect.offsetMax = offsetMax;
     }
-}
-
-public sealed class UIButtonPressFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
-{
-    private float target = 1f;
-
-    /// The current press scale. UIMotion multiplies its breathing into this so
-    /// a button can be pressed while it breathes; without a UIMotion this
-    /// component writes the transform itself.
-    public float Press { get; private set; } = 1f;
-
-    private UIMotion motion;
-
-    void Awake() => motion = GetComponent<UIMotion>();
-
-    /// Called by UIMotion when it is added after this component: Awake has
-    /// already run by then and would have cached a null.
-    public void BindMotion(UIMotion value) => motion = value;
-
-    void OnEnable()
-    {
-        Press = 1f;
-        target = 1f;
-        if (motion == null) transform.localScale = Vector3.one;
-    }
-
-    void Update()
-    {
-        Press = Mathf.Lerp(Press, target, 22f * Time.unscaledDeltaTime);
-        if (motion == null) transform.localScale = Vector3.one * Press;
-    }
-
-    public void OnPointerDown(PointerEventData eventData) => target = 0.95f;
-    public void OnPointerUp(PointerEventData eventData) => target = 1f;
-    public void OnPointerExit(PointerEventData eventData) => target = 1f;
 }

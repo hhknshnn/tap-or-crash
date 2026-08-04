@@ -30,7 +30,9 @@ public class PauseManager : MonoBehaviour
         // Oyun başlamadıysa veya bittiyse pause butonunu gizle
         if (gameUI != null)
         {
-            bool showUI = GameManager.isGameStarted && !GameManager.isGameOver && !isPaused;
+            bool showUI = GameManager.isGameStarted
+                && (!GameManager.isGameOver || GameManager.IsAlmostFeedbackPlaying)
+                && !isPaused;
             gameUI.SetActive(showUI);
         }
     }

@@ -128,12 +128,20 @@ public sealed class UIMotion : MonoBehaviour
         if (graphic == null) return;
 
         float cycle = (Time.unscaledTime / period + phase) % 1f;
-        float spike = Mathf.Clamp01(1f - cycle / 0.16f);
+        const float activeWindow = 0.12f; // ~0.50s at 4.2s period
+        float sweep = cycle <= activeWindow
+            ? Mathf.Clamp01(cycle / activeWindow)
+            : 0f;
+        float eased = Mathf.SmoothStep(0f, 1f, sweep);
+        float glint = sweep > 0f ? Mathf.Sin(sweep * Mathf.PI) : 0f;
 
         Color color = graphic.color;
-        color.a = baseAlpha * (0.10f + spike * spike * 0.90f);
+        color.a = baseAlpha * Mathf.SmoothStep(0f, 1f, glint);
         graphic.color = color;
 
-        transform.localScale = Vector3.one * (1f + spike * spike * 0.30f);
+        if (rect != null)
+            rect.anchoredPosition = basePosition + new Vector2(Mathf.Lerp(-48f, 48f, eased), 0f);
+
+        transform.localScale = Vector3.one;
     }
 }

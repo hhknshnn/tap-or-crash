@@ -13,6 +13,12 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class MenuBrandEmblem : MonoBehaviour
 {
+    // Off (default): legacy framing below, tuned to the Blender ring bake.
+    // On: an arbitrary flat logo sprite is the layout authority — its own aspect
+    // ratio and full bounds are used, and the ring-riding spark is suppressed
+    // since flat art has no baked orbit path for it to follow.
+    [SerializeField] bool flatLogoPresentation = false;
+
     // Mirrors of Tools/bake_emblem.py. The ring is centred on the sprite there,
     // so the live spark can ride the exact ellipse that was rendered into the
     // texture: change one of these and the other file has to move with it.
@@ -42,7 +48,7 @@ public sealed class MenuBrandEmblem : MonoBehaviour
 
     // Below this the band is a failed measurement, not a tight layout.
     const float MinBand = 0.05f;
-
+    const float FlatLogoVerticalOffset = 0.06f; // of the logo's own height
     SpriteRenderer emblem;
     SpriteRenderer halo;
     SpriteRenderer spark;
@@ -84,6 +90,7 @@ public sealed class MenuBrandEmblem : MonoBehaviour
             spark = stage.Find("BrandEmblemSpark")?.GetComponent<SpriteRenderer>();
             if (emblem == null || halo == null || spark == null) return false;
             haloAlpha = halo.color.a;
+            spark.gameObject.SetActive(!flatLogoPresentation);
             CaptureSerializedFraming();
             Reframe();
             return true;
@@ -108,6 +115,7 @@ public sealed class MenuBrandEmblem : MonoBehaviour
 
         spark = CreateRenderer(stage, "BrandEmblemSpark", VfxSpriteFactory.SoftSprite, SortingOrder + 1);
         spark.color = new Color(1f, 0.96f, 0.88f, 0.55f);
+        spark.gameObject.SetActive(!flatLogoPresentation);
 
         Reframe();
         return true;
@@ -184,18 +192,32 @@ public sealed class MenuBrandEmblem : MonoBehaviour
         }
         framed = true;
 
-        const float inkShare = (InkTop + InkBottom) * 0.5f;
+        // Flat art has no baked ink margin, so its full sprite bounds are the
+        // layout authority and it centres plainly in its band instead of being
+        // weighted toward where the old bake's lettering sat.
+        float spriteAspect = flatLogoPresentation
+            ? emblem.sprite.rect.width / emblem.sprite.rect.height
+            : SpriteAspect;
+        float inkShare = flatLogoPresentation ? 1f : (InkTop + InkBottom) * 0.5f;
 
         float frameWidth = stageCamera.orthographicSize * stageCamera.aspect * 2f;
-        width = Mathf.Min(frameWidth * WidthFraction, band * SpriteAspect / inkShare);
+        width = Mathf.Min(frameWidth * WidthFraction, band * spriteAspect / inkShare);
         width = Mathf.Min(width, heroRadius * 2f * HeroClearance);
-        height = width / SpriteAspect;
+        height = width / spriteAspect;
 
-        // Seated slightly above the middle of its band: an emblem hung a little
-        // high reads as a crown over the planet, one hung low reads as a caption.
-        float inkHeight = height * inkShare;
-        float inkCentre = floor + inkHeight * 0.5f + Mathf.Max(0f, band - inkHeight) * 0.55f;
-        float centre = inkCentre - height * (InkTop - InkBottom) * 0.5f;
+        float centre;
+        if (flatLogoPresentation)
+        {
+            centre = floor + band * 0.5f + height * FlatLogoVerticalOffset;
+        }
+        else
+        {
+            // Seated slightly above the middle of its band: an emblem hung a little
+            // high reads as a crown over the planet, one hung low reads as a caption.
+            float inkHeight = height * inkShare;
+            float inkCentre = floor + inkHeight * 0.5f + Mathf.Max(0f, band - inkHeight) * 0.55f;
+            centre = inkCentre - height * (InkTop - InkBottom) * 0.5f;
+        }
         basePosition = new Vector3(hero.position.x, centre, 0f);
 
         Vector3 spriteSize = emblem.sprite.bounds.size;
@@ -207,7 +229,7 @@ public sealed class MenuBrandEmblem : MonoBehaviour
         halo.transform.position = basePosition;
         halo.transform.localScale = Vector3.one * (width * 0.78f);
 
-        spark.transform.localScale = Vector3.one * (height * 0.055f);
+        if (!flatLogoPresentation) spark.transform.localScale = Vector3.one * (height * 0.055f);
     }
 
     void LateUpdate()
@@ -227,7 +249,7 @@ public sealed class MenuBrandEmblem : MonoBehaviour
         glow.a = haloAlpha * Mathf.Lerp(0.72f, 1.22f, (Mathf.Sin(time * 0.55f + phase) + 1f) * 0.5f);
         halo.color = glow;
 
-        AnimateSpark(time, position);
+        if (!flatLogoPresentation) AnimateSpark(time, position);
     }
 
     // One mote riding the baked orbit. It disappears behind the lettering on the

@@ -17,9 +17,30 @@ public sealed class VisualPolishController : MonoBehaviour
     // different heights, so only a shared centre line makes them one row.
     private const float BottomRowCentre = UIDesign.ScreenMargin + UIDesign.ButtonHeightPill * 0.5f;
 
+    // Shop pins its currency chip and header controls to one fixed identity
+    // regardless of which world the player last reached (KillShopTint disables
+    // UITinted there). ShopButton/SoundButton/HelpButton/DayNightButton now match
+    // that same fixed identity instead of drifting hue with world progress, so the
+    // Start Panel's controls read as the same UI family as the Shop in every world.
+    // Built from Crystal's registered accent (CrystalPlanetAmbience.AuraTint) —
+    // the redesign's canonical "purple glass" source per UIDesign.ApprovedStartupWorld
+    // — passed as a raw colour rather than looked up by world name, so this never
+    // depends on PlanetAmbience theme registration having already run.
+    private static readonly UIDesign.Palette ShopIdentityPalette =
+        UIDesign.PaletteForAccent(new Color(0.62f, 0.42f, 1f, 1f));
+
     // The launch lockup, bottom up: pill at 196, its caption, then the best-score
     // chip. Lifted from 344 to open an even gap on both sides of the caption.
     private const float BestChipCentre = 376f;
+
+    // Sound/Help/Theme's shared baked shell — pre-rendered art derived from the
+    // Shop header's CloseButtonShell family, minus its baked X glyph. Replaces
+    // the procedural glass disc via UIKit.ApplyBakedShell.
+    private const string MainMenuIconShellPath = "Menu/UI/Buttons/MainMenuIconButtonShell";
+
+    // Alpha-bounds crop of Resources/Icons/icon_shop.png — same pixels, no
+    // asymmetric padding — see StyleShopButton.
+    private const string ShopIconCroppedPath = "Icons/Cropped/icon_shop_Cropped";
 
     private Canvas canvas;
     private GameObject gameOverDim;
@@ -55,7 +76,7 @@ public sealed class VisualPolishController : MonoBehaviour
 
     void Start()
     {
-        canvas = FindAnyObjectByType<Canvas>();
+        canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         UIDesign.EnsureInitialised();
@@ -65,7 +86,6 @@ public sealed class VisualPolishController : MonoBehaviour
         StyleHud();
         StyleGameOver();
         StylePause();
-        StyleTutorial();
         StyleCommonButtons();
 
         SafeAreaFitter safeArea = canvas.GetComponent<SafeAreaFitter>();
@@ -199,71 +219,269 @@ public sealed class VisualPolishController : MonoBehaviour
             new Vector2(-discEdge, BottomRowCentre), 210f, 0.09f);
     }
 
-    // The single call to action: a wide glass pill with the theme's warm accent, a soft
-    // halo behind it and a breathing rhythm slow enough to invite rather than nag.
+    // The single call to action: a baked shell (glow + pill + rocket icon are all
+    // pre-rendered art, not procedural glass), with a breathing rhythm slow enough
+    // to invite rather than nag.
+    //
+    // Unlike every other glass surface this method styles, LaunchGlow/LaunchPlate
+    // are placed as-is: no MakeGlass tint, no procedural rim, no shadow link. Those
+    // calls repaint over baked art on every scene load, which is exactly what used
+    // to happen here before the shell became real art instead of a glass primitive.
     void StyleLaunchCall(Transform panel)
     {
-        TextMeshProUGUI tap = FindTmp(panel, "TapToLaunch");
-        if (tap == null) tap = FindTmp(panel, "TAP TO START");
+        // TapToLaunch's font is scene-authored (Montserrat ExtraBold), unlike every
+        // other label FindTmp resolves. Looked up via FindDeep instead of FindTmp so
+        // UIStyleKit.ApplyRuntimeFont never stamps the shared runtime font over it.
+        Transform tapTransform = FindDeep(panel, "TapToLaunch");
+        if (tapTransform == null) tapTransform = FindDeep(panel, "TAP TO START");
+        if (tapTransform == null) return;
+        TextMeshProUGUI tap = tapTransform.GetComponent<TextMeshProUGUI>();
         if (tap == null) return;
 
         int siblingIndex = tap.transform.GetSiblingIndex();
 
-        // The halo stays the thruster orange in every world. One call to action,
-        // one colour: the palette inherits the world, the CTA never does.
-        Color halo = UIDesign.Cta;
-        halo.a = 0.11f;
-        launchGlow = EnsurePlate(panel, "LaunchGlow", siblingIndex, new Vector2(0.5f, 0f),
-            new Vector2(0f, 196f), new Vector2(700f, 280f), halo, UIGlass.Glow, null);
+        Sprite launchGlowArt = Resources.Load<Sprite>("MenuBaked/PrimaryLaunch/ButtonGlow");
+        Sprite launchShellArt = Resources.Load<Sprite>("MenuBaked/PrimaryLaunch/ButtonShell_Normal");
+
+        // The shell, its glow and the label's font/rect are scene-authored art direction —
+        // SampleScene is their source of truth. Only build fallback values here when the
+        // serialized object is genuinely missing (a fresh scene, or one predating this art),
+        // so Edit Mode and Play Mode never disagree on how the launch call looks.
+        Transform existingGlow = FindDeep(panel, "LaunchGlow");
+        if (existingGlow != null)
+        {
+            launchGlow = existingGlow.GetComponent<Image>();
+        }
+        else
+        {
+            launchGlow = EnsurePlate(panel, "LaunchGlow", siblingIndex, new Vector2(0.5f, 0f),
+                new Vector2(0f, 208f), new Vector2(405f, 273f), new Color(1f, 1f, 1f, 0.4f), launchGlowArt, null);
+        }
         UIMotion.Attach(launchGlow.gameObject, UIMotion.Mode.Pulse, 1f, 3.9f);
 
-        Image plate = EnsurePlate(panel, "LaunchPlate", siblingIndex + 1, new Vector2(0.5f, 0f),
-            new Vector2(0f, 196f), new Vector2(474f, UIDesign.ButtonHeightMajor),
-            Color.white, null, null);
-        UIKit.MakeGlass(plate.gameObject, UIDesign.RadiusPill, UITinted.Role.GlassDeep);
-        // The one surface in the UI whose rim is the CTA colour rather than the
-        // world's: it is how the eye finds the button before reading the label.
-        UIKit.OverrideRim(plate.gameObject,
-            new Color(UIDesign.Cta.r, UIDesign.Cta.g, UIDesign.Cta.b, 0.70f));
+        Transform existingPlate = FindDeep(panel, "LaunchPlate");
+        Image plate = existingPlate != null
+            ? existingPlate.GetComponent<Image>()
+            : EnsurePlate(panel, "LaunchPlate", siblingIndex + 1, new Vector2(0.5f, 0f),
+                new Vector2(0f, 208f), new Vector2(378f, 252f), Color.white, launchShellArt, null);
         UIMotion.Attach(plate.gameObject, UIMotion.Mode.Breathe, 1f, 3.9f);
 
         tap.text = "TAP TO LAUNCH";
-        UIKit.StyleText(tap, UIDesign.TypeHeading, UIDesign.TrackButton, UIDesign.CtaText,
-            FontStyles.Bold);
-        SetRect(tap.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 196f), new Vector2(440f, 80f));
         tap.transform.SetAsLastSibling();
+
+        // The primary CTA's type treatment — Montserrat ExtraBold, cream face, dark
+        // brown-orange outline, RectTransform and size range — is scene-authored on
+        // TapToLaunch. Only fall back to code-built defaults when that authoring is
+        // missing (no font assigned), so a correctly configured label is left alone.
+        if (tap.font == null)
+        {
+            UIKit.StyleText(tap, UIDesign.TypeHeading, UIDesign.TrackButton, UIDesign.CtaText,
+                FontStyles.Bold);
+            // Recentred off-axis to leave room for RocketIcon on the shell's left side, so the
+            // icon+label group reads as one balanced unit instead of the label spanning edge-to-edge.
+            SetRect(tap.rectTransform, new Vector2(0.5f, 0f), new Vector2(10f, 208f), new Vector2(180f, 66f));
+            tap.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+
+            TMP_FontAsset launchFont = Resources.Load<TMP_FontAsset>("Fonts/Montserrat-ExtraBold SDF");
+            if (launchFont != null)
+            {
+                tap.font = launchFont;
+                tap.fontSharedMaterial = launchFont.material;
+                tap.fontMaterial = launchFont.material;
+            }
+            tap.fontSizeMin = 12f;
+            tap.fontSizeMax = 23f;
+            tap.characterSpacing = 0f;
+            tap.alignment = TextAlignmentOptions.Center;
+            tap.margin = new Vector4(10f, 2f, 8f, 2f);
+            tap.color = new Color(0.988235f, 0.972549f, 0.905882f);
+            tap.outlineColor = new Color(0.32f, 0.14f, 0.05f);
+            tap.outlineWidth = 0.18f;
+        }
     }
 
     // Best score reads as a small trophy chip instead of a line of text floating in space.
     void StyleBestScore(Transform panel)
     {
-        TextMeshProUGUI best = FindTmp(panel, "BestScoreText");
-        if (best == null) return;
+        Transform bestRoot = FindDeep(panel, "BestScoreText");
+        if (bestRoot == null) return;
 
         int value = PlayerPrefs.GetInt("HighScore", 0);
-        best.text = value + "\n<size=58%><color=#A9A4BD>BEST</color></size>";
-        best.lineSpacing = -20f;
-        UIKit.StyleText(best, UIDesign.TypeHeading, UIDesign.TrackLabel, UIDesign.TextMain,
-            FontStyles.Bold);
-        best.gameObject.SetActive(true);
 
         // Its scene parent is the tap label, which now moves with the launch pill; a chip
         // needs its own slot on the panel to stay put.
-        if (best.transform.parent != panel) best.transform.SetParent(panel, false);
-        SetRect(best.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre),
-            new Vector2(260f, 78f));
+        if (bestRoot.parent != panel) bestRoot.SetParent(panel, false);
+        RectTransform bestRect = bestRoot.GetComponent<RectTransform>();
+        if (bestRect == null) bestRect = bestRoot.gameObject.AddComponent<RectTransform>();
+        SetRect(bestRect, new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre), new Vector2(260f, 78f));
+        bestRoot.gameObject.SetActive(true);
 
-        Image chip = EnsurePlate(panel, "BestScorePlate", best.transform.GetSiblingIndex(),
-            new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre), new Vector2(286f, 88f),
-            Color.white, null, null);
-        UIKit.MakeGlass(chip.gameObject, UIDesign.RadiusChip, UITinted.Role.Glass, 0.82f, false);
+        // The old single two-line label ("102\nBEST" in one TMP block), and the
+        // VerticalLayoutGroup/ContentSizeFitter pass that replaced it, are both
+        // retired: box/layout-group centring aligned the RECTS correctly, but
+        // TMP's line-height metrics still left the rendered GLYPHS sitting
+        // off-centre within them (font ascender/descender space isn't the same
+        // as visible ink). Position below is computed from measured glyph ink
+        // bounds (ForceMeshUpdate + textInfo.characterInfo) instead — the only
+        // thing that actually matches what's drawn on screen.
+        TextMeshProUGUI legacyText = bestRoot.GetComponent<TextMeshProUGUI>();
+        if (legacyText != null) DestroyComponent(legacyText);
+        VerticalLayoutGroup legacyLayout = bestRoot.GetComponent<VerticalLayoutGroup>();
+        if (legacyLayout != null) DestroyComponent(legacyLayout);
+        ContentSizeFitter legacyFitter = bestRoot.GetComponent<ContentSizeFitter>();
+        if (legacyFitter != null) DestroyComponent(legacyFitter);
 
-        best.transform.SetAsLastSibling();
+        const float scoreValueSize = 29f;
+        const float bestLabelSize = 14f;
+        const float bestTypographyGap = 3f;
+
+        TextMeshProUGUI scoreValue = EnsureLabel(bestRoot, "ScoreValue", 0);
+        scoreValue.text = value.ToString();
+        UIKit.StyleText(scoreValue, scoreValueSize, UIDesign.TrackLabel, UIDesign.TextMain, FontStyles.Bold);
+        SetLocalRect(scoreValue.rectTransform, Vector2.zero, new Vector2(260f, scoreValueSize * 1.6f));
+
+        TextMeshProUGUI bestLabel = EnsureLabel(bestRoot, "BestLabel", 1);
+        bestLabel.text = "BEST";
+        UIKit.StyleText(bestLabel, bestLabelSize, UIDesign.TrackLabel, UIDesign.TextSub, FontStyles.Bold);
+        SetLocalRect(bestLabel.rectTransform, Vector2.zero, new Vector2(260f, bestLabelSize * 1.6f));
+
+        PositionBestTypography(scoreValue, bestLabel, bestTypographyGap);
+
+        // Real Shop art (BalanceChipBaseFlat_Cropped) at its own native aspect —
+        // Simple + preserveAspect, not stretched/sliced into a taller box, which
+        // is what read as an exaggerated capsule.
+        Transform plateTransform = FindDeep(panel, "BestScorePlate");
+        GameObject plateGo = plateTransform != null ? plateTransform.gameObject
+            : new GameObject("BestScorePlate", typeof(RectTransform));
+        if (plateTransform == null) plateGo.transform.SetParent(panel, false);
+        plateGo.transform.SetSiblingIndex(bestRoot.GetSiblingIndex());
+
+        RectTransform plateRoot = plateGo.GetComponent<RectTransform>();
+        SetRect(plateRoot, new Vector2(0.5f, 0f), new Vector2(0f, BestChipCentre), new Vector2(286f, 88f));
+
+        // A prior pass built this plate with MakeGlass — a procedural fill on
+        // the root's own Image plus a UITinted (world-palette colour) and an
+        // accent-tinted "Rim" sibling. Switching to the Background child below
+        // never removed them, so they kept rendering as a stray rectangular
+        // frame behind/around the real art. The root becomes a plain
+        // invisible layout anchor; only Background is visible.
+        UITinted stalePlateTint = plateGo.GetComponent<UITinted>();
+        if (stalePlateTint != null)
+        {
+            stalePlateTint.enabled = false;
+            DestroyComponent(stalePlateTint);
+        }
+        Image stalePlateImage = plateGo.GetComponent<Image>();
+        if (stalePlateImage != null) DestroyComponent(stalePlateImage);
+        Transform stalePlateRim = plateGo.transform.Find("Rim");
+        if (stalePlateRim != null) DestroyGameObject(stalePlateRim.gameObject);
+
+        Sprite bestArt = ShipSkinManager.LoadShopBalanceChipSprite();
+        UIKit.ApplyNativeAspectBackground(plateGo, bestArt, 286f);
+
+        bestRoot.SetAsLastSibling();
+    }
+
+    static TextMeshProUGUI EnsureLabel(Transform parent, string name, int siblingIndex)
+    {
+        Transform existing = parent.Find(name);
+        GameObject go = existing != null ? existing.gameObject : new GameObject(name, typeof(RectTransform));
+        if (existing == null) go.transform.SetParent(parent, false);
+
+        TextMeshProUGUI text = go.GetComponent<TextMeshProUGUI>();
+        if (text == null) text = go.AddComponent<TextMeshProUGUI>();
+
+        go.transform.SetSiblingIndex(siblingIndex);
+        return text;
+    }
+
+    // Stacks two labels using their measured glyph ink bounds rather than
+    // font line-height metrics, so the combined VISIBLE block — not just the
+    // two RectTransforms — is what ends up centred at the host's local origin.
+    static void PositionBestTypography(TextMeshProUGUI top, TextMeshProUGUI bottom, float gap)
+    {
+        Rect topBounds = GetTightTextBounds(top);
+        Rect bottomBounds = GetTightTextBounds(bottom);
+
+        float totalHeight = topBounds.height + gap + bottomBounds.height;
+        float halfTotal = totalHeight * 0.5f;
+
+        float topY = halfTotal - topBounds.yMax;
+        float bottomY = (topY + topBounds.yMin) - gap - bottomBounds.yMax;
+
+        top.rectTransform.anchoredPosition = new Vector2(-topBounds.center.x, topY);
+        bottom.rectTransform.anchoredPosition = new Vector2(-bottomBounds.center.x, bottomY);
+    }
+
+    // The actual rendered glyph quads (per TMP_CharacterInfo), not the font's
+    // ascender/descender line metrics — "102" has no descenders and "BEST" is
+    // all caps, so line-height bounds include dead space neither line uses,
+    // which is exactly what made the box-centred version look off-centre.
+    static Rect GetTightTextBounds(TextMeshProUGUI tmp)
+    {
+        tmp.ForceMeshUpdate(true);
+        TMP_TextInfo info = tmp.textInfo;
+        float minX = float.MaxValue, maxX = float.MinValue, minY = float.MaxValue, maxY = float.MinValue;
+        for (int i = 0; i < info.characterCount; i++)
+        {
+            TMP_CharacterInfo ch = info.characterInfo[i];
+            if (!ch.isVisible) continue;
+            minX = Mathf.Min(minX, ch.bottomLeft.x, ch.topLeft.x);
+            maxX = Mathf.Max(maxX, ch.bottomRight.x, ch.topRight.x);
+            minY = Mathf.Min(minY, ch.bottomLeft.y, ch.bottomRight.y);
+            maxY = Mathf.Max(maxY, ch.topLeft.y, ch.topRight.y);
+        }
+        if (maxX < minX) return new Rect(0f, 0f, 0f, 0f);
+        return Rect.MinMaxRect(minX, minY, maxX, maxY);
+    }
+
+    // HorizontalLayoutGroup arranges the icon (alpha-cropped, so its rect IS
+    // its visible bounds) and the label's own rect box side by side — but a
+    // label's rect box isn't its tight glyph bounds, so the combined group
+    // can still land a few px off the background's true centre. This
+    // measures the actual combined visible bounds (icon rect + label's tight
+    // glyph bounds) and nudges Content by the measured delta — not a guessed
+    // constant, a correction computed from what's actually on screen.
+    static void CenterShopContentOnVisibleBounds(Transform shop)
+    {
+        RectTransform content = shop.Find("Content") as RectTransform;
+        Transform iconTransform = content != null ? content.Find("LeadingIcon") : null;
+        TextMeshProUGUI label = content != null ? content.GetComponentInChildren<TextMeshProUGUI>(true) : null;
+        RectTransform background = shop.Find("Background") as RectTransform;
+        if (content == null || iconTransform == null || label == null || background == null) return;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+
+        RectTransform iconRect = (RectTransform)iconTransform;
+        Vector3[] iconCorners = new Vector3[4];
+        iconRect.GetWorldCorners(iconCorners);
+
+        Rect labelTight = GetTightTextBounds(label);
+        Vector3 labelWorldMin = label.rectTransform.TransformPoint(new Vector3(labelTight.xMin, labelTight.yMin, 0f));
+        Vector3 labelWorldMax = label.rectTransform.TransformPoint(new Vector3(labelTight.xMax, labelTight.yMax, 0f));
+
+        float groupLeft = Mathf.Min(iconCorners[0].x, labelWorldMin.x);
+        float groupRight = Mathf.Max(iconCorners[2].x, labelWorldMax.x);
+        float groupCenterX = (groupLeft + groupRight) * 0.5f;
+
+        Vector3[] bgCorners = new Vector3[4];
+        background.GetWorldCorners(bgCorners);
+        float bgCenterX = (bgCorners[0].x + bgCorners[2].x) * 0.5f;
+
+        float deltaWorldX = groupCenterX - bgCenterX;
+        float scale = content.lossyScale.x;
+        if (Mathf.Approximately(scale, 0f)) scale = 1f;
+        content.anchoredPosition -= new Vector2(deltaWorldX / scale, 0f);
     }
 
     void StyleControlHint(Transform panel)
     {
-        TextMeshProUGUI hint = FindTmp(panel, "ControlHint");
+        // FindTmp (not FindDeep) is what stamps the shared runtime font onto a
+        // label. Nunito isn't in the project yet, so — same idiom StyleLaunchCall
+        // uses for TapToLaunch — this one is looked up via FindDeep and the
+        // changeFont: false below, so its existing scene-authored font survives.
+        Transform hintTransform = FindDeep(panel, "ControlHint");
+        TextMeshProUGUI hint = hintTransform != null ? hintTransform.GetComponent<TextMeshProUGUI>() : null;
         if (hint == null)
         {
             hint = UIStyleKit.MakeLabel(
@@ -275,10 +493,15 @@ public sealed class VisualPolishController : MonoBehaviour
 
         // The same separator the tagline under the logo uses, so the menu's two
         // small caption lines read as one voice instead of two conventions.
-        hint.text = "TAP  LAUNCH  •  HOLD  REVERSE";
+        hint.text = "TAP TO LAUNCH  •  HOLD TO REVERSE";
         Color muted = UIDesign.TextMuted;
         muted.a = 0.68f;
-        UIKit.StyleText(hint, 19f, UIDesign.TrackCaption, muted, FontStyles.Bold);
+        // Nunito (the redesign's supporting-text font) is not in the project yet.
+        // Montserrat ExtraBold is a display/button weight and reads too heavy for
+        // an instructional caption, so this one label keeps its existing font
+        // rather than following StyleText's usual Montserrat default.
+        UIKit.StyleText(hint, 20f, UIDesign.TrackCaption, muted, FontStyles.Bold,
+            TextAlignmentOptions.Center, changeFont: false);
         // Was at 112, where a 560-wide centred line ran straight through the shop
         // pill. It belongs to the launch call, so it now sits in the gap between
         // that pill and the best-score chip instead of in the bottom row.
@@ -298,16 +521,52 @@ public sealed class VisualPolishController : MonoBehaviour
             // Bottom-left corner on the shared margin, which puts its centre on
             // BottomRowCentre — the same line the day/night disc sits on.
             rect.anchoredPosition = new Vector2(UIDesign.ScreenMargin, UIDesign.ScreenMargin);
-            rect.sizeDelta = new Vector2(250f, UIDesign.ButtonHeightPill);
+            rect.sizeDelta = new Vector2(264f, UIDesign.ButtonHeightPill);
         }
 
-        UIKit.StylePill(shop, "SHOP", UIDesign.RadiusPill, UITinted.Role.Glass, UIIcons.Shop);
-        UIMotion.Attach(shop.gameObject, UIMotion.Mode.Hover, 0.85f, 5.2f);
+        // Real Shop art (BalanceChipBaseFlat_Cropped) at its own native aspect,
+        // not stretched/sliced into the taller 92px click target — that
+        // stretch is what read as an exaggerated capsule. The click area
+        // stays the full 264x92 footprint the bottom row is tuned against;
+        // root's own Image becomes an invisible hit target behind it.
+        const float shopArtWidth = 264f;
+        Sprite shopArt = ShipSkinManager.LoadShopBalanceChipSprite();
+        UIKit.ApplyNativeAspectBackground(shop.gameObject, shopArt, shopArtWidth);
+        UIKit.MakeHitTargetOnly(shop.gameObject);
+
+        // UIIcons.Shop (icon_shop.png) has asymmetric transparent padding
+        // baked into its 256x256 canvas (36px below the glyph, 83px above),
+        // so centring the full sprite's RectTransform still reads as
+        // optically low. icon_shop_Cropped is the same pixels, alpha-bounds
+        // trimmed — its RectTransform bounds ARE its visible bounds, so the
+        // usual proportional-to-height sizing is replaced with the measured
+        // target from the visual spec (icon ~22px tall, "SHOP" ~28pt, ~10px gap).
+        Sprite shopIcon = Resources.Load<Sprite>(ShopIconCroppedPath);
+        const float shopIconHeight = 22f;
+        float shopIconWidth = shopIcon != null
+            ? shopIconHeight * (shopIcon.rect.width / shopIcon.rect.height)
+            : shopIconHeight;
+        const float shopIconGap = 10f;
+        const float shopTextSize = 28f;
+        if (shopIcon != null)
+            UIKit.StyleContentGroupExplicit(shop, "SHOP", shopIcon, shopIconWidth, shopIconHeight,
+                shopIconGap, shopTextSize);
+        else
+        {
+            float shopArtHeight = shopArtWidth / (shopArt.rect.width / shopArt.rect.height);
+            UIKit.StyleContentGroup(shop, "SHOP", UIIcons.Shop, shopTextSize, null, shopArtHeight);
+        }
+        CenterShopContentOnVisibleBounds(shop);
+
+        // SHOP stays visually static while idle — no breathing/floating loop.
+        UIMotion staleMotion = shop.GetComponent<UIMotion>();
+        if (staleMotion != null) DestroyComponent(staleMotion);
     }
 
-    // Sound, help and day/night share one silhouette: a glass disc with a lit rim
-    // and a baked icon at one glyph size. The button's own Image becomes the
-    // disc, so the sprite references the managers hold are moved to the glyph.
+    // Sound, help and day/night share one silhouette: a baked glass disc with a
+    // lit rim and a baked icon at one glyph size. The button's own Image
+    // becomes the disc, so the sprite references the managers hold are moved
+    // to the glyph.
     void StyleIconButton(Transform panel, string name, Vector2 anchor, Vector2 position)
     {
         Transform button = FindDeep(panel, name);
@@ -320,7 +579,8 @@ public sealed class VisualPolishController : MonoBehaviour
         // Help is the one disc whose icon never changes, so it can be set here.
         // The other two are driven by their managers.
         string icon = name == "HelpButton" ? UIIcons.Help : null;
-        UIKit.StyleIconButton(button, icon);
+        Sprite shell = Resources.Load<Sprite>(MainMenuIconShellPath);
+        UIKit.StyleIconButton(button, icon, shellSprite: shell);
 
         Image glyph = button.Find("Glyph").GetComponent<Image>();
         RouteIconTarget(button, glyph);
@@ -330,21 +590,74 @@ public sealed class VisualPolishController : MonoBehaviour
         if (legacyGlyph != null) legacyGlyph.gameObject.SetActive(false);
     }
 
-    // A breathing halo behind a control, in the world's accent. Deliberately far
-    // fainter than the launch call's: this one says "lit", not "press me".
+    // A breathing halo behind a control. DayNightButton is pinned to the Shop
+    // identity now, so its halo is pinned too — otherwise a world-accent glow
+    // would sit behind a violet disc and the two would fall out of sync.
     void AddSoftGlow(Transform panel, string hostName, Vector2 anchor, Vector2 position,
         float size, float alpha)
     {
         Transform host = FindDeep(panel, hostName);
         if (host == null) return;
 
-        Color halo = UIDesign.Accent;
+        Color halo = ShopIdentityPalette.Accent;
         halo.a = alpha;
         Image glow = EnsurePlate(panel, hostName + "Glow", host.GetSiblingIndex(), anchor,
             position, new Vector2(size, size), halo, UIGlass.Glow, null);
-        // Accent role, so the halo travels with the world like the disc it backs.
-        UITinted.Attach(glow.gameObject, UITinted.Role.Accent, alpha);
+        PinToShopIdentity(glow.gameObject, UITinted.Role.Accent, alpha);
         UIMotion.Attach(glow.gameObject, UIMotion.Mode.Pulse, 1f, 6.2f);
+    }
+
+    // Opts a single control out of the per-world Planet Theme System and pins
+    // it to the fixed Shop identity instead — the same fixed-colour approach
+    // Shop's own header uses (KillShopTint), just via UITinted removal rather
+    // than never attaching one. The Planet Theme System itself (UIDesign,
+    // UITinted, world palette resolution) is untouched.
+    static void PinToShopIdentity(GameObject host, UITinted.Role fillRole, float alphaScale = 1f)
+    {
+        if (host == null) return;
+
+        UITinted tint = host.GetComponent<UITinted>();
+        if (tint != null)
+        {
+            tint.enabled = false;
+            DestroyComponent(tint);
+        }
+
+        Graphic graphic = host.GetComponent<Graphic>();
+        if (graphic != null)
+        {
+            Color color = PaletteFillFor(fillRole);
+            color.a *= alphaScale;
+            graphic.color = color;
+        }
+
+        UIKit.OverrideRim(host, ShopIdentityPalette.GlassRim);
+    }
+
+    static Color PaletteFillFor(UITinted.Role role)
+    {
+        switch (role)
+        {
+            case UITinted.Role.GlassDeep: return ShopIdentityPalette.GlassDeep;
+            case UITinted.Role.Accent: return ShopIdentityPalette.Accent;
+            case UITinted.Role.Scrim: return ShopIdentityPalette.Scrim;
+            case UITinted.Role.Rim: return ShopIdentityPalette.GlassRim;
+            default: return ShopIdentityPalette.Glass;
+        }
+    }
+
+    static void DestroyComponent(Component component)
+    {
+        if (component == null) return;
+        if (Application.isPlaying) Destroy(component);
+        else DestroyImmediate(component);
+    }
+
+    static void DestroyGameObject(GameObject go)
+    {
+        if (go == null) return;
+        if (Application.isPlaying) Destroy(go);
+        else DestroyImmediate(go);
     }
 
     // A non-interactive backing shape placed just behind a control.
@@ -570,149 +883,16 @@ public sealed class VisualPolishController : MonoBehaviour
             new Vector2(600f, UIDesign.ButtonHeightPill));
     }
 
-    // Called again by TutorialManager every time the panel opens, so the polished
-    // layout always wins over ApplyContent()'s plainer fallback values.
-    public static void RestyleTutorial()
-    {
-        if (instance == null) return;
-        if (instance.canvas == null) instance.canvas = FindAnyObjectByType<Canvas>();
-        instance.StyleTutorial();
-    }
-
     public static void RestyleGameOver()
     {
         if (instance == null) return;
-        if (instance.canvas == null) instance.canvas = FindAnyObjectByType<Canvas>();
+        if (instance.canvas == null) instance.canvas = UIRootCanvas.Resolve();
         instance.StyleGameOver();
         instance.RefreshGameOverCoins();
     }
 
-    void StyleTutorial()
-    {
-        if (canvas == null) return;
-        Transform panel = FindDeep(canvas.transform, "TutorialPanel");
-        if (panel == null) return;
-
-        Image overlay = panel.GetComponent<Image>();
-        if (overlay != null)
-        {
-            overlay.color = UIDesign.Scrim;
-            overlay.raycastTarget = true;
-            UITinted.Attach(panel.gameObject, UITinted.Role.Scrim);
-        }
-
-        Transform card = FindDeep(panel, "Card");
-        if (card != null)
-        {
-            RectTransform cardRect = card.GetComponent<RectTransform>();
-            if (cardRect != null)
-            {
-                cardRect.anchorMin = new Vector2(0.055f, 0.05f);
-                cardRect.anchorMax = new Vector2(0.945f, 0.95f);
-                cardRect.pivot = new Vector2(0.5f, 0.5f);
-                cardRect.anchoredPosition = Vector2.zero;
-                cardRect.offsetMin = Vector2.zero;
-                cardRect.offsetMax = Vector2.zero;
-            }
-            // No shadow: the card fills the screen, so there is nothing behind
-            // it for a shadow to fall on.
-            UIKit.MakeGlass(card.gameObject, UIDesign.RadiusCard, UITinted.Role.GlassDeep, 1f, false, true);
-        }
-
-        TextMeshProUGUI title = FindTmp(panel, "TitleText");
-        if (title != null)
-        {
-            title.text = "ORBIT TRAINING";
-            UIKit.StyleDisplay(title, UIDesign.TypeTitle, UIDesign.TrackTitle, UIDesign.Accent);
-            UITinted.Attach(title.gameObject, UITinted.Role.Accent);
-            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -82f), new Vector2(800f, 86f));
-        }
-
-        ScrollRect scroll = panel.GetComponentInChildren<ScrollRect>(true);
-        if (scroll != null)
-        {
-            RectTransform scrollRect = scroll.GetComponent<RectTransform>();
-            if (scrollRect != null)
-            {
-                scrollRect.anchorMin = new Vector2(0.065f, 0.15f);
-                scrollRect.anchorMax = new Vector2(0.935f, 0.84f);
-                scrollRect.offsetMin = Vector2.zero;
-                scrollRect.offsetMax = Vector2.zero;
-            }
-            scroll.horizontal = false;
-            scroll.vertical = true;
-            scroll.movementType = ScrollRect.MovementType.Elastic;
-            scroll.elasticity = 0.09f;
-            scroll.scrollSensitivity = 35f;
-        }
-
-        Transform viewport = FindDeep(panel, "Viewport");
-        RectTransform viewportRect = viewport != null ? viewport.GetComponent<RectTransform>() : null;
-        if (viewportRect != null)
-        {
-            SetStretch(viewportRect, new Vector2(14f, 14f), new Vector2(-14f, -14f));
-            if (scroll != null) scroll.viewport = viewportRect;
-        }
-
-        Transform contentRoot = FindDeep(panel, "Content");
-        RectTransform contentRect = contentRoot != null ? contentRoot.GetComponent<RectTransform>() : null;
-        if (contentRect != null)
-        {
-            ContentSizeFitter fitter = contentRoot.GetComponent<ContentSizeFitter>();
-            if (fitter != null)
-            {
-                fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-                fitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
-            }
-            contentRect.anchorMin = new Vector2(0f, 1f);
-            contentRect.anchorMax = new Vector2(1f, 1f);
-            contentRect.pivot = new Vector2(0.5f, 1f);
-            contentRect.anchoredPosition = Vector2.zero;
-            contentRect.sizeDelta = new Vector2(0f, 1680f);
-            if (scroll != null) scroll.content = contentRect;
-        }
-
-        TextMeshProUGUI content = FindTmp(panel, "ContentText");
-        if (content != null)
-        {
-            content.text = TutorialManager.InstructionText;
-            UIStyleKit.ApplyRuntimeFont(content, panel);
-            content.fontSize = UIDesign.TypeBody;
-            content.enableAutoSizing = false;
-            // Body copy is the one place that wraps and scrolls, so it opts out
-            // of StyleText's no-wrap, ellipsised button-label defaults.
-            content.lineSpacing = 12f;
-            content.paragraphSpacing = 18f;
-            content.characterSpacing = 0f;
-            content.color = UIDesign.TextMain;
-            content.alignment = TextAlignmentOptions.TopLeft;
-            content.textWrappingMode = TextWrappingModes.Normal;
-            content.overflowMode = TextOverflowModes.Overflow;
-            content.maskable = true;
-            content.raycastTarget = false;
-
-            RectTransform contentTextRect = content.rectTransform;
-            contentTextRect.anchorMin = Vector2.zero;
-            contentTextRect.anchorMax = Vector2.one;
-            contentTextRect.pivot = new Vector2(0.5f, 1f);
-            contentTextRect.offsetMin = new Vector2(28f, 20f);
-            contentTextRect.offsetMax = new Vector2(-28f, -18f);
-        }
-
-        // Anchored to the bottom of the card rather than its centre, so the
-        // button holds its distance from the edge on a tall phone.
-        Transform gotIt = FindDeep(panel, "GotItButton");
-        RectTransform gotItRect = gotIt != null ? gotIt.GetComponent<RectTransform>() : null;
-        if (gotItRect != null)
-        {
-            gotItRect.anchorMin = gotItRect.anchorMax = new Vector2(0.5f, 0f);
-            gotItRect.pivot = new Vector2(0.5f, 0.5f);
-            gotItRect.anchoredPosition = new Vector2(0f, 96f);
-            gotItRect.sizeDelta = new Vector2(620f, UIDesign.ButtonHeightMajor);
-        }
-
-        StyleMajorButton(panel, "GotItButton", "READY TO FLY", null, true, null);
-    }
+    // Tutorial V2 is self-styled inside TutorialManager, the same way RocketFuelPopup
+    // owns its own glass card — there is no restyle pass to run here for it.
 
     void StyleCommonButtons()
     {
@@ -950,12 +1130,4 @@ public sealed class VisualPolishController : MonoBehaviour
         rect.sizeDelta = size;
     }
 
-    static void SetStretch(RectTransform rect, Vector2 offsetMin, Vector2 offsetMax)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.offsetMin = offsetMin;
-        rect.offsetMax = offsetMax;
-    }
 }

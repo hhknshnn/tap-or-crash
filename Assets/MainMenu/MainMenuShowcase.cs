@@ -138,6 +138,58 @@ public sealed class MainMenuShowcase : MonoBehaviour
     bool launching;
     bool handedOver;
 
+    // ─── Menu readiness, for anything that must not present over a half-built menu ──
+    //
+    // The showcase builds synchronously inside its own Start, so there is exactly one
+    // moment where the Main Menu stops being in progress: the end of that Start. This
+    // reports that moment as an event plus a current state, so a late subscriber is
+    // never left waiting for a signal that has already passed and nothing has to poll.
+    //
+    // "Settled" is not "ready". A stage that failed to build settles too — the scene's
+    // plain start screen is still a complete, interactive Main Menu, and onboarding
+    // belongs over that just as much as over the full showcase. What must never happen
+    // is presenting while the answer is still unknown.
+    //
+    // Both flags are reset in Awake, before any subscriber's Start can run, so a scene
+    // reload can never hand the new scene the previous one's verdict. Callers that may
+    // run in a scene with no showcase at all must ask ExistsInScene first rather than
+    // trusting a static nothing was alive to reset.
+
+    static bool menuSettled;
+    static bool menuReady;
+
+    /// <summary>Fired once per scene lifecycle, the moment the menu stops building.</summary>
+    public static event System.Action MenuSettled;
+
+    /// <summary>True once the menu has either finished building or failed to.</summary>
+    public static bool HasMenuSettled => menuSettled;
+
+    /// <summary>True only when the authoritative serialized stage built successfully.</summary>
+    public static bool IsMenuReady => menuReady;
+
+    /// <summary>
+    /// Whether this scene carries a showcase at all. Resolved live rather than from a
+    /// static, so a scene without one is never answered with a stale flag.
+    /// </summary>
+    public static bool ExistsInScene => FindAnyObjectByType<MainMenuShowcase>() != null;
+
+    static void ResetMenuState()
+    {
+        menuSettled = false;
+        menuReady = false;
+        // A subscriber from the previous scene is already destroyed; clearing the list
+        // here means the next scene's subscribers are the only ones that can be called.
+        MenuSettled = null;
+    }
+
+    static void SettleMenu(bool ready)
+    {
+        if (menuSettled) return;   // exactly once per scene lifecycle
+        menuSettled = true;
+        menuReady = ready;
+        MenuSettled?.Invoke();
+    }
+
     // GameManager asks before it hides the start panel. Taking ownership here is what
     // lets the menu dissolve on its own terms instead of blinking out.
     public static bool TryBeginLaunch(GameObject panel)
@@ -161,6 +213,10 @@ public sealed class MainMenuShowcase : MonoBehaviour
         if (instance != null && instance != this) { Destroy(gameObject); return; }
         instance = this;
 
+        // Before any subscriber's Start can run, so nobody can read the previous
+        // scene's verdict.
+        ResetMenuState();
+
         // A restart skips the menu entirely, so there is nothing to show off. Awake runs
         // before the first frame is rendered, so the serialized stage is gone before it
         // could ever be seen. (GameManager clears the flag in its own Start.)
@@ -170,6 +226,8 @@ public sealed class MainMenuShowcase : MonoBehaviour
             instance = null;
             gameObject.SetActive(false);
             Destroy(gameObject);
+            // There will be no menu this scene, and the answer is already final.
+            SettleMenu(false);
         }
     }
 
@@ -177,6 +235,7 @@ public sealed class MainMenuShowcase : MonoBehaviour
     {
         if (instance != this) return;
         Restore();
+        menuReady = false;
         instance = null;
     }
 
@@ -190,12 +249,17 @@ public sealed class MainMenuShowcase : MonoBehaviour
             Debug.LogError("MainMenuShowcase: the serialized menu stage could not be built. " +
                            "Check the MainMenu root's hero and light references in SampleScene.", this);
             Destroy(gameObject);
+            // The scene's plain start screen is what the player will see. It is a
+            // complete menu, so onboarding may still present over it — the answer is
+            // simply "not the showcase".
+            SettleMenu(false);
             return;
         }
 
         HandOverScreen();
         BuildBrandEmblem(ResolveAccent());
         built = true;
+        SettleMenu(true);
 
         StartCoroutine(RestampStageLayer());
     }
@@ -243,7 +307,7 @@ public sealed class MainMenuShowcase : MonoBehaviour
 
     bool ResolveStartScreen()
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return false;
 
         Transform panel = canvas.transform.Find("StartPanel");
@@ -963,9 +1027,18 @@ public sealed class MainMenuShowcase : MonoBehaviour
         GameManager.isIntroPlaying = false;
         PresentationGate.Release(PresentationGate.Kind.MenuIntro);
 
-        // If the pose could not be adopted the game still has to start; RocketController
-        // falls back to its own orbit maths on the next frame.
-        if (!adopted && rocketController != null) rocketController.enabled = true;
+        // If the pose could not be adopted the game still has to start. RunSession.Begin
+        // already attached the ship to a valid planet before the launch sequence ran, so
+        // this is a presentation seam rather than a broken run — but it is never silent,
+        // because a ship that visibly jumps on the hand-over frame means the first planet
+        // is not the one the menu framed itself around.
+        if (!adopted && rocketController != null)
+        {
+            Debug.LogError("MainMenuShowcase: the hand-over pose was refused — the first " +
+                           "gameplay planet is not in RocketController's planet list. The run " +
+                           "continues from its own orbit state.", this);
+            rocketController.enabled = true;
+        }
 
         Destroy(gameObject);
     }

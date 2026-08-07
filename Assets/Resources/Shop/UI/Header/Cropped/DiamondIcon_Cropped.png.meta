@@ -1,0 +1,702 @@
+fileFormatVersion: 2
+guid: d494c4491bc67e84c9a1c218a10be7db
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3620347794567426614
+    second: DiamondIcon_Cropped_0
+  - first:
+      213: 935988459115459330
+    second: DiamondIcon_Cropped_1
+  - first:
+      213: 4145255996407843692
+    second: DiamondIcon_Cropped_2
+  - first:
+      213: 1704199226828822361
+    second: DiamondIcon_Cropped_3
+  - first:
+      213: 3191879361481835802
+    second: DiamondIcon_Cropped_4
+  - first:
+      213: -2238253859787459065
+    second: DiamondIcon_Cropped_5
+  - first:
+      213: 8923904618139807595
+    second: DiamondIcon_Cropped_6
+  - first:
+      213: 9088131188725202946
+    second: DiamondIcon_Cropped_7
+  - first:
+      213: 7258842941292063116
+    second: DiamondIcon_Cropped_8
+  - first:
+      213: -8029424639174921442
+    second: DiamondIcon_Cropped_9
+  - first:
+      213: 5391958240247641620
+    second: DiamondIcon_Cropped_10
+  - first:
+      213: -1741459531370848656
+    second: DiamondIcon_Cropped_11
+  - first:
+      213: 8813981845731999366
+    second: DiamondIcon_Cropped_12
+  - first:
+      213: 1040487871483091424
+    second: DiamondIcon_Cropped_13
+  - first:
+      213: 908835268146233879
+    second: DiamondIcon_Cropped_14
+  - first:
+      213: -6026064229500804785
+    second: DiamondIcon_Cropped_15
+  - first:
+      213: 5757246220064109038
+    second: DiamondIcon_Cropped_16
+  - first:
+      213: -9187481045050868223
+    second: DiamondIcon_Cropped_17
+  - first:
+      213: -1824246227126673778
+    second: DiamondIcon_Cropped_18
+  - first:
+      213: -5114504481223476764
+    second: DiamondIcon_Cropped_19
+  - first:
+      213: -7334314743028238567
+    second: DiamondIcon_Cropped_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 0
+        width: 718
+        height: 591
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acd807dbcd0f1cdc0800000000000000
+      internalID: -3620347794567426614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_1
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 583
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20331736b8c4dfc00800000000000000
+      internalID: 935988459115459330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_2
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 566
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6b82f0cd58e68930800000000000000
+      internalID: 4145255996407843692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_3
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 566
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95790a5ea2886a710800000000000000
+      internalID: 1704199226828822361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_4
+      rect:
+        serializedVersion: 2
+        x: 475
+        y: 558
+        width: 17
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1586033e55db4c20800000000000000
+      internalID: 3191879361481835802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_5
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 440
+        width: 18
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 706b83a29ff10f0e0800000000000000
+      internalID: -2238253859787459065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_6
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 414
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6fe0b528f318db70800000000000000
+      internalID: 8923904618139807595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_7
+      rect:
+        serializedVersion: 2
+        x: 25
+        y: 398
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2004d184a278f1e70800000000000000
+      internalID: 9088131188725202946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_8
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 396
+        width: 17
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c89a01432379cb460800000000000000
+      internalID: 7258842941292063116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_9
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 387
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e13b53715d0c19090800000000000000
+      internalID: -8029424639174921442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_10
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 392
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41673b1a37514da40800000000000000
+      internalID: 5391958240247641620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_11
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 374
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07e1ce968c715d7e0800000000000000
+      internalID: -1741459531370848656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_12
+      rect:
+        serializedVersion: 2
+        x: 698
+        y: 374
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68ef89b4acd815a70800000000000000
+      internalID: 8813981845731999366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 354
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e91ad4d43e807e00800000000000000
+      internalID: 1040487871483091424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_14
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 342
+        width: 19
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71204357cd4dc9c00800000000000000
+      internalID: 908835268146233879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_15
+      rect:
+        serializedVersion: 2
+        x: 716
+        y: 344
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f41aaeeb28e1f5ca0800000000000000
+      internalID: -6026064229500804785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_16
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 296
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee1b1671fe8d5ef40800000000000000
+      internalID: 5757246220064109038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_17
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 46
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10ebb19baa28f7080800000000000000
+      internalID: -9187481045050868223
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_18
+      rect:
+        serializedVersion: 2
+        x: 367
+        y: 39
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8e9441c8b9fea6e0800000000000000
+      internalID: -1824246227126673778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_19
+      rect:
+        serializedVersion: 2
+        x: 447
+        y: 39
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e9f78aa541a509b0800000000000000
+      internalID: -5114504481223476764
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_Cropped_20
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 7
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91734ee9997473a90800000000000000
+      internalID: -7334314743028238567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      DiamondIcon_Cropped_0: -3620347794567426614
+      DiamondIcon_Cropped_1: 935988459115459330
+      DiamondIcon_Cropped_10: 5391958240247641620
+      DiamondIcon_Cropped_11: -1741459531370848656
+      DiamondIcon_Cropped_12: 8813981845731999366
+      DiamondIcon_Cropped_13: 1040487871483091424
+      DiamondIcon_Cropped_14: 908835268146233879
+      DiamondIcon_Cropped_15: -6026064229500804785
+      DiamondIcon_Cropped_16: 5757246220064109038
+      DiamondIcon_Cropped_17: -9187481045050868223
+      DiamondIcon_Cropped_18: -1824246227126673778
+      DiamondIcon_Cropped_19: -5114504481223476764
+      DiamondIcon_Cropped_2: 4145255996407843692
+      DiamondIcon_Cropped_20: -7334314743028238567
+      DiamondIcon_Cropped_3: 1704199226828822361
+      DiamondIcon_Cropped_4: 3191879361481835802
+      DiamondIcon_Cropped_5: -2238253859787459065
+      DiamondIcon_Cropped_6: 8923904618139807595
+      DiamondIcon_Cropped_7: 9088131188725202946
+      DiamondIcon_Cropped_8: 7258842941292063116
+      DiamondIcon_Cropped_9: -8029424639174921442
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

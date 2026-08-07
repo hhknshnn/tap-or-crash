@@ -47,7 +47,7 @@ public sealed class LevelProgressUI : MonoBehaviour
     {
         if (instance != null) return;
 
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         Transform gameUi = canvas.transform.Find("GameUI");

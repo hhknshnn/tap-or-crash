@@ -32,9 +32,9 @@ public sealed class MenuBrandEmblem : MonoBehaviour
     const float InkTop = 0.848f;
     const float InkBottom = 0.891f;
 
-    const float WidthFraction = 0.640f;   // of the visible frame width
-    const float HeroClearance = 1.35f;    // never wider than this many hero diameters
-    const float Margin = 0.020f;          // of screen height, kept off UI and planet
+    const float WidthFraction = 0.560f;   // of the visible frame width
+    const float HeroClearance = 1.12f;    // never wider than this many hero diameters
+    const float Margin = 0.055f;          // of screen height, kept off UI and planet
 
     const int SortingOrder = 8;           // above the planet (0), below the rocket (12)
 
@@ -48,7 +48,7 @@ public sealed class MenuBrandEmblem : MonoBehaviour
 
     // Below this the band is a failed measurement, not a tight layout.
     const float MinBand = 0.05f;
-    const float FlatLogoVerticalOffset = 0.06f; // of the logo's own height
+    const float FlatLogoVerticalOffset = 0.40f; // of the logo's own height
     SpriteRenderer emblem;
     SpriteRenderer halo;
     SpriteRenderer spark;
@@ -290,6 +290,14 @@ public sealed class MenuBrandEmblem : MonoBehaviour
         foreach (Graphic graphic in canvas.GetComponentsInChildren<Graphic>(false))
         {
             if (!graphic.isActiveAndEnabled) continue;
+
+            // The Fuel gauge's rocket marker rides the liquid surface, which at a
+            // high fill level can sit high enough on screen to pass the "top band"
+            // filter below and get mistaken for a top-row control — collapsing the
+            // measured gap to nearly nothing. The gauge is left-edge HUD, never a
+            // top control, so it is excluded outright rather than by position.
+            if (IsUnderRocketFuelHud(graphic.transform)) continue;
+
             graphic.rectTransform.GetWorldCorners(corners);
 
             float minY = float.PositiveInfinity;
@@ -309,6 +317,13 @@ public sealed class MenuBrandEmblem : MonoBehaviour
             limit = Mathf.Min(limit, minY);
         }
         return limit;
+    }
+
+    static bool IsUnderRocketFuelHud(Transform t)
+    {
+        for (Transform p = t; p != null; p = p.parent)
+            if (p.name == RocketFuelGaugeView.RootName) return true;
+        return false;
     }
 
     // PlanetPresentation.GetBodyRadius reads the renderer's world AABB, which on

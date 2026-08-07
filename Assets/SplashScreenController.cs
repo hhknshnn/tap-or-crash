@@ -20,21 +20,16 @@ public class SplashScreenController : MonoBehaviour
 
     private bool isTransitioning = false;
     private float pulseTimer = 0f;
+    private Coroutine transition;
 
     void OnEnable()
     {
         // Fast Play Mode can keep scene objects alive between sessions.
         isTransitioning = false;
+        transition = null;
     }
 
-    void Start()
-    {
-        if (fadeOverlay == null) return;
-
-        Color c = fadeOverlay.color;
-        c.a = 0f;
-        fadeOverlay.color = c;
-    }
+    void Start() => SetFadeAlpha(0f);
 
     void Update()
     {
@@ -53,6 +48,18 @@ public class SplashScreenController : MonoBehaviour
     public void StartTransition()
     {
         if (isTransitioning) return;
+
+        // StartButton fills the screen, so the release that dismissed a modal lands
+        // here as a launch unless the guard the modal armed is still up.
+        if (MenuInputGuard.IsLaunchSuppressed) return;
+
+        // Onboarding is decided before anything moves. An incomplete Tutorial V2 takes
+        // the screen instead of the launch: no fade, no queued start, no Fuel spent, and
+        // the Main Menu is left exactly as it was so it is still there when the tutorial
+        // closes. The player then has to tap Launch again — which is the whole point.
+        if (TutorialManager.instance != null && !TutorialManager.instance.TryClaimLaunch())
+            return;
+
         RocketFuelService fuel = RocketFuelService.Instance;
         fuel.RefreshFromClock();
         if (!fuel.CanStartNewRun)
@@ -60,27 +67,55 @@ public class SplashScreenController : MonoBehaviour
             fuel.NotifyNewRunRejected();
             return;
         }
-        StartCoroutine(FadeOutAndStart());
+        transition = StartCoroutine(FadeOutAndStart());
+    }
+
+    /// <summary>
+    /// Puts the start screen back the way a launch found it. The launch itself is the
+    /// only thing that may retire this panel, so any path that does not reach a running
+    /// game has to come back through here rather than leave the menu switched off.
+    /// </summary>
+    public void CancelTransition()
+    {
+        if (transition != null) { StopCoroutine(transition); transition = null; }
+        isTransitioning = false;
+        SetFadeAlpha(0f);
     }
 
     IEnumerator FadeOutAndStart()
     {
         isTransitioning = true;
-        if (fadeOverlay != null)
+
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
         {
-            float elapsed = 0f;
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.deltaTime;
-                float alpha = Mathf.Clamp01(elapsed / fadeDuration);
-                Color c = fadeOverlay.color;
-                c.a = alpha;
-                fadeOverlay.color = c;
-                yield return null;
-            }
+            elapsed += Time.deltaTime;
+            SetFadeAlpha(Mathf.Clamp01(elapsed / fadeDuration));
+            yield return null;
         }
-        TutorialManager.instance.OnTapToStart(); // ✅ Fade sonrası tutorial aç
+
+        transition = null;
+        if (GameManager.instance != null) GameManager.instance.StartGame();
+
+        // StartGame is allowed to decline — an empty tank, a presentation that took the
+        // screen during the fade. The panel is only retired once a run is genuinely
+        // running; otherwise the menu comes straight back rather than leaving the player
+        // on a blank screen with no way in.
+        if (!GameManager.isGameStarted)
+        {
+            CancelTransition();
+            yield break;
+        }
+
         gameObject.SetActive(false);
+    }
+
+    void SetFadeAlpha(float alpha)
+    {
+        if (fadeOverlay == null) return;
+        Color c = fadeOverlay.color;
+        c.a = alpha;
+        fadeOverlay.color = c;
     }
 
     void SetAlpha(TextMeshProUGUI tmp, float alpha)

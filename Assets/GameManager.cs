@@ -84,6 +84,22 @@ public class GameManager : MonoBehaviour
         // Play Mode continues. Re-establish the authoritative runtime singleton
         // before gameplay components resume their Update loops.
         BecomeAuthoritativeInstance();
+        if (instance == this) EnsureMenuGameplayFlags();
+    }
+
+    /// <summary>
+    /// Clears stale game-over flags whenever the authoritative Main Menu is visible.
+    /// Does not clear <see cref="isGameStarted"/> — that is reconciled only when a
+    /// menu entry point explicitly asks to open the Shop.
+    /// </summary>
+    internal static void EnsureMenuGameplayFlags()
+    {
+        if (isIntroPlaying || isRestart || isGameStarted) return;
+
+        if (MainMenuShowcase.ExistsInScene && MainMenuShowcase.IsMenuReady)
+            isGameOver = false;
+        else if (instance != null && instance.startPanel != null && instance.startPanel.activeInHierarchy)
+            isGameOver = false;
     }
 
     bool BecomeAuthoritativeInstance()
@@ -156,6 +172,7 @@ public class GameManager : MonoBehaviour
             if (startPanel != null) startPanel.SetActive(true);
         }
 
+        EnsureMenuGameplayFlags();
         ScoreChanged?.Invoke(score);
     }
 
@@ -163,11 +180,7 @@ public class GameManager : MonoBehaviour
     {
         if (almostText != null) return;
 
-        Canvas canvas = null;
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < canvases.Length; i++)
-            if (canvases[i] != null && canvases[i].isRootCanvas) { canvas = canvases[i]; break; }
-        if (canvas == null && canvases.Length > 0) canvas = canvases[0];
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         Transform almostTransform = canvas.transform.Find("GameUI/PerfectFeedbackLane/AlmostText");
@@ -178,11 +191,7 @@ public class GameManager : MonoBehaviour
     // Combo göstergesi UI elementini kod ile oluşturur
     void CreateComboTextUI()
     {
-        Canvas canvas = null;
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < canvases.Length; i++)
-            if (canvases[i] != null && canvases[i].isRootCanvas) { canvas = canvases[i]; break; }
-        if (canvas == null && canvases.Length > 0) canvas = canvases[0];
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         Transform gameUI = canvas.transform.Find("GameUI");
@@ -738,6 +747,10 @@ public class GameManager : MonoBehaviour
         }
 
         if (isGameStarted || isIntroPlaying) return;
+        // Tutorial V2 blocks every Main Menu control behind a full-screen raycast
+        // blocker already; this is the defense-in-depth guard for any caller that
+        // does not go through the UI event system.
+        if (PresentationGate.IsActive(PresentationGate.Kind.Tutorial)) return;
         if (!RocketFuelService.Instance.TryConsumeForNewRun()) return;
 
         RunSession.Begin();

@@ -60,7 +60,7 @@ public sealed class WorldTransitionManager : MonoBehaviour
     {
         if (instance != null) return;
 
-        Canvas canvas = Object.FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         GameObject host = new GameObject("WorldTransitionManager");

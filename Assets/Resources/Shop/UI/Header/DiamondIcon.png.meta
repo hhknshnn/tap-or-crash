@@ -1,0 +1,780 @@
+fileFormatVersion: 2
+guid: e769b510b2cec58478810b68d743e1a5
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2771856007786630233
+    second: DiamondIcon_0
+  - first:
+      213: -7487460500949569135
+    second: DiamondIcon_1
+  - first:
+      213: 354869785052425520
+    second: DiamondIcon_2
+  - first:
+      213: 4229957849317943553
+    second: DiamondIcon_3
+  - first:
+      213: 4252974476610137776
+    second: DiamondIcon_4
+  - first:
+      213: -3949190638164503584
+    second: DiamondIcon_5
+  - first:
+      213: 6936502917482791786
+    second: DiamondIcon_6
+  - first:
+      213: -72258384656556208
+    second: DiamondIcon_7
+  - first:
+      213: 877660844640579616
+    second: DiamondIcon_8
+  - first:
+      213: -146863823767398766
+    second: DiamondIcon_9
+  - first:
+      213: -505071402608219760
+    second: DiamondIcon_10
+  - first:
+      213: 642530033088578964
+    second: DiamondIcon_11
+  - first:
+      213: -6305320116533463335
+    second: DiamondIcon_12
+  - first:
+      213: 5129021693377471162
+    second: DiamondIcon_13
+  - first:
+      213: -3317637810209413694
+    second: DiamondIcon_14
+  - first:
+      213: -301782541780176088
+    second: DiamondIcon_15
+  - first:
+      213: 4386646059048147137
+    second: DiamondIcon_16
+  - first:
+      213: 5143789935809749039
+    second: DiamondIcon_17
+  - first:
+      213: -3509969144970128475
+    second: DiamondIcon_18
+  - first:
+      213: -1560907957137194669
+    second: DiamondIcon_19
+  - first:
+      213: 8072585180905498556
+    second: DiamondIcon_20
+  - first:
+      213: -90370904166643786
+    second: DiamondIcon_21
+  - first:
+      213: 8560637238892897746
+    second: DiamondIcon_22
+  - first:
+      213: 8704769352592826682
+    second: DiamondIcon_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 512
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: DiamondIcon_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 0
+        width: 326
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a3785795a36889d0800000000000000
+      internalID: -2771856007786630233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_1
+      rect:
+        serializedVersion: 2
+        x: 340
+        y: 0
+        width: 1187
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 191f12b3852371890800000000000000
+      internalID: -7487460500949569135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_2
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 579
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03da1977030cce400800000000000000
+      internalID: 354869785052425520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_3
+      rect:
+        serializedVersion: 2
+        x: 415
+        y: 665
+        width: 18
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 109a87fa044d3ba30800000000000000
+      internalID: 4229957849317943553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_4
+      rect:
+        serializedVersion: 2
+        x: 419
+        y: 639
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0be6625d0c9950b30800000000000000
+      internalID: 4252974476610137776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_5
+      rect:
+        serializedVersion: 2
+        x: 422
+        y: 599
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e318edc908a139c0800000000000000
+      internalID: -3949190638164503584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_6
+      rect:
+        serializedVersion: 2
+        x: 425
+        y: 623
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a63c50cf6a8634060800000000000000
+      internalID: 6936502917482791786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_7
+      rect:
+        serializedVersion: 2
+        x: 426
+        y: 567
+        width: 19
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05f908ac1694ffef0800000000000000
+      internalID: -72258384656556208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_8
+      rect:
+        serializedVersion: 2
+        x: 431
+        y: 612
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 020321e53e31e2c00800000000000000
+      internalID: 877660844640579616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_9
+      rect:
+        serializedVersion: 2
+        x: 439
+        y: 521
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2961df1612c36fdf0800000000000000
+      internalID: -146863823767398766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_10
+      rect:
+        serializedVersion: 2
+        x: 442
+        y: 237
+        width: 658
+        height: 561
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 099245d3c30adf8f0800000000000000
+      internalID: -505071402608219760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_11
+      rect:
+        serializedVersion: 2
+        x: 598
+        y: 791
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 495c3cb29a9bae800800000000000000
+      internalID: 642530033088578964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_12
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 791
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d6f5e2d2c00f78a0800000000000000
+      internalID: -6305320116533463335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_13
+      rect:
+        serializedVersion: 2
+        x: 722
+        y: 271
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab2690f2e02fd2740800000000000000
+      internalID: 5129021693377471162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_14
+      rect:
+        serializedVersion: 2
+        x: 762
+        y: 232
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c5201d3df165f1d0800000000000000
+      internalID: -3317637810209413694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_15
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 264
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82337cd806adfcbf0800000000000000
+      internalID: -301782541780176088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_16
+      rect:
+        serializedVersion: 2
+        x: 847
+        y: 264
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c89ee8695f70ec30800000000000000
+      internalID: 4386646059048147137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_17
+      rect:
+        serializedVersion: 2
+        x: 875
+        y: 783
+        width: 17
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f206b2391b9626740800000000000000
+      internalID: 5143789935809749039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_18
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 200
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a35975c8a51a4fc0800000000000000
+      internalID: -3509969144970128475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_19
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 104
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 351c1c7ab7a865ae0800000000000000
+      internalID: -1560907957137194669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_20
+      rect:
+        serializedVersion: 2
+        x: 1090
+        y: 617
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb764fe9375970070800000000000000
+      internalID: 8072585180905498556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_21
+      rect:
+        serializedVersion: 2
+        x: 1098
+        y: 599
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b7cd173420febef0800000000000000
+      internalID: -90370904166643786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_22
+      rect:
+        serializedVersion: 2
+        x: 1105
+        y: 621
+        width: 19
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d5213b663e7dc670800000000000000
+      internalID: 8560637238892897746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DiamondIcon_23
+      rect:
+        serializedVersion: 2
+        x: 1115
+        y: 569
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a31a0093b9d8dc870800000000000000
+      internalID: 8704769352592826682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      DiamondIcon_0: -2771856007786630233
+      DiamondIcon_1: -7487460500949569135
+      DiamondIcon_10: -505071402608219760
+      DiamondIcon_11: 642530033088578964
+      DiamondIcon_12: -6305320116533463335
+      DiamondIcon_13: 5129021693377471162
+      DiamondIcon_14: -3317637810209413694
+      DiamondIcon_15: -301782541780176088
+      DiamondIcon_16: 4386646059048147137
+      DiamondIcon_17: 5143789935809749039
+      DiamondIcon_18: -3509969144970128475
+      DiamondIcon_19: -1560907957137194669
+      DiamondIcon_2: 354869785052425520
+      DiamondIcon_20: 8072585180905498556
+      DiamondIcon_21: -90370904166643786
+      DiamondIcon_22: 8560637238892897746
+      DiamondIcon_23: 8704769352592826682
+      DiamondIcon_3: 4229957849317943553
+      DiamondIcon_4: 4252974476610137776
+      DiamondIcon_5: -3949190638164503584
+      DiamondIcon_6: 6936502917482791786
+      DiamondIcon_7: -72258384656556208
+      DiamondIcon_8: 877660844640579616
+      DiamondIcon_9: -146863823767398766
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

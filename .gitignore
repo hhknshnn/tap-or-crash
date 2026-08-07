@@ -22,3 +22,5 @@ Thumbs.db
 Assets/AI Toolkit/Temp/
 Assets/AI Toolkit/Temp.meta
 Assets/_Recovery/
+.uaid/plans/
+.uaid/settings.local.json

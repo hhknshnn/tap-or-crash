@@ -579,13 +579,7 @@ public sealed class GameplayVFX : MonoBehaviour
     void EnsureMilestoneBanner()
     {
         if (milestoneRoot != null) return;
-        if (canvas == null)
-        {
-            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < canvases.Length; i++)
-                if (canvases[i] != null && canvases[i].isRootCanvas) { canvas = canvases[i]; break; }
-            if (canvas == null && canvases.Length > 0) canvas = canvases[0];
-        }
+        if (canvas == null) canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
         Transform gameUi = canvas.transform.Find("GameUI");
         Transform parent = gameUi != null ? gameUi : canvas.transform;

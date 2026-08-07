@@ -1,0 +1,1404 @@
+fileFormatVersion: 2
+guid: b626fba8d820ce9418e585abda78f388
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -140187459935973985
+    second: 20_Fuel_Drop_Icon_0
+  - first:
+      213: 5721555375651824536
+    second: 20_Fuel_Drop_Icon_1
+  - first:
+      213: 573094205251541779
+    second: 20_Fuel_Drop_Icon_2
+  - first:
+      213: -6824418178626052284
+    second: 20_Fuel_Drop_Icon_3
+  - first:
+      213: -8746293832423544785
+    second: 20_Fuel_Drop_Icon_4
+  - first:
+      213: 917914393238961107
+    second: 20_Fuel_Drop_Icon_5
+  - first:
+      213: -2945710695459930500
+    second: 20_Fuel_Drop_Icon_6
+  - first:
+      213: 8551192034466665060
+    second: 20_Fuel_Drop_Icon_7
+  - first:
+      213: 7955008826023686562
+    second: 20_Fuel_Drop_Icon_8
+  - first:
+      213: 3418818201298900695
+    second: 20_Fuel_Drop_Icon_9
+  - first:
+      213: 5074591713562603445
+    second: 20_Fuel_Drop_Icon_10
+  - first:
+      213: 2957933307945710423
+    second: 20_Fuel_Drop_Icon_11
+  - first:
+      213: 2608916803216647907
+    second: 20_Fuel_Drop_Icon_12
+  - first:
+      213: -5757001458587268237
+    second: 20_Fuel_Drop_Icon_13
+  - first:
+      213: -447837225840210130
+    second: 20_Fuel_Drop_Icon_14
+  - first:
+      213: 1433991119043897156
+    second: 20_Fuel_Drop_Icon_15
+  - first:
+      213: -1415712286689645287
+    second: 20_Fuel_Drop_Icon_16
+  - first:
+      213: 4310542123399526045
+    second: 20_Fuel_Drop_Icon_17
+  - first:
+      213: -8625492429189868397
+    second: 20_Fuel_Drop_Icon_18
+  - first:
+      213: 5874414882982210523
+    second: 20_Fuel_Drop_Icon_19
+  - first:
+      213: 3071017102397184986
+    second: 20_Fuel_Drop_Icon_20
+  - first:
+      213: 5553681578283042180
+    second: 20_Fuel_Drop_Icon_21
+  - first:
+      213: 770669820307551190
+    second: 20_Fuel_Drop_Icon_22
+  - first:
+      213: 8615506642442083772
+    second: 20_Fuel_Drop_Icon_23
+  - first:
+      213: -6006879335886876716
+    second: 20_Fuel_Drop_Icon_24
+  - first:
+      213: 3963513857365896091
+    second: 20_Fuel_Drop_Icon_25
+  - first:
+      213: 6462816787599956699
+    second: 20_Fuel_Drop_Icon_26
+  - first:
+      213: 3156112833978581412
+    second: 20_Fuel_Drop_Icon_27
+  - first:
+      213: 3180622949588847197
+    second: 20_Fuel_Drop_Icon_28
+  - first:
+      213: 7381263382955836804
+    second: 20_Fuel_Drop_Icon_29
+  - first:
+      213: 327303187206945435
+    second: 20_Fuel_Drop_Icon_30
+  - first:
+      213: 9156358636007449899
+    second: 20_Fuel_Drop_Icon_31
+  - first:
+      213: -4241462623057264783
+    second: 20_Fuel_Drop_Icon_32
+  - first:
+      213: 7692107211047970005
+    second: 20_Fuel_Drop_Icon_33
+  - first:
+      213: -7763404468878667888
+    second: 20_Fuel_Drop_Icon_34
+  - first:
+      213: 1006448283865615947
+    second: 20_Fuel_Drop_Icon_35
+  - first:
+      213: 4349248874682548877
+    second: 20_Fuel_Drop_Icon_36
+  - first:
+      213: 6284074497138063915
+    second: 20_Fuel_Drop_Icon_37
+  - first:
+      213: -8747604872869680164
+    second: 20_Fuel_Drop_Icon_38
+  - first:
+      213: -3315329448436614917
+    second: 20_Fuel_Drop_Icon_39
+  - first:
+      213: -7668056657429780903
+    second: 20_Fuel_Drop_Icon_40
+  - first:
+      213: 2980519123168750598
+    second: 20_Fuel_Drop_Icon_41
+  - first:
+      213: -5415250634990303461
+    second: 20_Fuel_Drop_Icon_42
+  - first:
+      213: -2922005532893543868
+    second: 20_Fuel_Drop_Icon_43
+  - first:
+      213: 1620208112808714109
+    second: 20_Fuel_Drop_Icon_44
+  - first:
+      213: -2998933167214126899
+    second: 20_Fuel_Drop_Icon_45
+  - first:
+      213: -3183513505710111092
+    second: 20_Fuel_Drop_Icon_46
+  - first:
+      213: 625735709608075291
+    second: 20_Fuel_Drop_Icon_47
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 0
+        width: 243
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9d4d887f34fd0ef0800000000000000
+      internalID: -140187459935973985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_1
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 0
+        width: 1282
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8932470dc4c076f40800000000000000
+      internalID: 5721555375651824536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_2
+      rect:
+        serializedVersion: 2
+        x: 779
+        y: 823
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31b5adea42a04f700800000000000000
+      internalID: 573094205251541779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_3
+      rect:
+        serializedVersion: 2
+        x: 739
+        y: 791
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44f9648e2dbca41a0800000000000000
+      internalID: -6824418178626052284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_4
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 734
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f286439691cee9680800000000000000
+      internalID: -8746293832423544785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_5
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 652
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3dbf93ff6461dbc00800000000000000
+      internalID: 917914393238961107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_6
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 635
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7eba02cabbbe17d0800000000000000
+      internalID: -2945710695459930500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_7
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 620
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 462198469dfeba670800000000000000
+      internalID: 8551192034466665060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_8
+      rect:
+        serializedVersion: 2
+        x: 585
+        y: 549
+        width: 39
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a13d3c316ed56e60800000000000000
+      internalID: 7955008826023686562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_9
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 542
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d69f085a05127f20800000000000000
+      internalID: 3418818201298900695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_10
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 518
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bf2a03f6429c6640800000000000000
+      internalID: 5074591713562603445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_11
+      rect:
+        serializedVersion: 2
+        x: 598
+        y: 502
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7537669fba0bc0920800000000000000
+      internalID: 2957933307945710423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_12
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 486
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e6a648820cb43420800000000000000
+      internalID: 2608916803216647907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_13
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 470
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37b0081eca50b10b0800000000000000
+      internalID: -5757001458587268237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_14
+      rect:
+        serializedVersion: 2
+        x: 582
+        y: 455
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2f09947a66f8c9f0800000000000000
+      internalID: -447837225840210130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_15
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 430
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4472dad335f86e310800000000000000
+      internalID: 1433991119043897156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_16
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 420
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91d25bf0d216a5ce0800000000000000
+      internalID: -1415712286689645287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_17
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 406
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d963696193f12db30800000000000000
+      internalID: 4310542123399526045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_18
+      rect:
+        serializedVersion: 2
+        x: 585
+        y: 407
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3941151e5581c4880800000000000000
+      internalID: -8625492429189868397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_19
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 398
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdb2c6b463d168150800000000000000
+      internalID: 5874414882982210523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_20
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 388
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: adb988f98c17e9a20800000000000000
+      internalID: 3071017102397184986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_21
+      rect:
+        serializedVersion: 2
+        x: 598
+        y: 368
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 485013588f3a21d40800000000000000
+      internalID: 5553681578283042180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_22
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 350
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d3bb8e4e18f1ba00800000000000000
+      internalID: 770669820307551190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_23
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 336
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbd57c6f4ad609770800000000000000
+      internalID: 8615506642442083772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_24
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 318
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4df04dfd11743aca0800000000000000
+      internalID: -6006879335886876716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_25
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 286
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9be1aa8ada310730800000000000000
+      internalID: 3963513857365896091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_26
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 271
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bda935970a980b950800000000000000
+      internalID: 6462816787599956699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_27
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 246
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a1485496e3cccb20800000000000000
+      internalID: 3156112833978581412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_28
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 238
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5ac2b298b7d32c20800000000000000
+      internalID: 3180622949588847197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_29
+      rect:
+        serializedVersion: 2
+        x: 823
+        y: 247
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4854eae60f38f6660800000000000000
+      internalID: 7381263382955836804
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_30
+      rect:
+        serializedVersion: 2
+        x: 839
+        y: 247
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9ab25fb380da8400800000000000000
+      internalID: 327303187206945435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_31
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 230
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b25ed4fbaabe11f70800000000000000
+      internalID: 9156358636007449899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_32
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 234
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17f3390773c4325c0800000000000000
+      internalID: -4241462623057264783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_33
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 200
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d42cb001cadfba60800000000000000
+      internalID: 7692107211047970005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_34
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 186
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09f8ec094c8d24490800000000000000
+      internalID: -7763404468878667888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_35
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 153
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4e8c9cb16f97fd00800000000000000
+      internalID: 1006448283865615947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_36
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 147
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d828837eec2ab5c30800000000000000
+      internalID: 4349248874682548877
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_37
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 140
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2a7100f574853750800000000000000
+      internalID: 6284074497138063915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_38
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 104
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdb602507b34a9680800000000000000
+      internalID: -8747604872869680164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_39
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 91
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf83b889e659df1d0800000000000000
+      internalID: -3315329448436614917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_40
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 91
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9562450e817959590800000000000000
+      internalID: -7668056657429780903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_41
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 84
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60c6bbed95eec5920800000000000000
+      internalID: 2980519123168750598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_42
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 38
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b17c1bb1d3a29d4b0800000000000000
+      internalID: -5415250634990303461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_43
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 35
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44287240373f277d0800000000000000
+      internalID: -2922005532893543868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_44
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 39
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7f5b22c1b22c7610800000000000000
+      internalID: 1620208112808714109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_45
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 23
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc890176c26a166d0800000000000000
+      internalID: -2998933167214126899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_46
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 8
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c868d726553e1d3d0800000000000000
+      internalID: -3183513505710111092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 20_Fuel_Drop_Icon_47
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 8
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b106776005f0fa800800000000000000
+      internalID: 625735709608075291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      20_Fuel_Drop_Icon_0: -140187459935973985
+      20_Fuel_Drop_Icon_1: 5721555375651824536
+      20_Fuel_Drop_Icon_10: 5074591713562603445
+      20_Fuel_Drop_Icon_11: 2957933307945710423
+      20_Fuel_Drop_Icon_12: 2608916803216647907
+      20_Fuel_Drop_Icon_13: -5757001458587268237
+      20_Fuel_Drop_Icon_14: -447837225840210130
+      20_Fuel_Drop_Icon_15: 1433991119043897156
+      20_Fuel_Drop_Icon_16: -1415712286689645287
+      20_Fuel_Drop_Icon_17: 4310542123399526045
+      20_Fuel_Drop_Icon_18: -8625492429189868397
+      20_Fuel_Drop_Icon_19: 5874414882982210523
+      20_Fuel_Drop_Icon_2: 573094205251541779
+      20_Fuel_Drop_Icon_20: 3071017102397184986
+      20_Fuel_Drop_Icon_21: 5553681578283042180
+      20_Fuel_Drop_Icon_22: 770669820307551190
+      20_Fuel_Drop_Icon_23: 8615506642442083772
+      20_Fuel_Drop_Icon_24: -6006879335886876716
+      20_Fuel_Drop_Icon_25: 3963513857365896091
+      20_Fuel_Drop_Icon_26: 6462816787599956699
+      20_Fuel_Drop_Icon_27: 3156112833978581412
+      20_Fuel_Drop_Icon_28: 3180622949588847197
+      20_Fuel_Drop_Icon_29: 7381263382955836804
+      20_Fuel_Drop_Icon_3: -6824418178626052284
+      20_Fuel_Drop_Icon_30: 327303187206945435
+      20_Fuel_Drop_Icon_31: 9156358636007449899
+      20_Fuel_Drop_Icon_32: -4241462623057264783
+      20_Fuel_Drop_Icon_33: 7692107211047970005
+      20_Fuel_Drop_Icon_34: -7763404468878667888
+      20_Fuel_Drop_Icon_35: 1006448283865615947
+      20_Fuel_Drop_Icon_36: 4349248874682548877
+      20_Fuel_Drop_Icon_37: 6284074497138063915
+      20_Fuel_Drop_Icon_38: -8747604872869680164
+      20_Fuel_Drop_Icon_39: -3315329448436614917
+      20_Fuel_Drop_Icon_4: -8746293832423544785
+      20_Fuel_Drop_Icon_40: -7668056657429780903
+      20_Fuel_Drop_Icon_41: 2980519123168750598
+      20_Fuel_Drop_Icon_42: -5415250634990303461
+      20_Fuel_Drop_Icon_43: -2922005532893543868
+      20_Fuel_Drop_Icon_44: 1620208112808714109
+      20_Fuel_Drop_Icon_45: -2998933167214126899
+      20_Fuel_Drop_Icon_46: -3183513505710111092
+      20_Fuel_Drop_Icon_47: 625735709608075291
+      20_Fuel_Drop_Icon_5: 917914393238961107
+      20_Fuel_Drop_Icon_6: -2945710695459930500
+      20_Fuel_Drop_Icon_7: 8551192034466665060
+      20_Fuel_Drop_Icon_8: 7955008826023686562
+      20_Fuel_Drop_Icon_9: 3418818201298900695
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

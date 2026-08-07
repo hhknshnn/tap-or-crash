@@ -72,7 +72,7 @@ public static class MenuPresentationBaker
         {
             VisualPolishController polish = polishHost.AddComponent<VisualPolishController>();
             typeof(VisualPolishController).GetField("canvas", PrivateInstance).SetValue(polish, canvas);
-            string[] methods = { "ConfigureCanvas", "AdoptIconFamily", "StyleStartScreen", "StyleHud", "StyleGameOver", "StylePause", "StyleTutorial", "StyleCommonButtons" };
+            string[] methods = { "ConfigureCanvas", "AdoptIconFamily", "StyleStartScreen", "StyleHud", "StyleGameOver", "StylePause", "StyleCommonButtons" };
             foreach (string method in methods) Invoke(polish, method);
         }
         finally
@@ -131,7 +131,7 @@ public static class MenuPresentationBaker
             return;
         }
 
-        Canvas canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         Transform start = canvas != null ? canvas.transform.Find("StartPanel") : null;
         Transform gameUi = canvas != null ? canvas.transform.Find("GameUI") : null;
         if (canvas == null || start == null || gameUi == null)

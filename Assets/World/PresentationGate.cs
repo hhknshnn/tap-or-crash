@@ -19,6 +19,7 @@ public static class PresentationGate
         FuelPopup,
         GameplayNotice,
         Advertisement,
+        IapPurchase,
     }
 
     static readonly HashSet<Kind> active = new HashSet<Kind>();
@@ -43,6 +44,13 @@ public static class PresentationGate
         Kind.GameplayNotice,
     };
 
+    /// <summary>
+    /// Raised whenever the set of active presentations actually changes. Exists so a
+    /// presenter that has to wait for the screen to clear can be told when to look
+    /// again instead of testing the gate every frame from an Update.
+    /// </summary>
+    public static event System.Action Changed;
+
     public static bool IsActive(Kind kind) => active.Contains(kind);
 
     public static bool IsAnyFullScreenPresentationActive => active.Count > 0;
@@ -51,9 +59,15 @@ public static class PresentationGate
 
     public static bool CanBeginWorldTransition() => !IsAnyFullScreenPresentationActive;
 
-    public static void Acquire(Kind kind) => active.Add(kind);
+    public static void Acquire(Kind kind)
+    {
+        if (active.Add(kind)) Changed?.Invoke();
+    }
 
-    public static void Release(Kind kind) => active.Remove(kind);
+    public static void Release(Kind kind)
+    {
+        if (active.Remove(kind)) Changed?.Invoke();
+    }
 
     /// <summary>
     /// Releases every gate scoped to a single run. Called by <see cref="RunSession"/>
@@ -62,7 +76,9 @@ public static class PresentationGate
     /// </summary>
     public static void ReleaseRunScoped()
     {
-        for (int i = 0; i < RunScoped.Length; i++) active.Remove(RunScoped[i]);
+        bool changed = false;
+        for (int i = 0; i < RunScoped.Length; i++) changed |= active.Remove(RunScoped[i]);
+        if (changed) Changed?.Invoke();
     }
 
     public static void AcquireAdvertisement() => Acquire(Kind.Advertisement);

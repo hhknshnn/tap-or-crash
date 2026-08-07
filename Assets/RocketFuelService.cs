@@ -9,6 +9,7 @@ public enum FuelGrantSource
 {
     NaturalRefill,
     RewardedAd,
+    Purchase,
     DebugValidation,
 }
 
@@ -29,7 +30,19 @@ public sealed class RocketFuelService : MonoBehaviour
     private float nextClockRefresh;
     private bool initialized;
 
-    public static RocketFuelService Instance => Ensure();
+    public static RocketFuelService Instance
+    {
+        get
+        {
+            if (instance != null) return instance;
+            instance = FindAnyObjectByType<RocketFuelService>();
+            if (instance != null) return instance;
+
+            GameObject host = new GameObject("RocketFuelService");
+            instance = host.AddComponent<RocketFuelService>();
+            return instance;
+        }
+    }
     public int CurrentFuel => currentFuel;
     public int MaxFuel => Capacity;
     public float NormalizedFuel => Capacity > 0 ? currentFuel / (float)Capacity : 0f;
@@ -37,24 +50,14 @@ public sealed class RocketFuelService : MonoBehaviour
     public TimeSpan TimeUntilNextFuel => CalculateTimeUntilNextFuel(DateTime.UtcNow);
 
     public event Action FuelChanged;
+    public event Action<int, FuelGrantSource> FuelGranted;
     public event Action NewRunRejected;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics() => instance = null;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void Bootstrap() => Ensure();
-
-    public static RocketFuelService Ensure()
-    {
-        if (instance != null) return instance;
-        instance = FindAnyObjectByType<RocketFuelService>();
-        if (instance != null) return instance;
-
-        GameObject host = new GameObject("RocketFuelService");
-        instance = host.AddComponent<RocketFuelService>();
-        return instance;
-    }
+    private static void Bootstrap() => _ = Instance;
 
     private void Awake()
     {
@@ -146,6 +149,29 @@ public sealed class RocketFuelService : MonoBehaviour
 
         Persist();
         FuelChanged?.Invoke();
+        FuelGranted?.Invoke(granted, source);
+        return granted;
+    }
+
+    /// The Full Fuel IAP delivery path. Unlike GrantFuel this sets the tank
+    /// directly to capacity rather than adding to it — a second delivery of the
+    /// same consumable (a replayed transaction) lands on the same result instead
+    /// of stacking, so the grant is safe to repeat.
+    public int GrantFullRefill(FuelGrantSource source)
+    {
+        RefreshFromClock();
+
+        int previousFuel = currentFuel;
+        currentFuel = Capacity;
+        refillAnchorUtc = DateTime.UtcNow;
+        int granted = currentFuel - previousFuel;
+
+        Persist();
+        if (granted > 0)
+        {
+            FuelChanged?.Invoke();
+            FuelGranted?.Invoke(granted, source);
+        }
         return granted;
     }
 
@@ -167,7 +193,12 @@ public sealed class RocketFuelService : MonoBehaviour
         if (currentFuel != previousFuel || refillAnchorUtc != previousAnchor)
         {
             Persist();
-            if (currentFuel != previousFuel) FuelChanged?.Invoke();
+            if (currentFuel != previousFuel)
+            {
+                int granted = currentFuel - previousFuel;
+                FuelChanged?.Invoke();
+                if (granted > 0) FuelGranted?.Invoke(granted, FuelGrantSource.NaturalRefill);
+            }
         }
     }
 

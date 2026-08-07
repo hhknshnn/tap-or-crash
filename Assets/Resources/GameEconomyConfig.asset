@@ -38,7 +38,7 @@ MonoBehaviour:
     diamonds: 5
   skinPrices:
   - 0
-  - 35
-  - 80
-  - 180
-  rewardedAdCoins: 5
+  - 25
+  - 50
+  - 100
+  rewardedAdCoins: 10

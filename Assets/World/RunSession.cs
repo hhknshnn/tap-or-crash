@@ -44,5 +44,12 @@ public static class RunSession
 
         AsteroidSpawner asteroids = Object.FindAnyObjectByType<AsteroidSpawner>();
         if (asteroids != null) asteroids.ResetForNewRun();
+
+        // Last, because the resets above free the gates and the world state the orbit
+        // is measured against. Every entry point therefore hands gameplay a ship that
+        // is already attached to a valid planet, in a neutral input state — the Main
+        // Menu hand-over then writes its own exact pose over the top of it.
+        RocketController rocket = Object.FindAnyObjectByType<RocketController>();
+        if (rocket != null) rocket.BeginRun();
     }
 }

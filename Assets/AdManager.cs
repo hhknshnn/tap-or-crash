@@ -35,6 +35,8 @@ public class AdManager : MonoBehaviour
     private int gameOverCount;
     private Action<int> pendingRewardCallback;
     private int pendingRewardAmount;
+    private Action pendingGenericGrantedCallback;
+    private Action pendingGenericClosedCallback;
     private bool rewardedAdShowing;
     private bool adsInitialized;
 
@@ -195,6 +197,17 @@ public class AdManager : MonoBehaviour
 
     private void ShowInterstitialAd()
     {
+        // Covers gameplay, Shop, Fuel popup, Continue, Game Over, a rewarded ad
+        // already on screen and an active IAP purchase sheet in one check: all
+        // of them hold a PresentationGate kind for exactly as long as they own
+        // the screen. This cycle is simply skipped rather than queued — the ad
+        // stays loaded and the next OnGameOver() call tries again.
+        if (PresentationGate.IsAnyFullScreenPresentationActive)
+        {
+            Debug.Log("Interstitial ertelendi: başka bir sunum aktif.");
+            return;
+        }
+
         if (interstitialAd == null || !interstitialAd.CanShowAd())
         {
             Debug.Log("Interstitial hazır değil, yeniden yükleniyor.");
@@ -323,7 +336,8 @@ public class AdManager : MonoBehaviour
     )
     {
         rewardAmount = Mathf.Max(0, rewardAmount);
-        if (rewardAmount <= 0 || !AdsSupported || rewardedAdShowing)
+        if (rewardAmount <= 0 || !AdsSupported || rewardedAdShowing
+            || PresentationGate.IsActive(PresentationGate.Kind.IapPurchase))
         {
             return;
         }
@@ -376,6 +390,64 @@ public class AdManager : MonoBehaviour
         });
     }
 
+    // ─── Rewarded (placement-agnostic) ────────────────────────────────────────
+
+    // Used by Continue and Fuel+3, which carry no coin amount of their own —
+    // AdService routes both through this via AdManagerRewardedProvider so every
+    // placement shares the one real RewardedAd instance and its rewardedAdShowing
+    // guard, keeping two placements from ever showing at once.
+    public void ShowRewardedAd(
+        Action onRewardGranted,
+        Action onClosedWithoutReward
+    )
+    {
+        if (!AdsSupported || rewardedAdShowing
+            || PresentationGate.IsActive(PresentationGate.Kind.IapPurchase))
+        {
+            onClosedWithoutReward?.Invoke();
+            return;
+        }
+
+        if (rewardedAd == null || !rewardedAd.CanShowAd())
+        {
+            Debug.Log(
+                "Rewarded reklam hazır değil, yeniden yükleniyor."
+            );
+
+            LoadRewardedAd();
+            onClosedWithoutReward?.Invoke();
+            return;
+        }
+
+        pendingGenericGrantedCallback = onRewardGranted;
+        pendingGenericClosedCallback = onClosedWithoutReward;
+        rewardedAdShowing = true;
+
+        bool rewardGranted = false;
+
+        rewardedAd.OnAdFullScreenContentClosed +=
+            OnRewardedClosed;
+
+        rewardedAd.OnAdFullScreenContentFailed +=
+            OnRewardedFailed;
+
+        PresentationGate.AcquireAdvertisement();
+        rewardedAd.Show(reward =>
+        {
+            if (rewardGranted)
+            {
+                return;
+            }
+
+            rewardGranted = true;
+
+            Action callback = pendingGenericGrantedCallback;
+            pendingGenericGrantedCallback = null;
+            pendingGenericClosedCallback = null;
+            callback?.Invoke();
+        });
+    }
+
     private void OnRewardedClosed()
     {
         PresentationGate.ReleaseAdvertisement();
@@ -383,6 +455,11 @@ public class AdManager : MonoBehaviour
 
         rewardedAdShowing = false;
         pendingRewardCallback = null;
+
+        Action closedCallback = pendingGenericClosedCallback;
+        pendingGenericGrantedCallback = null;
+        pendingGenericClosedCallback = null;
+        closedCallback?.Invoke();
 
         LoadRewardedAd();
     }
@@ -399,6 +476,11 @@ public class AdManager : MonoBehaviour
 
         rewardedAdShowing = false;
         pendingRewardCallback = null;
+
+        Action closedCallback = pendingGenericClosedCallback;
+        pendingGenericGrantedCallback = null;
+        pendingGenericClosedCallback = null;
+        closedCallback?.Invoke();
 
         LoadRewardedAd();
     }

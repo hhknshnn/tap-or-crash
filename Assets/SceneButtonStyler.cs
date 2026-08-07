@@ -8,7 +8,7 @@ public class SceneButtonStyler : MonoBehaviour
 {
     void Start()
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         StyleNamedButton(canvas, "RestartButton",            UIStyleKit.BtnAccent);

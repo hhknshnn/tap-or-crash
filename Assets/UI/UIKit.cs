@@ -54,6 +54,42 @@ public static class UIKit
         if (shadow) EnsureShadow(host, 0f);
     }
 
+    /// Swaps a control's fill for pre-rendered Shop-family art (a baked shell or
+    /// pill), stripping the procedural dressing MakeGlass/MakeGlassDisc would
+    /// otherwise draw over it: the per-world UITinted repaint and the generated
+    /// Rim child. The art already carries its own rim and lighting baked in, so
+    /// nothing is layered on top and the colour never drifts with world theme.
+    public static void ApplyBakedShell(GameObject host, Sprite shell)
+    {
+        if (host == null || shell == null) return;
+
+        UITinted tint = host.GetComponent<UITinted>();
+        if (tint != null)
+        {
+            tint.enabled = false;
+            DestroyEditorSafe(tint);
+        }
+
+        Image image = host.GetComponent<Image>();
+        if (image == null) image = host.AddComponent<Image>();
+        image.sprite = shell;
+        image.type = shell.border.sqrMagnitude > 0f ? Image.Type.Sliced : Image.Type.Simple;
+        image.color = Color.white;
+        image.raycastTarget = true;
+
+        Transform rim = host.transform.Find("Rim");
+        if (rim != null) DestroyEditorSafe(rim.gameObject);
+
+        Outline legacy = host.GetComponent<Outline>();
+        if (legacy != null) DestroyEditorSafe(legacy);
+    }
+
+    static void DestroyEditorSafe(Object target)
+    {
+        if (Application.isPlaying) Object.Destroy(target);
+        else Object.DestroyImmediate(target);
+    }
+
     /// The hairline that makes a surface read as glass rather than as paint.
     public static void EnsureRim(GameObject host, float radius, float alphaScale = 1f)
         => EnsureChildImage(host, "Rim", UIGlass.Rim(radius), Image.Type.Sliced, Vector2.zero,
@@ -73,7 +109,7 @@ public static class UIKit
             // Disable before destroying: Destroy lands at end of frame and the
             // component would otherwise write the palette colour back once more.
             tint.enabled = false;
-            Object.Destroy(tint);
+            DestroyEditorSafe(tint);
         }
 
         Image image = rim.GetComponent<Image>();
@@ -171,17 +207,28 @@ public static class UIKit
 
     /// The shared icon disc: sound, help, day/night, pause. One silhouette, one
     /// glyph size, one rim, whatever sprite the managers swap in.
+    ///
+    /// shellSprite opts a caller into pre-rendered shell art (Main Menu's baked
+    /// disc) instead of the procedural glass disc — see ApplyBakedShell. Callers
+    /// that omit it are unaffected, so pause/HUD discs keep the procedural look.
     public static void StyleIconButton(Transform button, string iconName = null,
-        float size = UIDesign.IconButtonSize)
+        float size = UIDesign.IconButtonSize, Sprite shellSprite = null)
     {
         if (button == null) return;
 
         RectTransform rect = button.GetComponent<RectTransform>();
         if (rect != null) rect.sizeDelta = new Vector2(size, size);
 
-        // The button's own Image is the disc; the glyph moves to a child so the
-        // managers that swap sprites keep working on a known target.
-        MakeGlassDisc(button.gameObject, UITinted.Role.Glass, 1f, true, true);
+        if (shellSprite != null)
+        {
+            ApplyBakedShell(button.gameObject, shellSprite);
+        }
+        else
+        {
+            // The button's own Image is the disc; the glyph moves to a child so the
+            // managers that swap sprites keep working on a known target.
+            MakeGlassDisc(button.gameObject, UITinted.Role.Glass, 1f, true, true);
+        }
 
         Image glyph = EnsureGlyph(button.gameObject, size);
         if (iconName != null) glyph.sprite = UIIcons.Get(iconName);
@@ -223,15 +270,17 @@ public static class UIKit
         if (target == null) return;
 
         MakeGlass(target.gameObject, radius, role, 1f, true, true);
+        StyleContentGroup(target, label, iconName, fontSize, labelColor);
+    }
 
-        float iconInset = 0f;
-        if (iconName != null)
-        {
-            RectTransform rect = target.GetComponent<RectTransform>();
-            float height = rect != null ? rect.sizeDelta.y : UIDesign.ButtonHeightPill;
-            Image icon = EnsureLeadingIcon(target.gameObject, iconName, height);
-            iconInset = icon.rectTransform.sizeDelta.x + 34f;
-        }
+    /// The label (and, if iconName is given, the icon+label as one centred
+    /// group) without touching the background — for callers that manage
+    /// their own background art (e.g. a native-aspect Shop sprite) instead
+    /// of the procedural glass panel StylePill/MakeGlass would draw.
+    public static void StyleContentGroup(Transform target, string label, string iconName = null,
+        float fontSize = UIDesign.TypeButton, Color? labelColor = null, float? contentHeight = null)
+    {
+        if (target == null) return;
 
         TextMeshProUGUI text = target.GetComponentInChildren<TextMeshProUGUI>(true);
         if (text != null)
@@ -239,11 +288,22 @@ public static class UIKit
             text.text = label;
             StyleText(text, fontSize, UIDesign.TrackButton,
                 labelColor ?? UIDesign.TextMain, FontStyles.Bold);
+        }
+
+        if (iconName != null && text != null)
+        {
+            RectTransform rect = target.GetComponent<RectTransform>();
+            float height = contentHeight ?? (rect != null ? rect.sizeDelta.y : UIDesign.ButtonHeightPill);
+            float glyph = height * 0.56f;
+            CenterIconAndLabelCore(target.gameObject, UIIcons.Get(iconName), glyph, glyph, height * 0.16f, text);
+        }
+        else if (text != null)
+        {
             RectTransform rect = text.rectTransform;
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.offsetMin = new Vector2(iconInset, 0f);
+            rect.offsetMin = Vector2.zero;
             rect.offsetMax = new Vector2(-18f, 0f);
             text.transform.SetAsLastSibling();
         }
@@ -251,28 +311,158 @@ public static class UIKit
         AddPressFeedback(target.gameObject);
     }
 
-    static Image EnsureLeadingIcon(GameObject host, string iconName, float height)
+    /// Sizes a "Background" child Image to the sprite's own aspect ratio at
+    /// a fixed target width, centred on host — for Shop-family art whose
+    /// rounded end-caps should read at their real proportions instead of
+    /// being stretched to fill a taller click target (Image.Type.Simple,
+    /// preserveAspect, no 9-slice stretch).
+    public static RectTransform ApplyNativeAspectBackground(GameObject host, Sprite art, float targetWidth)
+    {
+        Transform existing = host.transform.Find("Background");
+        GameObject go = existing != null ? existing.gameObject : new GameObject("Background", typeof(RectTransform));
+        if (existing == null) go.transform.SetParent(host.transform, false);
+        go.transform.SetSiblingIndex(0);
+
+        float targetHeight = targetWidth / (art.rect.width / art.rect.height);
+
+        RectTransform rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(targetWidth, targetHeight);
+
+        Image image = go.GetComponent<Image>();
+        if (image == null) image = go.AddComponent<Image>();
+        image.sprite = art;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = true;
+        image.color = Color.white;
+        image.raycastTarget = false;
+
+        return rect;
+    }
+
+    /// Clears a control's own Image to an invisible hit target — for a
+    /// button whose visible art lives entirely in a separate Background
+    /// child (see ApplyNativeAspectBackground) but whose root RectTransform
+    /// still needs to be the full click area and the Button's targetGraphic.
+    public static void MakeHitTargetOnly(GameObject host)
+    {
+        UITinted tint = host.GetComponent<UITinted>();
+        if (tint != null)
+        {
+            tint.enabled = false;
+            DestroyEditorSafe(tint);
+        }
+
+        Image image = host.GetComponent<Image>();
+        if (image == null) image = host.AddComponent<Image>();
+        image.sprite = null;
+        image.type = Image.Type.Simple;
+        image.color = new Color(0f, 0f, 0f, 0f);
+        image.raycastTarget = true;
+
+        Transform rim = host.transform.Find("Rim");
+        if (rim != null) DestroyEditorSafe(rim.gameObject);
+    }
+
+    /// Groups an icon and a label into one "Content" child, anchored and
+    /// pivoted at host's own centre and sized by a layout group + fitter —
+    /// so the icon and label read as a single centred unit instead of the
+    /// icon pinned at a fixed inset while only the label centres in
+    /// whatever space is left over. iconSprite/iconWidth/iconHeight/gap are
+    /// exact — callers that need optical control over icon size (e.g. an
+    /// alpha-cropped sprite with a measured target size) get it directly,
+    /// rather than through the proportional-to-height convention below.
+    static void CenterIconAndLabelCore(GameObject host, Sprite iconSprite, float iconWidth, float iconHeight,
+        float gap, TextMeshProUGUI text)
+    {
+        // A pre-Content authoring pass built "LeadingIcon" directly on host at
+        // a fixed inset. Left in place it would sit stranded outside Content
+        // while EnsureLeadingIconCore below builds a second, properly centred one.
+        Transform staleIcon = host.transform.Find("LeadingIcon");
+        if (staleIcon != null) DestroyEditorSafe(staleIcon.gameObject);
+
+        Transform existing = host.transform.Find("Content");
+        GameObject content = existing != null ? existing.gameObject : new GameObject("Content", typeof(RectTransform));
+        if (existing == null) content.transform.SetParent(host.transform, false);
+
+        RectTransform contentRect = content.GetComponent<RectTransform>();
+        contentRect.anchorMin = contentRect.anchorMax = new Vector2(0.5f, 0.5f);
+        contentRect.pivot = new Vector2(0.5f, 0.5f);
+        contentRect.anchoredPosition = Vector2.zero;
+
+        HorizontalLayoutGroup layout = content.GetComponent<HorizontalLayoutGroup>();
+        if (layout == null) layout = content.AddComponent<HorizontalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.spacing = gap;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+
+        ContentSizeFitter fitter = content.GetComponent<ContentSizeFitter>();
+        if (fitter == null) fitter = content.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        Image icon = EnsureLeadingIconCore(content, iconSprite, iconWidth, iconHeight);
+        icon.transform.SetSiblingIndex(0);
+
+        text.rectTransform.SetParent(content.transform, false);
+        text.transform.SetSiblingIndex(1);
+
+        content.transform.SetAsLastSibling();
+    }
+
+    static Image EnsureLeadingIconCore(GameObject host, Sprite sprite, float width, float height)
     {
         Transform existing = host.transform.Find("LeadingIcon");
         GameObject go = existing != null ? existing.gameObject : new GameObject("LeadingIcon");
         if (existing == null) go.transform.SetParent(host.transform, false);
 
-        float glyph = height * 0.56f;
-
         RectTransform rect = go.GetComponent<RectTransform>();
         if (rect == null) rect = go.AddComponent<RectTransform>();
-        rect.anchorMin = rect.anchorMax = new Vector2(0f, 0.5f);
-        rect.pivot = new Vector2(0f, 0.5f);
-        rect.anchoredPosition = new Vector2(height * 0.30f, 0f);
-        rect.sizeDelta = new Vector2(glyph, glyph);
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(width, height);
 
         Image image = go.GetComponent<Image>();
         if (image == null) image = go.AddComponent<Image>();
-        image.sprite = UIIcons.Get(iconName);
+        image.sprite = sprite;
         image.preserveAspect = true;
         image.raycastTarget = false;
         image.color = UIDesign.TextMain;
+
+        // HorizontalLayoutGroup's childControlWidth/Height reads this rather
+        // than the plain Image's rect, which is otherwise not layout-aware.
+        LayoutElement layoutElement = go.GetComponent<LayoutElement>();
+        if (layoutElement == null) layoutElement = go.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = width;
+        layoutElement.preferredHeight = height;
+
         return image;
+    }
+
+    /// Same content-group styling as StyleContentGroup, but with an exact
+    /// icon sprite/size/gap rather than the UIIcons-by-name + height*ratio
+    /// convention — for callers whose icon is an alpha-bounds-cropped
+    /// derivative with a measured target size, where optical accuracy
+    /// matters more than proportional convenience.
+    public static void StyleContentGroupExplicit(Transform target, string label, Sprite iconSprite,
+        float iconWidth, float iconHeight, float gap, float fontSize, Color? labelColor = null)
+    {
+        if (target == null || iconSprite == null) return;
+
+        TextMeshProUGUI text = target.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (text == null) return;
+
+        text.text = label;
+        StyleText(text, fontSize, UIDesign.TrackButton, labelColor ?? UIDesign.TextMain, FontStyles.Bold);
+
+        CenterIconAndLabelCore(target.gameObject, iconSprite, iconWidth, iconHeight, gap, text);
+
+        AddPressFeedback(target.gameObject);
     }
 
     public static void AddPressFeedback(GameObject host)
@@ -297,13 +487,20 @@ public static class UIKit
 
     /// One place that decides what "a label" means: size, tracking, colour,
     /// weight, wrapping. Every screen goes through it.
+    ///
+    /// changeFont defaults on: the redesign's Montserrat is what "a label" means
+    /// almost everywhere. The one exception is supporting/caption copy that is
+    /// meant to carry the lighter body font (Nunito) once it exists — until then
+    /// those callers pass changeFont: false to keep whatever font the scene
+    /// already has rather than jump to a heavier display weight.
     public static void StyleText(TMP_Text text, float size, float tracking, Color color,
         FontStyles style = FontStyles.Normal,
-        TextAlignmentOptions align = TextAlignmentOptions.Center)
+        TextAlignmentOptions align = TextAlignmentOptions.Center,
+        bool changeFont = true)
     {
         if (text == null) return;
 
-        UIStyleKit.ApplyRuntimeFont(text, text.transform);
+        if (changeFont) UIStyleKit.ApplyRuntimeFont(text, text.transform);
         text.fontSize = size;
         text.characterSpacing = tracking;
         text.color = color;

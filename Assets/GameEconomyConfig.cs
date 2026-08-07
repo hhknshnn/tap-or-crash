@@ -32,10 +32,10 @@ public sealed class GameEconomyConfig : ScriptableObject
     };
 
     [Header("Shop")]
-    public int[] skinPrices = { 0, 35, 80, 180 };
+    public int[] skinPrices = { 0, 25, 50, 100 };
 
     [Header("Ads")]
-    [Min(0)] public int rewardedAdCoins = 5;
+    [Min(0)] public int rewardedAdCoins = 10;
 
     private static GameEconomyConfig current;
 
@@ -101,7 +101,7 @@ public sealed class GameEconomyConfig : ScriptableObject
         }
 
         if (skinPrices == null || skinPrices.Length != 4)
-            skinPrices = new[] { 0, 35, 80, 180 };
+            skinPrices = new[] { 0, 25, 50, 100 };
 
         for (int i = 0; i < skinPrices.Length; i++)
             skinPrices[i] = Mathf.Max(0, skinPrices[i]);

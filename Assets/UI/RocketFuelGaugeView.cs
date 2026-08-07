@@ -32,9 +32,11 @@ public sealed class RocketFuelGaugeView : MonoBehaviour
     private const float LowFuelThreshold = 0.20f;
 
     // ── Palette ──────────────────────────────────────────────────────────────
-    private static readonly Color FrameFill = new Color(0.160f, 0.145f, 0.255f, 0.72f);
-    private static readonly Color FrameRim = new Color(0.520f, 0.470f, 0.700f, 0.62f);
-    private static readonly Color TrackFill = new Color(0.045f, 0.038f, 0.090f, 0.92f);
+    // Deeper and more saturated than the original: at low alpha the old values
+    // read as flat grey plastic rather than navy/purple glass.
+    private static readonly Color FrameFill = new Color(0.100f, 0.080f, 0.190f, 0.82f);
+    private static readonly Color FrameRim = new Color(0.620f, 0.520f, 0.980f, 0.70f);
+    private static readonly Color TrackFill = new Color(0.035f, 0.028f, 0.075f, 0.94f);
     private static readonly Color GlossColor = new Color(1f, 1f, 1f, 0.075f);
     private static readonly Color MarkerBacking = new Color(0.085f, 0.070f, 0.150f, 0.95f);
 
@@ -169,7 +171,13 @@ public sealed class RocketFuelGaugeView : MonoBehaviour
         Transform parent = transform.parent;
         if (parent == null || parent.GetComponentInParent<Canvas>() == null) return;
 
-        Canvas nested = gameObject.AddComponent<Canvas>();
+        // The Main Menu instance's tap hit area (RocketFuelHud.WireMenuGaugeTap)
+        // adds a GraphicRaycaster to this same GameObject, and GraphicRaycaster
+        // requires a Canvas — Unity may have already attached one as that
+        // dependency by the time this first runs, so this must adopt it rather
+        // than assume it is always the one adding it.
+        Canvas nested = GetComponent<Canvas>();
+        if (nested == null) nested = gameObject.AddComponent<Canvas>();
         if (nested.isRootCanvas)
         {
             Destroy(nested);
@@ -232,7 +240,7 @@ public sealed class RocketFuelGaugeView : MonoBehaviour
         {
             // Below a fifth of a tank the halo breathes once every couple of
             // seconds. It is a reminder, not an alarm: no flashing, no strobe.
-            float baseAlpha = 0.16f;
+            float baseAlpha = 0.22f;
             if (normalized <= LowFuelThreshold)
             {
                 float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * Mathf.PI / 1.1f);
@@ -508,8 +516,8 @@ public sealed class RocketFuelGaugeView : MonoBehaviour
                 new GradientColorKey(new Color(1.000f, 0.720f, 0.120f), 0.40f),
                 new GradientColorKey(new Color(0.990f, 0.870f, 0.160f), 0.52f),
                 new GradientColorKey(new Color(0.740f, 0.960f, 0.200f), 0.60f),
-                new GradientColorKey(new Color(0.580f, 0.990f, 0.220f), 0.80f),
-                new GradientColorKey(new Color(0.500f, 1.000f, 0.280f), 1.00f),
+                new GradientColorKey(new Color(0.680f, 1.000f, 0.150f), 0.80f),
+                new GradientColorKey(new Color(0.722f, 1.000f, 0.102f), 1.00f),
             },
             new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
         return gradient;

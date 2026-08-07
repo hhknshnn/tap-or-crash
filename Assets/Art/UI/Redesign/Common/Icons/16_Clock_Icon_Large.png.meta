@@ -1,0 +1,598 @@
+fileFormatVersion: 2
+guid: 8135df317b2fe1f438df902dc0c4c797
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6876920275685743557
+    second: 16_Clock_Icon_Large_0
+  - first:
+      213: -1297279456012900957
+    second: 16_Clock_Icon_Large_1
+  - first:
+      213: -4603162609292112647
+    second: 16_Clock_Icon_Large_2
+  - first:
+      213: 2090646387528587205
+    second: 16_Clock_Icon_Large_3
+  - first:
+      213: -46897480607864549
+    second: 16_Clock_Icon_Large_4
+  - first:
+      213: 8558366432076978772
+    second: 16_Clock_Icon_Large_5
+  - first:
+      213: 8824929315175526854
+    second: 16_Clock_Icon_Large_6
+  - first:
+      213: -1047783361654662844
+    second: 16_Clock_Icon_Large_7
+  - first:
+      213: -6339157840115911880
+    second: 16_Clock_Icon_Large_8
+  - first:
+      213: -91400756675762721
+    second: 16_Clock_Icon_Large_9
+  - first:
+      213: 1312671238571460305
+    second: 16_Clock_Icon_Large_10
+  - first:
+      213: 2349676456996902409
+    second: 16_Clock_Icon_Large_11
+  - first:
+      213: 5937703817707615898
+    second: 16_Clock_Icon_Large_12
+  - first:
+      213: -7598138753938681827
+    second: 16_Clock_Icon_Large_13
+  - first:
+      213: -8950200320394181421
+    second: 16_Clock_Icon_Large_14
+  - first:
+      213: -7768906251368755275
+    second: 16_Clock_Icon_Large_15
+  - first:
+      213: 5414367018286631144
+    second: 16_Clock_Icon_Large_16
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_0
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 0
+        width: 437
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cb1ee42e8abf6f50800000000000000
+      internalID: 6876920275685743557
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_1
+      rect:
+        serializedVersion: 2
+        x: 463
+        y: 1
+        width: 194
+        height: 1023
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a560f145332ffde0800000000000000
+      internalID: -1297279456012900957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_2
+      rect:
+        serializedVersion: 2
+        x: 539
+        y: 0
+        width: 988
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fc88c5def74e10c0800000000000000
+      internalID: -4603162609292112647
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_3
+      rect:
+        serializedVersion: 2
+        x: 719
+        y: 762
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c7589f00d7730d10800000000000000
+      internalID: 2090646387528587205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_4
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 757
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b19e1876df2695ff0800000000000000
+      internalID: -46897480607864549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_5
+      rect:
+        serializedVersion: 2
+        x: 879
+        y: 760
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45a53910dec65c670800000000000000
+      internalID: 8558366432076978772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_6
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 749
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c1f7f6a472787a70800000000000000
+      internalID: 8824929315175526854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_7
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 748
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 449520f75968571f0800000000000000
+      internalID: -1047783361654662844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_8
+      rect:
+        serializedVersion: 2
+        x: 879
+        y: 749
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83332ccd789c608a0800000000000000
+      internalID: -6339157840115911880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_9
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 751
+        width: 11
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd5a32efe774bbef0800000000000000
+      internalID: -91400756675762721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_10
+      rect:
+        serializedVersion: 2
+        x: 966
+        y: 641
+        width: 9
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d68ce1698b873210800000000000000
+      internalID: 1312671238571460305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_11
+      rect:
+        serializedVersion: 2
+        x: 993
+        y: 658
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 906166cd94abb9020800000000000000
+      internalID: 2349676456996902409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_12
+      rect:
+        serializedVersion: 2
+        x: 963
+        y: 500
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9671f3b926f66250800000000000000
+      internalID: 5937703817707615898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_13
+      rect:
+        serializedVersion: 2
+        x: 964
+        y: 489
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d101b595f0dfd8690800000000000000
+      internalID: -7598138753938681827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_14
+      rect:
+        serializedVersion: 2
+        x: 964
+        y: 483
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d441529a308ac380800000000000000
+      internalID: -8950200320394181421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_15
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 448
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bf8ad10dec4f2490800000000000000
+      internalID: -7768906251368755275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16_Clock_Icon_Large_16
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 200
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e8c098dd12b32b40800000000000000
+      internalID: 5414367018286631144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      16_Clock_Icon_Large_0: 6876920275685743557
+      16_Clock_Icon_Large_1: -1297279456012900957
+      16_Clock_Icon_Large_10: 1312671238571460305
+      16_Clock_Icon_Large_11: 2349676456996902409
+      16_Clock_Icon_Large_12: 5937703817707615898
+      16_Clock_Icon_Large_13: -7598138753938681827
+      16_Clock_Icon_Large_14: -8950200320394181421
+      16_Clock_Icon_Large_15: -7768906251368755275
+      16_Clock_Icon_Large_16: 5414367018286631144
+      16_Clock_Icon_Large_2: -4603162609292112647
+      16_Clock_Icon_Large_3: 2090646387528587205
+      16_Clock_Icon_Large_4: -46897480607864549
+      16_Clock_Icon_Large_5: 8558366432076978772
+      16_Clock_Icon_Large_6: 8824929315175526854
+      16_Clock_Icon_Large_7: -1047783361654662844
+      16_Clock_Icon_Large_8: -6339157840115911880
+      16_Clock_Icon_Large_9: -91400756675762721
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -39,7 +39,7 @@ public sealed class ContinuePanelView : MonoBehaviour
         if (root != null)
             return;
 
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null)
         {
             Debug.LogError("Continue Panel requires a Canvas in the scene.");

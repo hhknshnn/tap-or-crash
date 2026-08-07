@@ -16,7 +16,12 @@ public static class UIDesign
 {
     // The deterministic palette baked into the Edit Mode Main Menu preview.
     // Runtime still resolves the player's persisted/current world in Refresh().
-    public const string ApprovedStartupWorld = "Alien";
+    // Crystal's accent is this game's one violet hue, which is what the premium
+    // redesign's purple glass is built from. A new player with no progress (or
+    // the Editor preview) sees that violet; a returning player's HUD still
+    // drifts to whatever world they last reached — this constant only picks
+    // the out-of-the-box look, it does not touch the adaptive system itself.
+    public const string ApprovedStartupWorld = "Crystal";
 
     public struct Palette
     {
@@ -68,14 +73,19 @@ public static class UIDesign
     // Deep space ink: every glass surface is a tint of this, never of black.
     static readonly Color Ink = new Color(0.030f, 0.045f, 0.105f);
 
-    public static readonly Color Cta = new Color(1.000f, 0.560f, 0.180f);       // thruster orange
+    public static readonly Color Cta = new Color(1.000f, 0.545f, 0.055f);       // thruster orange
     public static readonly Color CtaText = new Color(1.000f, 0.845f, 0.560f);
     public static readonly Color Gold = new Color(1.000f, 0.760f, 0.240f);      // coin / best
     public static readonly Color Danger = new Color(0.960f, 0.360f, 0.280f);
 
-    public static readonly Color TextMain = new Color(0.960f, 0.972f, 1.000f);
-    public static readonly Color TextSub = new Color(0.720f, 0.780f, 0.890f);
-    public static readonly Color TextMuted = new Color(0.560f, 0.630f, 0.760f);
+    // Cream, not blue-white: the reference's body text carries a warm tint even
+    // at full brightness, which is what keeps the deep-space chrome from
+    // reading as a cold dashboard. Sub/muted step down through the accent's
+    // own lavender rather than toward grey, so dimmer text still reads as
+    // glass rather than as disabled.
+    public static readonly Color TextMain = new Color(0.988f, 0.973f, 0.906f);
+    public static readonly Color TextSub = new Color(0.667f, 0.659f, 1.000f);
+    public static readonly Color TextMuted = new Color(0.460f, 0.450f, 0.680f);
 
     static readonly Color DefaultAccent = new Color(0.340f, 0.860f, 1.000f);
 
@@ -142,9 +152,19 @@ public static class UIDesign
     // never reads PlayerPrefs and is therefore safe for editor preview baking.
     public static Palette PaletteForWorld(string world)
     {
+        Color raw = PlanetAmbience.AccentColorFor(world, DefaultAccent);
+        return PaletteForAccent(raw);
+    }
+
+    // Same recipe as PaletteForWorld, from a raw accent colour directly rather
+    // than a world-name registry lookup. Lets a caller pin a fixed identity
+    // (e.g. Crystal's violet) without depending on PlanetAmbience registration
+    // having already run — a real hazard for callers that resolve this during
+    // Edit Mode authoring, before RuntimeInitializeOnLoadMethod has fired.
+    public static Palette PaletteForAccent(Color raw)
+    {
         Palette palette = new Palette();
 
-        Color raw = PlanetAmbience.AccentColorFor(world, DefaultAccent);
         Color.RGBToHSV(raw, out float hue, out float saturation, out _);
 
         // A world whose accent is nearly grey has no hue worth inheriting;

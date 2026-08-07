@@ -254,6 +254,8 @@ public static class UIStyleKit
         tmp.margin = new Vector4(10f, 2f, 10f, 2f);
     }
 
+    const string RuntimeFontResourcePath = "Fonts/Montserrat-ExtraBold SDF";
+
     public static void ApplyRuntimeFont(TMP_Text text, Transform context = null)
     {
         if (text == null) return;
@@ -261,29 +263,25 @@ public static class UIStyleKit
         if (_runtimeFont != null) text.font = _runtimeFont;
     }
 
+    // The redesign's one runtime label font. Resources.Load first: it is the
+    // asset every generated label is meant to use, and does not depend on some
+    // other label already existing in the hierarchy to copy from. Scanning the
+    // scene used to prefer whichever label happened to still say "Fredoka",
+    // which fought every redesigned screen back toward the old font.
     static TMP_FontAsset FindRuntimeFont(Transform context)
     {
-        Transform root = context != null ? context.root : null;
-        TMP_Text fallback = null;
+        TMP_FontAsset resource = Resources.Load<TMP_FontAsset>(RuntimeFontResourcePath);
+        if (resource != null) return resource;
 
+        Transform root = context != null ? context.root : null;
         if (root != null)
         {
             foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
             {
                 if (text == null || text.font == null) continue;
-                if (fallback == null) fallback = text;
-                if (text.font.name.IndexOf("Fredoka", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                if (text.font.name.IndexOf("Montserrat", System.StringComparison.OrdinalIgnoreCase) >= 0)
                     return text.font;
             }
-        }
-
-        if (fallback != null) return fallback.font;
-
-        foreach (TMP_Text text in Resources.FindObjectsOfTypeAll<TMP_Text>())
-        {
-            if (text == null || text.font == null) continue;
-            if (text.font.name.IndexOf("Fredoka", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                return text.font;
         }
 
         return TMP_Settings.defaultFontAsset;

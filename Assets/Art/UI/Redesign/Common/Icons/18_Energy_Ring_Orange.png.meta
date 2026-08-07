@@ -1,0 +1,1144 @@
+fileFormatVersion: 2
+guid: 31a0429ff70fd7147b5b03a9732607b0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2872135080717312162
+    second: 18_Energy_Ring_Orange_0
+  - first:
+      213: 7712830655876394449
+    second: 18_Energy_Ring_Orange_1
+  - first:
+      213: 2964855035712662907
+    second: 18_Energy_Ring_Orange_2
+  - first:
+      213: 4968959025788077548
+    second: 18_Energy_Ring_Orange_3
+  - first:
+      213: -4542706031599998109
+    second: 18_Energy_Ring_Orange_4
+  - first:
+      213: -632547104109460891
+    second: 18_Energy_Ring_Orange_5
+  - first:
+      213: 7104290551960122472
+    second: 18_Energy_Ring_Orange_6
+  - first:
+      213: 1044260916225814732
+    second: 18_Energy_Ring_Orange_7
+  - first:
+      213: -2246022683461034187
+    second: 18_Energy_Ring_Orange_8
+  - first:
+      213: 6227316944618639172
+    second: 18_Energy_Ring_Orange_9
+  - first:
+      213: 5045249438591054712
+    second: 18_Energy_Ring_Orange_10
+  - first:
+      213: -5198887364082597779
+    second: 18_Energy_Ring_Orange_11
+  - first:
+      213: -9050211379021987782
+    second: 18_Energy_Ring_Orange_12
+  - first:
+      213: -9206202449310684015
+    second: 18_Energy_Ring_Orange_13
+  - first:
+      213: 9005861719281076592
+    second: 18_Energy_Ring_Orange_14
+  - first:
+      213: 4139544671700030278
+    second: 18_Energy_Ring_Orange_15
+  - first:
+      213: -2285818839299352041
+    second: 18_Energy_Ring_Orange_16
+  - first:
+      213: -8224256048561776885
+    second: 18_Energy_Ring_Orange_17
+  - first:
+      213: -4475569825522912123
+    second: 18_Energy_Ring_Orange_18
+  - first:
+      213: 7620590157451304904
+    second: 18_Energy_Ring_Orange_19
+  - first:
+      213: -8174334725385649493
+    second: 18_Energy_Ring_Orange_20
+  - first:
+      213: -48522076390956021
+    second: 18_Energy_Ring_Orange_21
+  - first:
+      213: -930941224426337443
+    second: 18_Energy_Ring_Orange_22
+  - first:
+      213: 8738732620634477476
+    second: 18_Energy_Ring_Orange_23
+  - first:
+      213: -508882318968258871
+    second: 18_Energy_Ring_Orange_24
+  - first:
+      213: -2481610233573460978
+    second: 18_Energy_Ring_Orange_25
+  - first:
+      213: 2396645095443595288
+    second: 18_Energy_Ring_Orange_26
+  - first:
+      213: -3632115453021665765
+    second: 18_Energy_Ring_Orange_27
+  - first:
+      213: -4149160315727472766
+    second: 18_Energy_Ring_Orange_28
+  - first:
+      213: -1371738684619897496
+    second: 18_Energy_Ring_Orange_29
+  - first:
+      213: 360878567970473225
+    second: 18_Energy_Ring_Orange_30
+  - first:
+      213: 2767717455637272356
+    second: 18_Energy_Ring_Orange_31
+  - first:
+      213: -5423088975159380027
+    second: 18_Energy_Ring_Orange_32
+  - first:
+      213: -384635070324536207
+    second: 18_Energy_Ring_Orange_33
+  - first:
+      213: -8377228896717909892
+    second: 18_Energy_Ring_Orange_34
+  - first:
+      213: 4220571403459638093
+    second: 18_Energy_Ring_Orange_35
+  - first:
+      213: -3652942515764272090
+    second: 18_Energy_Ring_Orange_36
+  - first:
+      213: -2442178684292201610
+    second: 18_Energy_Ring_Orange_37
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_0
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 3
+        width: 78
+        height: 1021
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5f18ee7c502428d0800000000000000
+      internalID: -2872135080717312162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_1
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 910
+        width: 22
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dd61400e9a790b60800000000000000
+      internalID: 7712830655876394449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_2
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 592
+        width: 22
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7d6e2e42f7452920800000000000000
+      internalID: 2964855035712662907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_3
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 854
+        width: 10
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce5c19348e945f440800000000000000
+      internalID: 4968959025788077548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_4
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 630
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36b257bbee015f0c0800000000000000
+      internalID: -4542706031599998109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_5
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 797
+        width: 8
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5628adb92cdb837f0800000000000000
+      internalID: -632547104109460891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_6
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 662
+        width: 8
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8643fbaed92879260800000000000000
+      internalID: 7104290551960122472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_7
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 616
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc0b67445c5fd7e00800000000000000
+      internalID: 1044260916225814732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_8
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 276
+        width: 8
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53fd5d2f44684d0e0800000000000000
+      internalID: -2246022683461034187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_9
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 78
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44fc3c374cfdb6650800000000000000
+      internalID: 6227316944618639172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_10
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 0
+        width: 8
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 873757e22a3540640800000000000000
+      internalID: 5045249438591054712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_11
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 983
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d60079cbc77d9d7b0800000000000000
+      internalID: -5198887364082597779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_12
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 951
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a30423b63b0376280800000000000000
+      internalID: -9050211379021987782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_13
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 340
+        width: 7
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19c618e16affc3080800000000000000
+      internalID: -9206202449310684015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_14
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 326
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0798902c48f3bfc70800000000000000
+      internalID: 9005861719281076592
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_15
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 238
+        width: 7
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6439a8852fd927930800000000000000
+      internalID: 4139544671700030278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_16
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 204
+        width: 7
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71a9aae50e32740e0800000000000000
+      internalID: -2285818839299352041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_17
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 182
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b071e93a2b29ddd80800000000000000
+      internalID: -8224256048561776885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_18
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 94
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 584ff3ec4f493e1c0800000000000000
+      internalID: -4475569825522912123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_19
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 38
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8cf19b16f56c1c960800000000000000
+      internalID: 7620590157451304904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_20
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 406
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba28f3270edee8e80800000000000000
+      internalID: -8174334725385649493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_21
+      rect:
+        serializedVersion: 2
+        x: 94
+        y: 0
+        width: 1442
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b04e3f8bd6d935ff0800000000000000
+      internalID: -48522076390956021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_22
+      rect:
+        serializedVersion: 2
+        x: 219
+        y: 546
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5b0d4383e1a413f0800000000000000
+      internalID: -930941224426337443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_23
+      rect:
+        serializedVersion: 2
+        x: 243
+        y: 515
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a35908c407364970800000000000000
+      internalID: 8738732620634477476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_24
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 575
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ce7b612a3610f8f0800000000000000
+      internalID: -508882318968258871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_25
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 488
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0431e404ac8f8dd0800000000000000
+      internalID: -2481610233573460978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_26
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 522
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 810099e2408924120800000000000000
+      internalID: 2396645095443595288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_27
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 464
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b16cf6f3d32289dc0800000000000000
+      internalID: -3632115453021665765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_28
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 720
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2879ae01da83b66c0800000000000000
+      internalID: -4149160315727472766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_29
+      rect:
+        serializedVersion: 2
+        x: 259
+        y: 551
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 865c1922fea96fce0800000000000000
+      internalID: -1371738684619897496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_30
+      rect:
+        serializedVersion: 2
+        x: 1255
+        y: 555
+        width: 10
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9058ee24529120500800000000000000
+      internalID: 360878567970473225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_31
+      rect:
+        serializedVersion: 2
+        x: 1255
+        y: 496
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42758e5ac58e86620800000000000000
+      internalID: 2767717455637272356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_32
+      rect:
+        serializedVersion: 2
+        x: 1256
+        y: 591
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c7b9425f415db4b0800000000000000
+      internalID: -5423088975159380027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_33
+      rect:
+        serializedVersion: 2
+        x: 1261
+        y: 600
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17c0621017089aaf0800000000000000
+      internalID: -384635070324536207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_34
+      rect:
+        serializedVersion: 2
+        x: 1265
+        y: 562
+        width: 16
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c70ddf0f3ba1ebb80800000000000000
+      internalID: -8377228896717909892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_35
+      rect:
+        serializedVersion: 2
+        x: 1265
+        y: 473
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d433264745b729a30800000000000000
+      internalID: 4220571403459638093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_36
+      rect:
+        serializedVersion: 2
+        x: 1266
+        y: 543
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 624e2f2d2242e4dc0800000000000000
+      internalID: -3652942515764272090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 18_Energy_Ring_Orange_37
+      rect:
+        serializedVersion: 2
+        x: 1278
+        y: 561
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6738bb40d63ab1ed0800000000000000
+      internalID: -2442178684292201610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      18_Energy_Ring_Orange_0: -2872135080717312162
+      18_Energy_Ring_Orange_1: 7712830655876394449
+      18_Energy_Ring_Orange_10: 5045249438591054712
+      18_Energy_Ring_Orange_11: -5198887364082597779
+      18_Energy_Ring_Orange_12: -9050211379021987782
+      18_Energy_Ring_Orange_13: -9206202449310684015
+      18_Energy_Ring_Orange_14: 9005861719281076592
+      18_Energy_Ring_Orange_15: 4139544671700030278
+      18_Energy_Ring_Orange_16: -2285818839299352041
+      18_Energy_Ring_Orange_17: -8224256048561776885
+      18_Energy_Ring_Orange_18: -4475569825522912123
+      18_Energy_Ring_Orange_19: 7620590157451304904
+      18_Energy_Ring_Orange_2: 2964855035712662907
+      18_Energy_Ring_Orange_20: -8174334725385649493
+      18_Energy_Ring_Orange_21: -48522076390956021
+      18_Energy_Ring_Orange_22: -930941224426337443
+      18_Energy_Ring_Orange_23: 8738732620634477476
+      18_Energy_Ring_Orange_24: -508882318968258871
+      18_Energy_Ring_Orange_25: -2481610233573460978
+      18_Energy_Ring_Orange_26: 2396645095443595288
+      18_Energy_Ring_Orange_27: -3632115453021665765
+      18_Energy_Ring_Orange_28: -4149160315727472766
+      18_Energy_Ring_Orange_29: -1371738684619897496
+      18_Energy_Ring_Orange_3: 4968959025788077548
+      18_Energy_Ring_Orange_30: 360878567970473225
+      18_Energy_Ring_Orange_31: 2767717455637272356
+      18_Energy_Ring_Orange_32: -5423088975159380027
+      18_Energy_Ring_Orange_33: -384635070324536207
+      18_Energy_Ring_Orange_34: -8377228896717909892
+      18_Energy_Ring_Orange_35: 4220571403459638093
+      18_Energy_Ring_Orange_36: -3652942515764272090
+      18_Energy_Ring_Orange_37: -2442178684292201610
+      18_Energy_Ring_Orange_4: -4542706031599998109
+      18_Energy_Ring_Orange_5: -632547104109460891
+      18_Energy_Ring_Orange_6: 7104290551960122472
+      18_Energy_Ring_Orange_7: 1044260916225814732
+      18_Energy_Ring_Orange_8: -2246022683461034187
+      18_Energy_Ring_Orange_9: 6227316944618639172
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

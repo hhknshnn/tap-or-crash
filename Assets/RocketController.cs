@@ -163,6 +163,12 @@ public class RocketController : MonoBehaviour
 
     void Update()
     {
+        // Runs before the gameplay guard on purpose: the states this catches are the
+        // ones where the rest of Update either never runs or cannot reach DoFlight's
+        // own miss check, which is what would otherwise leave a run alive forever with
+        // no ship on screen and no Game Over.
+        WatchForLostRocket();
+
         if (!CanRunGameplay())
         {
             CancelHoldInput();
@@ -280,6 +286,114 @@ public class RocketController : MonoBehaviour
         CancelHoldInput();
         persistentOrbitDirection = 1;
         EnsureRocketFlame();
+    }
+
+    /// <summary>
+    /// The orbit invariant every new run starts from, guaranteed before gameplay takes
+    /// authority. Called by <see cref="RunSession.Begin"/>, which is the single entry
+    /// point for the first run, a Main Menu launch, Fly Again and both restarts.
+    ///
+    /// A run must never begin mid-flight, without an orbit target or carrying the
+    /// previous run's held direction. The Main Menu hand-over runs after this and
+    /// writes the exact pose the ship is already in (see RestoreContinueState), so
+    /// guaranteeing the invariant here costs the launch nothing.
+    /// </summary>
+    public void BeginRun()
+    {
+        ResetForNewRun();
+
+        isOrbiting = true;
+        isSettlingCapture = false;
+        captureSettleElapsed = 0f;
+        flyDir = Vector3.zero;
+        trackedFlightTarget = null;
+        closestApproach = float.MaxValue;
+        lostRocketElapsed = 0f;
+
+        if (flightTrail != null)
+        {
+            flightTrail.emitting = false;
+            flightTrail.Clear();
+        }
+        if (trajectoryLine != null) trajectoryLine.positionCount = 0;
+
+        if (planets == null || planets.Count == 0) return;
+
+        // A list that was rebuilt, or an index left over from a previous run, must not
+        // become an orbit around nothing.
+        currentIndex = Mathf.Clamp(currentIndex, 0, planets.Count - 1);
+        if (planets[currentIndex] == null) currentIndex = 0;
+
+        Transform planet = planets[currentIndex];
+        if (planet == null) return;
+
+        orbitRadius = CalculateOrbitRadius(planet);
+
+        // Keep the angle the ship already stands at when that is meaningful, so the
+        // hand-over and a restart both resume from a readable pose rather than snapping
+        // to a fixed side of the planet.
+        Vector3 outward = transform.position - planet.position;
+        angle = outward.sqrMagnitude > 0.0001f
+            ? Mathf.Atan2(outward.y, outward.x) * Mathf.Rad2Deg
+            : angle;
+
+        float rad = angle * Mathf.Deg2Rad;
+        Vector3 orbitOutward = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
+        transform.position = planet.position + orbitOutward * orbitRadius;
+        transform.rotation = CalculateOrbitRotation(orbitOutward, persistentOrbitDirection);
+    }
+
+    // ─── Lost-rocket fail-safe ───────────────────────────────────────────────
+
+    // A run is only ever ended by this after every legitimate explanation has been
+    // ruled out and the invalid state has held continuously. It exists for the state
+    // no legitimate path produces: an active run whose ship has no orbit target at all,
+    // where DoOrbit cannot place it and DoFlight's own miss check never runs.
+    const float LostRocketConfirmSeconds = 1.25f;
+
+    float lostRocketElapsed;
+
+    void WatchForLostRocket()
+    {
+        if (!IsRocketLost())
+        {
+            lostRocketElapsed = 0f;
+            return;
+        }
+
+        lostRocketElapsed += Time.unscaledDeltaTime;
+        if (lostRocketElapsed < LostRocketConfirmSeconds) return;
+
+        lostRocketElapsed = 0f;
+        Debug.LogError("RocketController: the run has no valid orbit target and no crash, " +
+                       "landing or transition is in progress. Ending the run through the normal " +
+                       "Game Over path rather than leaving it stuck.", this);
+
+        // The normal path, once. TriggerGameOver refuses a second call while a Game
+        // Over is already running, so this can never stack.
+        GameManager.isNearMiss = false;
+        if (GameManager.instance != null) GameManager.instance.TriggerGameOver();
+    }
+
+    bool IsRocketLost()
+    {
+        // Only an active, un-paused, un-presented run can be stuck. Every one of these
+        // is a legitimate reason for the ship to be standing still.
+        if (!GameManager.isGameStarted || GameManager.isGameOver) return false;
+        if (GameManager.isIntroPlaying) return false;
+        if (WorldTransitionManager.IsPlaying) return false;
+        if (PauseManager.instance != null && PauseManager.instance.IsPaused) return false;
+        if (PresentationGate.IsAnyFullScreenPresentationActive) return false;
+        if (Mathf.Approximately(Time.timeScale, 0f)) return false;
+
+        // A missed launch is not this: it is still flying toward a real planet and
+        // DoFlight ends it on its own distance check. This is the ship having nothing
+        // to orbit or fly towards at all.
+        return planets == null
+            || planets.Count == 0
+            || currentIndex < 0
+            || currentIndex >= planets.Count
+            || planets[currentIndex] == null;
     }
 
     public bool TryCaptureContinueState(out ContinueState state)

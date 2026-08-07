@@ -1,0 +1,1092 @@
+fileFormatVersion: 2
+guid: 6548a88c3e82869458ee2413d826c37e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7384733473143856096
+    second: 22_CrystalRock_Icon_0
+  - first:
+      213: -798340732843905101
+    second: 22_CrystalRock_Icon_1
+  - first:
+      213: -1108212552757219017
+    second: 22_CrystalRock_Icon_2
+  - first:
+      213: 3556661982249014983
+    second: 22_CrystalRock_Icon_3
+  - first:
+      213: 4117623368254147198
+    second: 22_CrystalRock_Icon_4
+  - first:
+      213: -4991780311981398606
+    second: 22_CrystalRock_Icon_5
+  - first:
+      213: 550991675526742532
+    second: 22_CrystalRock_Icon_6
+  - first:
+      213: 4285831382496580677
+    second: 22_CrystalRock_Icon_7
+  - first:
+      213: -1435061145616553325
+    second: 22_CrystalRock_Icon_8
+  - first:
+      213: -5306138151117990231
+    second: 22_CrystalRock_Icon_9
+  - first:
+      213: 8055784558029906435
+    second: 22_CrystalRock_Icon_10
+  - first:
+      213: -6956546481685552655
+    second: 22_CrystalRock_Icon_11
+  - first:
+      213: -1775899709191357962
+    second: 22_CrystalRock_Icon_12
+  - first:
+      213: 5351461903855650499
+    second: 22_CrystalRock_Icon_13
+  - first:
+      213: 3690207068597849023
+    second: 22_CrystalRock_Icon_14
+  - first:
+      213: 2735093373470631661
+    second: 22_CrystalRock_Icon_15
+  - first:
+      213: -4596176116344246791
+    second: 22_CrystalRock_Icon_16
+  - first:
+      213: -5416298508042860906
+    second: 22_CrystalRock_Icon_17
+  - first:
+      213: 9143524852280183801
+    second: 22_CrystalRock_Icon_18
+  - first:
+      213: 3623684804363147866
+    second: 22_CrystalRock_Icon_19
+  - first:
+      213: 6259324680139980527
+    second: 22_CrystalRock_Icon_20
+  - first:
+      213: 3533364360627532490
+    second: 22_CrystalRock_Icon_21
+  - first:
+      213: 6555855591041803164
+    second: 22_CrystalRock_Icon_22
+  - first:
+      213: 8330119727962682254
+    second: 22_CrystalRock_Icon_23
+  - first:
+      213: -9142190064822532094
+    second: 22_CrystalRock_Icon_24
+  - first:
+      213: 1686927907487592433
+    second: 22_CrystalRock_Icon_25
+  - first:
+      213: -5814982952980970060
+    second: 22_CrystalRock_Icon_26
+  - first:
+      213: -3662425803107809977
+    second: 22_CrystalRock_Icon_27
+  - first:
+      213: -3117174590671066201
+    second: 22_CrystalRock_Icon_28
+  - first:
+      213: -5533109012018773830
+    second: 22_CrystalRock_Icon_29
+  - first:
+      213: 3699702843744741211
+    second: 22_CrystalRock_Icon_30
+  - first:
+      213: 1489448701242727508
+    second: 22_CrystalRock_Icon_31
+  - first:
+      213: -1227863907662368912
+    second: 22_CrystalRock_Icon_32
+  - first:
+      213: -8408676505106470571
+    second: 22_CrystalRock_Icon_33
+  - first:
+      213: 2387413768933614749
+    second: 22_CrystalRock_Icon_34
+  - first:
+      213: 6567810093798701128
+    second: 22_CrystalRock_Icon_35
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 0
+        width: 243
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 024e25c3808248990800000000000000
+      internalID: -7384733473143856096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_1
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 0
+        width: 1275
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bf2d115559bbe4f0800000000000000
+      internalID: -798340732843905101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_2
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 963
+        width: 23
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 731f6490e86de90f0800000000000000
+      internalID: -1108212552757219017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_3
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 847
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c6d6169a3dcb5130800000000000000
+      internalID: 3556661982249014983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_4
+      rect:
+        serializedVersion: 2
+        x: 914
+        y: 839
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7ac2a723acb42930800000000000000
+      internalID: 4117623368254147198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_5
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 842
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b56f8bf042a9bab0800000000000000
+      internalID: -4991780311981398606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_6
+      rect:
+        serializedVersion: 2
+        x: 851
+        y: 796
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40208f5720485a700800000000000000
+      internalID: 550991675526742532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_7
+      rect:
+        serializedVersion: 2
+        x: 917
+        y: 795
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5441ee06fe45a7b30800000000000000
+      internalID: 4285831382496580677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_8
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 784
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39a6f88cd73a51ce0800000000000000
+      internalID: -1435061145616553325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_9
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 734
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a6d675f67fcc56b0800000000000000
+      internalID: -5306138151117990231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_10
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 636
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3022378cf55ebcf60800000000000000
+      internalID: 8055784558029906435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_11
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 622
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f1a3af05d1657f90800000000000000
+      internalID: -6956546481685552655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_12
+      rect:
+        serializedVersion: 2
+        x: 1083
+        y: 504
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f9fde4af9cba57e0800000000000000
+      internalID: -1775899709191357962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_13
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 430
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c60a509f36344a40800000000000000
+      internalID: 5351461903855650499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_14
+      rect:
+        serializedVersion: 2
+        x: 1087
+        y: 435
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbb096ff6cf363330800000000000000
+      internalID: 3690207068597849023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_15
+      rect:
+        serializedVersion: 2
+        x: 1087
+        y: 418
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de6ed399ee005f520800000000000000
+      internalID: 2735093373470631661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_16
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 406
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fdaa2c7c2a1730c0800000000000000
+      internalID: -4596176116344246791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_17
+      rect:
+        serializedVersion: 2
+        x: 1087
+        y: 387
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69680a6243175d4b0800000000000000
+      internalID: -5416298508042860906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_18
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 371
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fbcd1f986354ee70800000000000000
+      internalID: 9143524852280183801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_19
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 350
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5adb06612ae94230800000000000000
+      internalID: 3623684804363147866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_20
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 344
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fee349d12a69dd650800000000000000
+      internalID: 6259324680139980527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_21
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 326
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac2ba395a28090130800000000000000
+      internalID: 3533364360627532490
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_22
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 286
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c932ec6fce31bfa50800000000000000
+      internalID: 6555855591041803164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_23
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 246
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8370b9f1c78a9370800000000000000
+      internalID: 8330119727962682254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_24
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 220
+        width: 8
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 208c52dc29a602180800000000000000
+      internalID: -9142190064822532094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_25
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 229
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ffad7f7efb296710800000000000000
+      internalID: 1686927907487592433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_26
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 200
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b50e9830d70d4fa0800000000000000
+      internalID: -5814982952980970060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_27
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 182
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 745c88de2237c2dc0800000000000000
+      internalID: -3662425803107809977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_28
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 153
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ab6d2ca9329db4d0800000000000000
+      internalID: -3117174590671066201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_29
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 147
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab0cb135ba27633b0800000000000000
+      internalID: -5533109012018773830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_30
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 142
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5768ef622cf75330800000000000000
+      internalID: 3699702843744741211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_31
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 94
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45c5dbcc3b59ba410800000000000000
+      internalID: 1489448701242727508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_32
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 84
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07fe24f0840c5fee0800000000000000
+      internalID: -1227863907662368912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_33
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 70
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 559a4f905416e4b80800000000000000
+      internalID: -8408676505106470571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_34
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 24
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d942a2d7c2cc12120800000000000000
+      internalID: 2387413768933614749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 22_CrystalRock_Icon_35
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 8
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 848b8198b7c852b50800000000000000
+      internalID: 6567810093798701128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      22_CrystalRock_Icon_0: -7384733473143856096
+      22_CrystalRock_Icon_1: -798340732843905101
+      22_CrystalRock_Icon_10: 8055784558029906435
+      22_CrystalRock_Icon_11: -6956546481685552655
+      22_CrystalRock_Icon_12: -1775899709191357962
+      22_CrystalRock_Icon_13: 5351461903855650499
+      22_CrystalRock_Icon_14: 3690207068597849023
+      22_CrystalRock_Icon_15: 2735093373470631661
+      22_CrystalRock_Icon_16: -4596176116344246791
+      22_CrystalRock_Icon_17: -5416298508042860906
+      22_CrystalRock_Icon_18: 9143524852280183801
+      22_CrystalRock_Icon_19: 3623684804363147866
+      22_CrystalRock_Icon_2: -1108212552757219017
+      22_CrystalRock_Icon_20: 6259324680139980527
+      22_CrystalRock_Icon_21: 3533364360627532490
+      22_CrystalRock_Icon_22: 6555855591041803164
+      22_CrystalRock_Icon_23: 8330119727962682254
+      22_CrystalRock_Icon_24: -9142190064822532094
+      22_CrystalRock_Icon_25: 1686927907487592433
+      22_CrystalRock_Icon_26: -5814982952980970060
+      22_CrystalRock_Icon_27: -3662425803107809977
+      22_CrystalRock_Icon_28: -3117174590671066201
+      22_CrystalRock_Icon_29: -5533109012018773830
+      22_CrystalRock_Icon_3: 3556661982249014983
+      22_CrystalRock_Icon_30: 3699702843744741211
+      22_CrystalRock_Icon_31: 1489448701242727508
+      22_CrystalRock_Icon_32: -1227863907662368912
+      22_CrystalRock_Icon_33: -8408676505106470571
+      22_CrystalRock_Icon_34: 2387413768933614749
+      22_CrystalRock_Icon_35: 6567810093798701128
+      22_CrystalRock_Icon_4: 4117623368254147198
+      22_CrystalRock_Icon_5: -4991780311981398606
+      22_CrystalRock_Icon_6: 550991675526742532
+      22_CrystalRock_Icon_7: 4285831382496580677
+      22_CrystalRock_Icon_8: -1435061145616553325
+      22_CrystalRock_Icon_9: -5306138151117990231
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

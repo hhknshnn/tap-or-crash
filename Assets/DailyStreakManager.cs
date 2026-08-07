@@ -62,7 +62,7 @@ public class DailyStreakManager : MonoBehaviour
 
     IEnumerator ShowStreakBanner(int streak, int coins)
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) yield break;
 
         // Banner oluştur

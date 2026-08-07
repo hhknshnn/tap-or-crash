@@ -74,12 +74,16 @@ public sealed class FuelRewardController : MonoBehaviour, IRewardReceiver
     {
         // Not in progress means this is a repeat of a callback already settled.
         if (!requestInProgress) return;
-        requestInProgress = false;
 
         Action<int> callback = granted;
         DetachListeners();
 
+        // Keep requestInProgress true while GrantFuel raises FuelChanged. The popup
+        // uses that distinction to avoid presenting this +3 grant as a timer-driven
+        // +1 refill before the rewarded callback reports the real capped amount.
         int amount = RocketFuelService.Instance.GrantFuel(RewardAmount, FuelGrantSource.RewardedAd);
+        requestInProgress = false;
+        CancelPendingMenuLaunch();
         callback?.Invoke(amount);
     }
 
@@ -90,7 +94,17 @@ public sealed class FuelRewardController : MonoBehaviour, IRewardReceiver
 
         Action callback = unavailable;
         DetachListeners();
+        CancelPendingMenuLaunch();
         callback?.Invoke();
+    }
+
+    // A Fuel ad is a management action, never a launch continuation. Clearing the
+    // start-screen transition here covers success, cancellation and failure even
+    // when the popup was dismissed while the network's full-screen UI was open.
+    private static void CancelPendingMenuLaunch()
+    {
+        SplashScreenController splash = FindAnyObjectByType<SplashScreenController>();
+        if (splash != null) splash.CancelTransition();
     }
 
     private AdService ResolveAdService()

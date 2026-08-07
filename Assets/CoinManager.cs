@@ -33,26 +33,12 @@ public class CoinManager : MonoBehaviour
     private int runCoinsEarned;
     private int pendingLandingCredits;
 
-    // One horizontal group: [icon] gap [amount] gap [+]. Every step is measured
-    // from the one before it, so the "+" cannot drift away from the last digit.
-    private const float IconSize = 72f;
-    private const float IconToValueGap = 16f;
-    private const float ValueToPlusGap = 14f;
-    // The visible button is large enough to advertise the shop entry while the
-    // transparent hit rect still gives it the same comfortable thumb target as
-    // the rest of the HUD.
-    private const float PlusButtonSize = 63f;
-    private const float ValueFontSize = 48f;
-    private const float CounterHeight = 98f;
-    private const float StripHorizontalPadding = 14f;
-    private const float ValueLeft = StripHorizontalPadding + IconSize + IconToValueGap;
-
     private Canvas canvas;
     private RectTransform canvasRect;
     private TextMeshProUGUI coinText;
     private RectTransform coinCounterRt;
-    private RectTransform coinValueRt;
     private RectTransform coinPlusRt;
+    private float coinChipAppliedWidth = -1f;
     private Button runDoubleButton;
     private TextMeshProUGUI runDoubleLabel;
     private TextMeshProUGUI runDoublePreview;
@@ -88,7 +74,7 @@ public class CoinManager : MonoBehaviour
 
     void CreateCoinCounter()
     {
-        canvas = FindAnyObjectByType<Canvas>();
+        canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
         canvasRect = canvas.GetComponent<RectTransform>();
 
@@ -96,21 +82,14 @@ public class CoinManager : MonoBehaviour
         if (existing != null)
         {
             coinCounterRt = existing.GetComponent<RectTransform>();
-            Transform value = existing.Find("Value");
-            Transform shortcut = existing.Find("CoinPurchaseShortcut");
-            coinValueRt = value as RectTransform;
-            coinText = value != null ? value.GetComponent<TextMeshProUGUI>() : null;
-            coinPlusRt = shortcut as RectTransform;
-            Button shortcutButton = shortcut != null ? shortcut.GetComponent<Button>() : null;
-            if (shortcutButton != null)
+            if (!BindDiamondChip(existing))
             {
-                shortcutButton.onClick.RemoveListener(OpenCoinShop);
-                shortcutButton.onClick.AddListener(OpenCoinShop);
+                RebuildDiamondChip(existing.gameObject);
+                BindDiamondChip(existing);
             }
-            WireCoinStripButton(existing.gameObject);
+            WireDiamondChipButton(existing.gameObject);
             if (coinCounterRt == null || coinText == null || coinPlusRt == null)
                 Debug.LogError("CoinManager: serialized CoinCounter is incomplete. Run the Main Menu authoring command.", this);
-            ApplyCoinPresentation(existing);
             RefreshCoinDisplay();
             return;
         }
@@ -130,211 +109,155 @@ public class CoinManager : MonoBehaviour
         coinCounterRt.pivot = new Vector2(0f, 1f);
         UIDesign.EnsureInitialised();
         coinCounterRt.anchoredPosition = new Vector2(UIDesign.ScreenMargin, -UIDesign.ScreenMargin);
-        coinCounterRt.sizeDelta = new Vector2(258f, CounterHeight);
-        UIKit.MakeGlass(root, UIDesign.RadiusChip, UITinted.Role.Glass, 0.92f, true, true);
-        WireCoinStripButton(root);
+        coinCounterRt.sizeDelta = new Vector2(ShipSkinManager.ShopBalanceChipMinWidth, ShipSkinManager.ShopBalanceChipHeight);
 
-        GameObject iconGo = new GameObject("Icon");
-        iconGo.transform.SetParent(root.transform, false);
-        RectTransform iconRt = iconGo.AddComponent<RectTransform>();
-        iconRt.anchorMin = new Vector2(0f, 0.5f);
-        iconRt.anchorMax = new Vector2(0f, 0.5f);
-        iconRt.pivot = new Vector2(0f, 0.5f);
-        iconRt.anchoredPosition = new Vector2(StripHorizontalPadding, 0f);
-        iconRt.sizeDelta = new Vector2(IconSize, IconSize);
-        Image iconImg = iconGo.AddComponent<Image>();
-        iconImg.sprite = UIIcons.Get(UIIcons.Coin);
-        iconImg.preserveAspect = true;
-        iconImg.raycastTarget = false;
-        ConfigureCoinIcon(iconGo);
-
-        GameObject textGo = new GameObject("Value");
-        textGo.transform.SetParent(root.transform, false);
-        coinValueRt = textGo.AddComponent<RectTransform>();
-        coinValueRt.anchorMin = coinValueRt.anchorMax = new Vector2(0f, 0.5f);
-        coinValueRt.pivot = new Vector2(0f, 0.5f);
-        coinValueRt.anchoredPosition = new Vector2(ValueLeft, 0f);
-        coinValueRt.sizeDelta = new Vector2(0f, CounterHeight - 12f);
-
-        coinText = textGo.AddComponent<TextMeshProUGUI>();
-        UIKit.StyleText(coinText, UIDesign.TypeHeading, UIDesign.TrackButton, UIDesign.TextMain,
-            FontStyles.Bold, TextAlignmentOptions.MidlineLeft);
-        coinText.enableAutoSizing = false;
-        coinText.fontSize = ValueFontSize;
-        coinText.raycastTarget = false;
-        // StyleText leaves every label wrapping-off and ellipsised. The rect here is
-        // sized to the text rather than the other way round, so an ellipsis would be
-        // drawn exactly at the last digit it was measured to fit.
-        coinText.textWrappingMode = TextWrappingModes.NoWrap;
-        coinText.overflowMode = TextOverflowModes.Overflow;
-
-        CreateCoinShopShortcut(root.transform);
+        RebuildDiamondChip(root);
+        BindDiamondChip(root.transform);
+        WireDiamondChipButton(root);
         RefreshCoinDisplay();
     }
 
-    void ApplyCoinPresentation(Transform root)
+    // Same visual family as the Shop header's currency chip: a sliced
+    // BalanceChipBaseFlat pill, DiamondIcon, centred amount and a PlusButton
+    // that opens the Shop. Reuses ShipSkinManager's own builder and layout
+    // constants so the HUD and the Shop currency chip can never drift apart.
+    bool BindDiamondChip(Transform root)
     {
-        if (root == null || coinCounterRt == null) return;
-        UIKit.MakeGlass(root.gameObject, UIDesign.RadiusChip, UITinted.Role.Glass, 0.92f, true, true);
-        WireCoinStripButton(root.gameObject);
-        coinCounterRt.sizeDelta = new Vector2(coinCounterRt.sizeDelta.x, CounterHeight);
+        Transform chipBase = root.Find("BalanceChipBase");
+        Transform diamond = root.Find("DiamondIcon");
+        Transform amount = root.Find("BalanceAmount");
+        Transform plus = root.Find("PlusButton");
+        if (chipBase == null || diamond == null || amount == null || plus == null) return false;
 
-        RectTransform icon = root.Find("Icon") as RectTransform;
-        if (icon != null)
-        {
-            icon.anchoredPosition = new Vector2(StripHorizontalPadding, 0f);
-            icon.sizeDelta = Vector2.one * IconSize;
-            ConfigureCoinIcon(icon.gameObject);
-        }
+        TextMeshProUGUI amountText = amount.GetComponent<TextMeshProUGUI>();
+        if (amountText == null) return false;
+        coinText = amountText;
+        coinPlusRt = plus as RectTransform;
 
-        if (coinValueRt != null)
+        Button plusButton = plus.GetComponent<Button>();
+        if (plusButton != null)
         {
-            coinValueRt.anchoredPosition = new Vector2(ValueLeft, 0f);
-            coinValueRt.sizeDelta = new Vector2(coinValueRt.sizeDelta.x, CounterHeight - 12f);
+            plusButton.onClick.RemoveListener(OpenCoinShop);
+            plusButton.onClick.AddListener(OpenCoinShop);
         }
-        if (coinText != null)
-        {
-            coinText.enableAutoSizing = false;
-            coinText.fontSize = ValueFontSize;
-            coinText.fontSizeMin = ValueFontSize;
-            coinText.textWrappingMode = TextWrappingModes.NoWrap;
-            coinText.overflowMode = TextOverflowModes.Overflow;
-        }
-
-        Transform shortcut = root.Find("CoinPurchaseShortcut");
-        RectTransform disc = shortcut != null ? shortcut.Find("PlusButton") as RectTransform : null;
-        if (disc != null) disc.sizeDelta = Vector2.one * PlusButtonSize;
-        RectTransform highlight = disc != null ? disc.Find("Highlight") as RectTransform : null;
-        if (highlight != null)
-        {
-            highlight.anchoredPosition = new Vector2(0f, PlusButtonSize * 0.16f);
-            highlight.sizeDelta = Vector2.one * (PlusButtonSize * 0.62f);
-        }
-        TextMeshProUGUI plus = disc != null ? disc.GetComponentInChildren<TextMeshProUGUI>(true) : null;
-        if (plus != null)
-        {
-            plus.fontSize = 40f;
-            plus.color = UIDesign.TextMain;
-        }
-
-        if (disc != null) RemovePlusShadowArtifacts(disc);
+        return true;
     }
 
-    static void RemovePlusShadowArtifacts(Component target)
+    static void DestroyUnityObject(UnityEngine.Object target)
     {
-        if (target == null) return;
+        if (Application.isPlaying) Destroy(target);
+        else DestroyImmediate(target);
+    }
 
-        foreach (Shadow legacy in target.GetComponentsInChildren<Shadow>(true))
-            if (legacy != null) UnityEngine.Object.Destroy(legacy);
+    void RebuildDiamondChip(GameObject root)
+    {
+        for (int i = root.transform.childCount - 1; i >= 0; --i)
+            DestroyUnityObject(root.transform.GetChild(i).gameObject);
 
-        foreach (Outline legacy in target.GetComponentsInChildren<Outline>(true))
-            if (legacy != null) UnityEngine.Object.Destroy(legacy);
-
-        UIShadowLink link = target.GetComponent<UIShadowLink>();
-        if (link != null) UnityEngine.Object.Destroy(link);
-
-        Transform parent = target.transform;
-        if (parent != null)
+        Sprite chipSprite = ShipSkinManager.LoadShopBalanceChipSprite();
+        Sprite diamondSprite = ShipSkinManager.LoadShopHeaderSprite("DiamondIcon");
+        Sprite plusSprite = ShipSkinManager.LoadShopHeaderSprite("PlusButton");
+        if (chipSprite == null || diamondSprite == null || plusSprite == null)
         {
-            for (int i = parent.childCount - 1; i >= 0; --i)
-            {
-                Transform child = parent.GetChild(i);
-                if (child != null &&
-                    child.name != null &&
-                    child.name.IndexOf("Shadow", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    UnityEngine.Object.Destroy(child.gameObject);
-                }
-            }
-
-            Transform hostParent = parent.parent;
-            if (hostParent != null)
-            {
-                for (int i = hostParent.childCount - 1; i >= 0; --i)
-                {
-                    Transform sibling = hostParent.GetChild(i);
-                    if (sibling != null &&
-                        sibling.name != null &&
-                        sibling.name.IndexOf("Shadow", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        UnityEngine.Object.Destroy(sibling.gameObject);
-                    }
-                }
-            }
+            Debug.LogError("CoinManager: Shop currency sprites are missing; the main menu diamond chip cannot be built.", this);
+            return;
         }
+
+        GameObject chipGo = new GameObject("BalanceChipBase", typeof(RectTransform));
+        chipGo.transform.SetParent(root.transform, false);
+        chipGo.transform.SetAsFirstSibling();
+        RectTransform chipRect = chipGo.GetComponent<RectTransform>();
+        ShipSkinManager.Stretch(chipRect, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        ShipSkinManager.BuildShopBalanceChipVisual(chipGo.transform, chipSprite);
+
+        GameObject diamondGo = new GameObject("DiamondIcon", typeof(RectTransform));
+        diamondGo.transform.SetParent(root.transform, false);
+        RectTransform diamondRect = diamondGo.GetComponent<RectTransform>();
+        diamondRect.anchorMin = diamondRect.anchorMax = new Vector2(0f, 0.5f);
+        diamondRect.pivot = new Vector2(0.5f, 0.5f);
+        diamondRect.anchoredPosition = new Vector2(ShipSkinManager.ShopBalanceDiamondCenterX, 0f);
+        diamondRect.sizeDelta = new Vector2(ShipSkinManager.ShopBalanceDiamondVisualSize, ShipSkinManager.ShopBalanceDiamondVisualSize);
+        Image diamondImage = diamondGo.AddComponent<Image>();
+        diamondImage.sprite = diamondSprite;
+        diamondImage.type = Image.Type.Simple;
+        diamondImage.preserveAspect = true;
+        diamondImage.color = Color.white;
+        diamondImage.raycastTarget = false;
+
+        GameObject amountGo = new GameObject("BalanceAmount", typeof(RectTransform));
+        amountGo.transform.SetParent(root.transform, false);
+        RectTransform amountRect = amountGo.GetComponent<RectTransform>();
+        amountRect.anchorMin = Vector2.zero;
+        amountRect.anchorMax = Vector2.one;
+        amountRect.pivot = new Vector2(0.5f, 0.5f);
+        amountRect.offsetMin = new Vector2(ShipSkinManager.ShopBalanceAmountLeftInset, 0f);
+        amountRect.offsetMax = new Vector2(-ShipSkinManager.ShopBalanceAmountRightInset, 0f);
+        amountRect.anchoredPosition = new Vector2(0f, ShipSkinManager.ShopBalanceAmountVerticalLift);
+
+        TextMeshProUGUI amountText = amountGo.AddComponent<TextMeshProUGUI>();
+        TMP_FontAsset balanceFont = Resources.Load<TMP_FontAsset>("Fonts/Montserrat-ExtraBold SDF");
+        if (balanceFont != null) amountText.font = balanceFont;
+        amountText.text = "0";
+        amountText.fontSize = ShipSkinManager.ShopBalanceAmountFontSize;
+        amountText.fontStyle = FontStyles.Bold;
+        amountText.alignment = TextAlignmentOptions.Center;
+        amountText.color = ShipSkinManager.ShopBalanceAmountColor;
+        amountText.margin = Vector4.zero;
+        amountText.textWrappingMode = TextWrappingModes.NoWrap;
+        amountText.overflowMode = TextOverflowModes.Overflow;
+        amountText.raycastTarget = false;
+
+        GameObject plusGo = new GameObject("PlusButton", typeof(RectTransform));
+        plusGo.transform.SetParent(root.transform, false);
+        RectTransform plusRect = plusGo.GetComponent<RectTransform>();
+        plusRect.anchorMin = plusRect.anchorMax = new Vector2(1f, 0.5f);
+        plusRect.pivot = new Vector2(0.5f, 0.5f);
+        plusRect.anchoredPosition = new Vector2(-ShipSkinManager.ShopBalancePlusCenterX, 0f);
+        plusRect.sizeDelta = new Vector2(ShipSkinManager.ShopBalancePlusHitSize, ShipSkinManager.ShopBalancePlusHitSize);
+
+        Image plusHit = plusGo.AddComponent<Image>();
+        plusHit.color = Color.clear;
+        plusHit.raycastTarget = true;
+
+        Button plusButton = plusGo.AddComponent<Button>();
+        plusButton.targetGraphic = plusHit;
+        plusButton.transition = Selectable.Transition.None;
+        ShipSkinManager.ConfigureShopSpriteButtonColors(plusButton);
+        plusButton.onClick.AddListener(OpenCoinShop);
+        plusGo.AddComponent<UIButtonPressFeedback>();
+
+        GameObject plusVisualGo = new GameObject("Visual", typeof(RectTransform));
+        plusVisualGo.transform.SetParent(plusGo.transform, false);
+        RectTransform plusVisualRect = plusVisualGo.GetComponent<RectTransform>();
+        plusVisualRect.anchorMin = plusVisualRect.anchorMax = new Vector2(0.5f, 0.5f);
+        plusVisualRect.pivot = new Vector2(0.5f, 0.5f);
+        plusVisualRect.sizeDelta = new Vector2(ShipSkinManager.ShopBalancePlusVisualSize, ShipSkinManager.ShopBalancePlusVisualSize);
+        Image plusImage = plusVisualGo.AddComponent<Image>();
+        plusImage.sprite = plusSprite;
+        plusImage.type = Image.Type.Simple;
+        plusImage.preserveAspect = true;
+        plusImage.color = Color.white;
+        plusImage.raycastTarget = false;
     }
 
-    // The shortcut is two rects, not one. The button is what the player sees, and
-    // it is small enough to sit a few pixels off the last digit; the transparent
-    // rect around it is what the thumb hits, and it stays at the shared 112px
-    // (~44dp) touch size the rest of the HUD uses. Sizing one rect for both jobs
-    // is what pushed the old "+" a chip's width away from the number it belongs to.
-    //
-    // The button itself is the shared glass disc with its rim pinned warm, not a
-    // painted orange puck: dark translucent centre, one hairline outline, one
-    // highlight catching the light from above, one small white glyph.
-    void CreateCoinShopShortcut(Transform parent)
-    {
-        GameObject plusObject = new GameObject("CoinPurchaseShortcut");
-        plusObject.transform.SetParent(parent, false);
-        coinPlusRt = plusObject.AddComponent<RectTransform>();
-        coinPlusRt.anchorMin = coinPlusRt.anchorMax = new Vector2(0f, 0.5f);
-        coinPlusRt.pivot = new Vector2(0.5f, 0.5f);
-        coinPlusRt.sizeDelta = new Vector2(UIDesign.IconButtonSize, UIDesign.IconButtonSize);
-
-        Image touchArea = plusObject.AddComponent<Image>();
-        touchArea.color = Color.clear;
-        touchArea.raycastTarget = true;
-
-        Button button = plusObject.AddComponent<Button>();
-        button.targetGraphic = touchArea;
-        button.transition = Selectable.Transition.None;
-        button.onClick.AddListener(OpenCoinShop);
-
-        GameObject discObject = new GameObject("PlusButton");
-        discObject.transform.SetParent(plusObject.transform, false);
-        RectTransform discRect = discObject.AddComponent<RectTransform>();
-        discRect.anchorMin = discRect.anchorMax = discRect.pivot = new Vector2(0.5f, 0.5f);
-        discRect.anchoredPosition = Vector2.zero;
-        discRect.sizeDelta = new Vector2(PlusButtonSize, PlusButtonSize);
-
-        // No shadow: the shared 112px hit area is intentionally untinted.
-        UIKit.MakeGlassDisc(discObject, UITinted.Role.GlassDeep, 1f, false);
-        UIKit.OverrideRim(discObject, new Color(UIDesign.Gold.r, UIDesign.Gold.g,
-            UIDesign.Gold.b, 0.9f));
-
-        GameObject highlightObject = new GameObject("Highlight");
-        highlightObject.transform.SetParent(discObject.transform, false);
-        RectTransform highlightRect = highlightObject.AddComponent<RectTransform>();
-        highlightRect.anchorMin = highlightRect.anchorMax = new Vector2(0.5f, 0.5f);
-        highlightRect.pivot = new Vector2(0.5f, 0.5f);
-        highlightRect.anchoredPosition = new Vector2(0f, PlusButtonSize * 0.16f);
-        highlightRect.sizeDelta = Vector2.one * (PlusButtonSize * 0.62f);
-        Image highlight = highlightObject.AddComponent<Image>();
-        highlight.sprite = UIGlass.Glow;
-        highlight.color = new Color(1f, 0.92f, 0.78f, 0.14f);
-        highlight.raycastTarget = false;
-
-        TextMeshProUGUI plus = UIStyleKit.AddLabel(discObject.transform, "+", 40f,
-            UIDesign.TextMain, FontStyles.Bold);
-        plus.alignment = TextAlignmentOptions.Center;
-        plus.raycastTarget = false;
-        plus.rectTransform.offsetMin = new Vector2(0f, -2f);
-        plus.rectTransform.offsetMax = Vector2.zero;
-        plus.transform.SetAsLastSibling();
-
-        plusObject.AddComponent<UIButtonPressFeedback>();
-        UIMotion.Attach(discObject, UIMotion.Mode.Breathe, 0.55f, 3.6f);
-    }
-
-    void WireCoinStripButton(GameObject root)
+    // The whole chip stays a single tap target, matching the previous strip's
+    // behaviour: a transparent full-rect Image/Button behind the visible chip
+    // pieces, rather than only the PlusButton reacting to taps.
+    void WireDiamondChipButton(GameObject root)
     {
         if (root == null) return;
 
+        // A previously authored root may still carry the old glass pill's
+        // UITinted/UIShadowLink — left alone, they would repaint this now
+        // transparent hit rect with a palette colour behind the new chip art.
+        UITinted legacyTint = root.GetComponent<UITinted>();
+        if (legacyTint != null) DestroyUnityObject(legacyTint);
+        UIShadowLink legacyShadowLink = root.GetComponent<UIShadowLink>();
+        if (legacyShadowLink != null) DestroyUnityObject(legacyShadowLink);
+
         Image hitArea = root.GetComponent<Image>();
         if (hitArea == null) hitArea = root.AddComponent<Image>();
-        if (hitArea.sprite == null) UIKit.MakeGlass(root, UIDesign.RadiusChip,
-            UITinted.Role.Glass, 0.92f, true, true);
+        hitArea.color = Color.clear;
         hitArea.raycastTarget = true;
 
         Button button = root.GetComponent<Button>();
@@ -343,62 +266,15 @@ public class CoinManager : MonoBehaviour
         button.transition = Selectable.Transition.None;
         button.onClick.RemoveListener(OpenCoinShop);
         button.onClick.AddListener(OpenCoinShop);
-
-        // The root keeps CoinManager's balance-bounce scale. The plus badge has
-        // its own press feedback, so the strip can be clickable without two
-        // components competing for localScale.
-    }
-
-    void ConfigureCoinIcon(GameObject iconGo)
-    {
-        if (iconGo == null) return;
-
-        Image iconImage = iconGo.GetComponent<Image>();
-        if (iconImage != null)
-        {
-            iconImage.sprite = UIIcons.Get(UIIcons.Coin);
-            iconImage.preserveAspect = true;
-            iconImage.raycastTarget = false;
-        }
-
-        Mask mask = iconGo.GetComponent<Mask>();
-        if (mask == null) mask = iconGo.AddComponent<Mask>();
-        mask.showMaskGraphic = true;
-
-        Transform oldDot = iconGo.transform.Find("Shine");
-        GameObject sweepGo;
-        if (oldDot != null)
-        {
-            oldDot.name = "ShineSweep";
-            sweepGo = oldDot.gameObject;
-        }
-        else
-        {
-            Transform existing = iconGo.transform.Find("ShineSweep");
-            sweepGo = existing != null ? existing.gameObject : new GameObject("ShineSweep");
-            if (existing == null) sweepGo.transform.SetParent(iconGo.transform, false);
-        }
-
-        RectTransform sweepRect = sweepGo.GetComponent<RectTransform>();
-        if (sweepRect == null) sweepRect = sweepGo.AddComponent<RectTransform>();
-        sweepRect.anchorMin = sweepRect.anchorMax = new Vector2(0.5f, 0.5f);
-        sweepRect.pivot = new Vector2(0.5f, 0.5f);
-        sweepRect.anchoredPosition = new Vector2(-IconSize * 0.76f, 0f);
-        sweepRect.sizeDelta = new Vector2(IconSize * 0.17f, IconSize * 1.38f);
-        sweepRect.localRotation = Quaternion.Euler(0f, 0f, -26f);
-
-        Image sweep = sweepGo.GetComponent<Image>();
-        if (sweep == null) sweep = sweepGo.AddComponent<Image>();
-        sweep.sprite = UIGlass.Glow;
-        sweep.type = Image.Type.Simple;
-        sweep.color = new Color(1f, 0.98f, 0.84f, 0.85f);
-        sweep.raycastTarget = false;
-        sweepGo.transform.SetAsLastSibling();
-        UIMotion.Attach(sweepGo, UIMotion.Mode.Shine, 1f, 4.2f);
     }
 
     void OpenCoinShop()
     {
+        // This HUD is shared by menu and gameplay. Its purchase affordance is a
+        // menu action only; a flight tap must never put a modal over the run.
+        ShipSkinManager.LogShopBlocked("CoinShop");
+        if (!ShipSkinManager.CanOpenFromMainMenu) return;
+
         ShipSkinManager shop = FindAnyObjectByType<ShipSkinManager>();
         if (shop != null) shop.OpenShop();
     }
@@ -562,7 +438,7 @@ public class CoinManager : MonoBehaviour
         iconRt.anchoredPosition = new Vector2(-62f, 0f);
         iconRt.sizeDelta = new Vector2(46f, 46f);
         Image icon = iconGo.AddComponent<Image>();
-        icon.sprite = UIIcons.Get(UIIcons.Coin);
+        icon.sprite = ShipSkinManager.DiamondIcon();
         icon.preserveAspect = true;
         icon.raycastTarget = false;
 
@@ -607,7 +483,7 @@ public class CoinManager : MonoBehaviour
 
     public void ShowWatchAdButton()
     {
-        if (canvas == null) canvas = FindAnyObjectByType<Canvas>();
+        if (canvas == null) canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         Transform panel = canvas.transform.Find("GameOverPanel");
@@ -780,25 +656,24 @@ public class CoinManager : MonoBehaviour
         LayoutCoinGroup();
     }
 
-    // TMP's own preferred width for the string it is about to draw, taken once per
-    // balance change rather than every frame. A layout group would give the same
-    // answer at the cost of a rebuild whose input is this counter's own scale — the
-    // bounce animation would then feed itself, which is exactly the unstable nesting
-    // this avoids.
+    // The diamond icon and plus button are anchored to the chip's own left/right
+    // edges (same as the Shop header's balance chip), so only the chip's own
+    // width needs recomputing per balance change — everything else follows.
     void LayoutCoinGroup()
     {
-        if (coinText == null || coinValueRt == null || coinPlusRt == null) return;
+        if (coinText == null || coinCounterRt == null) return;
 
-        float valueWidth = Mathf.Max(0f, coinText.GetPreferredValues(coinText.text).x);
-        coinValueRt.sizeDelta = new Vector2(valueWidth, coinValueRt.sizeDelta.y);
+        coinText.ForceMeshUpdate(true);
+        float textWidth = coinText.preferredWidth;
+        float width = Mathf.Clamp(
+            ShipSkinManager.ShopBalanceAmountLeftInset + textWidth + ShipSkinManager.ShopBalanceAmountRightInset,
+            ShipSkinManager.ShopBalanceChipMinWidth,
+            ShipSkinManager.ShopBalanceChipMaxWidth);
 
-        float plusCentre = ValueLeft + valueWidth + ValueToPlusGap + PlusButtonSize * 0.5f;
-        coinPlusRt.anchoredPosition = new Vector2(plusCentre, 0f);
-
-        if (coinCounterRt != null)
+        if (Mathf.Abs(width - coinChipAppliedWidth) > 0.5f)
         {
-            coinCounterRt.sizeDelta = new Vector2(
-                plusCentre + PlusButtonSize * 0.5f + StripHorizontalPadding, CounterHeight);
+            coinCounterRt.sizeDelta = new Vector2(width, ShipSkinManager.ShopBalanceChipHeight);
+            coinChipAppliedWidth = width;
         }
     }
 
@@ -837,7 +712,7 @@ public class CoinManager : MonoBehaviour
 
     IEnumerator ShowMilestoneNotif(int score, int coin, int diamond)
     {
-        if (canvas == null) canvas = FindAnyObjectByType<Canvas>();
+        if (canvas == null) canvas = UIRootCanvas.Resolve();
         if (canvas == null) yield break;
 
         GameObject root = new GameObject("MilestoneNotif");

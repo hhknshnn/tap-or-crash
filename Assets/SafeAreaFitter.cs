@@ -39,7 +39,7 @@ public class SafeAreaFitter : MonoBehaviour
 
     static void Install()
     {
-        Canvas sceneCanvas = FindAnyObjectByType<Canvas>();
+        Canvas sceneCanvas = UIRootCanvas.Resolve();
         if (sceneCanvas != null && sceneCanvas.GetComponent<SafeAreaFitter>() == null)
             sceneCanvas.gameObject.AddComponent<SafeAreaFitter>();
     }

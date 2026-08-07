@@ -32,7 +32,7 @@ public class NearMissEffect : MonoBehaviour
     // Canvas'ta fullscreen turuncu bir overlay Image oluşturur
     void CreateOverlay()
     {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        Canvas canvas = UIRootCanvas.Resolve();
         if (canvas == null) return;
 
         GameObject go = new GameObject("NearMissOverlay");
